@@ -79,6 +79,75 @@
                 </div>
             </div>
         </section>
+        <!-- Seccion Catalogo -->
+        <section id="catalogo" class="seccion-catalogo">
+            <div class="contenedor-catalogo">
+                <div class="encabezado-seccion">
+                    <span class="subtitulo-seccion">Nuestras Creaciones</span>
+                    <h2 class="titulo-seccion">Catálogo</h2>
+                    <p class="bajada-seccion">Piezas tejidas a mano bajo pedido. Precios y detalles referenciales según especificaciones del cliente.</p>
+                </div>
+
+                <!-- Filtros de Categorias -->
+                <div class="contenedor-filtros">
+                    <button class="boton-filtro activo" data-categoria="todos">Todos</button>
+                    <button class="boton-filtro" data-categoria="amigurumis">Amigurumis</button>
+                    <button class="boton-filtro" data-categoria="llaveros">Llaveros</button>
+                    <button class="boton-filtro" data-categoria="flores">Ramos de Flores</button>
+                </div>
+
+                <!-- Grilla de Productos -->
+                <div class="grilla-productos" id="contenedor-productos">
+                    <!-- Tarjeta 1: Amigurumi -->
+                    <article class="tarjeta-producto" data-categoria="amigurumis">
+                        <div class="imagen-producto">
+                            <img src="images/amigurumi.jpg" alt="Amigurumi a crochet" onerror="this.style.display='none'">
+                            <span class="etiqueta-categoria">Amigurumi</span>
+                        </div>
+                        <div class="info-producto">
+                            <h3 class="nombre-producto">Nombre del amigurumi</h3>
+                            <p class="descripcion-producto">Descripción del amigurumi y detalles de tejido.</p>
+                            <div class="pie-tarjeta">
+                                <span class="precio-producto">Precio referencial</span>
+                                <a href="https://wa.me/593983462196" target="_blank" class="boton-consultar">Consultar</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Tarjeta 2: Llavero -->
+                    <article class="tarjeta-producto" data-categoria="llaveros">
+                        <div class="imagen-producto">
+                            <img src="images/llavero.jpg" alt="Llavero a crochet" onerror="this.style.display='none'">
+                            <span class="etiqueta-categoria">Llavero</span>
+                        </div>
+                        <div class="info-producto">
+                            <h3 class="nombre-producto">Nombre del llavero</h3>
+                            <p class="descripcion-producto">Descripción del llavero y opciones de personalización.</p>
+                            <div class="pie-tarjeta">
+                                <span class="precio-producto">Precio referencial</span>
+                                <a href="https://wa.me/593983462196" target="_blank" class="boton-consultar">Consultar</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Tarjeta 3: Flores -->
+                    <article class="tarjeta-producto" data-categoria="flores">
+                        <div class="imagen-producto">
+                            <img src="images/ramo.jpg" alt="Ramo de flores a crochet" onerror="this.style.display='none'">
+                            <span class="etiqueta-categoria">Ramos de Flores</span>
+                        </div>
+                        <div class="info-producto">
+                            <h3 class="nombre-producto">Nombre del ramo de flores</h3>
+                            <p class="descripcion-producto">Descripción del ramo de flores y cantidad de piezas.</p>
+                            <div class="pie-tarjeta">
+                                <span class="precio-producto">Precio referencial</span>
+                                <a href="https://wa.me/593983462196" target="_blank" class="boton-consultar">Consultar</a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
     </main>
 
 </body>
