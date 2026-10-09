@@ -79,6 +79,7 @@
                 </div>
             </div>
         </section>
+
         <!-- Seccion Catalogo -->
         <section id="catalogo" class="seccion-catalogo">
             <div class="contenedor-catalogo">
@@ -148,7 +149,66 @@
                 </div>
             </div>
         </section>
-    </main>
 
+        <!-- Seccion Pedidos Personalizados -->
+        <section id="pedidos" class="seccion-pedidos">
+            <div class="contenedor-pedidos">
+                <div class="encabezado-seccion">
+                    <span class="subtitulo-seccion">Hecho a tu medida</span>
+                    <h2 class="titulo-seccion">Encargo Personalizado</h2>
+                    <p class="bajada-seccion">Cuéntanos tu idea. Diseñamos y tejemos piezas únicas según tus preferencias.</p>
+                </div>
+
+                <!-- Aviso de Anticipacion -->
+                <div class="tarjeta-aviso">
+                    <p><strong>Aviso importante:</strong> Cada pieza se elabora a mano bajo pedido. Planifica tu encargo con anticipación o consulta a través de nuestro WhatsApp.</p>
+                </div>
+
+                <!-- Formulario de Pedido -->
+                <form id="formulario-pedido" class="formulario-pedido">
+                    <div class="grupo-campo">
+                        <label for="nombre-cliente">Nombre y apellido *</label>
+                        <input type="text" id="nombre-cliente" name="nombre" required placeholder="Tu nombre">
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label for="whatsapp-cliente">Número de WhatsApp *</label>
+                        <input type="tel" id="whatsapp-cliente" name="whatsapp" required placeholder="Ej: 0912345678">
+                    </div>
+
+                    <div class="fila-campos">
+                        <div class="grupo-campo">
+                            <label for="tipo-pieza">Tipo de pieza *</label>
+                            <select id="tipo-pieza" name="tipoPieza" required>
+                                <option value="" disabled selected>Selecciona una opción</option>
+                                <option value="amigurumi">Amigurumi</option>
+                                <option value="llavero">Llavero</option>
+                                <option value="ramo">Ramo de flores</option>
+                                <option value="otro">Diseño personalizado</option>
+                            </select>
+                        </div>
+
+                        <div class="grupo-campo">
+                            <label for="fecha-entrega">Fecha estimada de entrega *</label>
+                            <input type="date" id="fecha-entrega" name="fechaEntrega" required>
+                        </div>
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label for="imagen-referencia">Enlace a imagen de referencia (opcional)</label>
+                        <input type="url" id="imagen-referencia" name="imagenReferencia" placeholder="https://ejemplo.com/foto-referencial.jpg">
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label for="detalles-pedido">Especificaciones y detalles *</label>
+                        <textarea id="detalles-pedido" name="especificaciones" rows="4" required placeholder="Describe detalles, colores, tamaño aproximado o cualquier cambio que desees."></textarea>
+                    </div>
+
+                    <button type="submit" class="boton-enviar-pedido">Enviar solicitud de encargo</button>
+                    <p class="aviso-envio">Entregas coordinadas exclusivamente en Guayaquil.</p>
+                </form>
+            </div>
+        </section>
+    </main>
 </body>
 </html>
