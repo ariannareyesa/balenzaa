@@ -1,11 +1,8 @@
-// ==========================================================================
 // BALENZAA — Lógica de Cliente (frontend/app.js)
-// ==========================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ----------------------------------------------------------------------
     // 1. Filtrado de Categorías en el Catálogo
-    // ----------------------------------------------------------------------
+
     const botonesFiltro = document.querySelectorAll('.boton-filtro');
     const tarjetasProducto = document.querySelectorAll('.tarjeta-producto');
 
