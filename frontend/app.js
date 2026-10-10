@@ -2,22 +2,16 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ----------------------------------------------------------------------
     // 0. Banner de Estado de la Agenda (Tienda pública)
-    // ----------------------------------------------------------------------
     const bannerAgenda = document.getElementById('banner-estado-agenda');
     if (bannerAgenda) {
         const estaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
         if (estaCerrada) {
-            bannerAgenda.textContent = 'Agenda cerrada';
-            bannerAgenda.style.backgroundColor = 'var(--rosa-pastel, #FDE2E4)';
-            bannerAgenda.style.color = 'var(--tinta, #4A2433)';
-            bannerAgenda.style.border = '1px solid var(--rosa-claro, #F8BBD0)';
+            bannerAgenda.textContent = 'Agenda cerrada por el momento';
+            bannerAgenda.className = 'agenda-cerrada';
         } else {
             bannerAgenda.textContent = 'Agenda abierta';
-            bannerAgenda.style.backgroundColor = 'var(--verde-menta, #D8F3DC)';
-            bannerAgenda.style.color = 'var(--verde-texto, #2D6A4F)';
-            bannerAgenda.style.border = '1px solid #B7E4C7';
+            bannerAgenda.className = 'agenda-abierta';
         }
     }
 

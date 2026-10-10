@@ -579,15 +579,28 @@ ul {
 }
 
 #banner-estado-agenda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: fit-content;
-  margin: 1rem auto 1.5rem;
-  text-align: center;
+  margin: 0.8rem auto 1.4rem auto;
+  padding: 0.45rem 1.4rem;
   font-family: var(--f-cuerpo);
   font-size: 0.88rem;
   font-weight: 700;
-  padding: 0.4rem 1.3rem;
   border-radius: var(--radio-pill);
-  display: block;
+  text-align: center;
+  border: none;
+}
+
+#banner-estado-agenda.agenda-abierta {
+  background-color: var(--celeste, #bde0fe);
+  color: var(--azul-oscuro, #22577a);
+}
+
+#banner-estado-agenda.agenda-cerrada {
+  background-color: var(--rosa-pastel, #ffcbf2);
+  color: var(--tinta, #6a0572);
 }
 
 .boton-confirmar-pedido {
