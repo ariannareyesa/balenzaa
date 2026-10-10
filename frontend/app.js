@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </span>
                     </td>
                     <td>
-                        <select class="select-cambio-estado" data-index="${index}" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--rosa-claro); font-size: 0.82rem; cursor: pointer;">
+                        <select class="select-cambio-estado" data-index="${index}" style="padding: 4px 24px 4px 8px; min-width: 135px; border-radius: 8px; border: 1px solid var(--rosa-claro); font-size: 0.82rem; cursor: pointer; background-color: #fff;">
                             <option value="Pendiente" ${estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                             <option value="En elaboración" ${estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
                             <option value="Completado" ${estado === 'Completado' ? 'selected' : ''}>Completado</option>
