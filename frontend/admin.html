@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control | Balenzaa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="cuerpo-admin">
+
+    <!-- Encabezado del Panel -->
+    <header class="barra-admin">
+        <div class="contenedor-admin-header">
+            <span class="nombre-marca">Balenzaa</span>
+            <span class="etiqueta-panel">Panel de Control</span>
+            <a href="index.html" class="enlace-volver-tienda">Volver a la tienda</a>
+        </div>
+    </header>
+
+    <main class="contenedor-principal-admin">
+        <!-- Pantalla de Inicio de Sesion -->
+        <section id="seccion-login-admin" class="tarjeta-login-admin">
+            <div class="encabezado-login">
+                <h2>Acceso Administrativo</h2>
+                <p>Ingresa tus credenciales para gestionar pedidos y catálogo.</p>
+            </div>
+            <form id="formulario-login-admin" class="formulario-login">
+                <div class="grupo-campo">
+                    <label for="usuario-admin">Usuario</label>
+                    <input type="text" id="usuario-admin" name="usuario" required placeholder="Usuario">
+                </div>
+                <div class="grupo-campo">
+                    <label for="clave-admin">Contraseña</label>
+                    <input type="password" id="clave-admin" name="clave" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="boton-ingreso-admin">Iniciar Sesión</button>
+                <p id="error-login" class="mensaje-error-login" style="display: none;">Credenciales incorrectas.</p>
+            </form>
+        </section>
+
+        <!-- Contenedor del Panel Privado (Oculto hasta autenticacion) -->
+        <div id="panel-contenido" class="panel-contenido" style="display: none;">
+            
+            <!-- Barra Superior de Control y Estado de Agenda -->
+            <div class="barra-estado-agenda">
+                <div class="info-sesion">
+                    <p>Bienvenida, <strong>Romina</strong></p>
+                </div>
+                <div class="control-agenda">
+                    <span>Estado de la agenda:</span>
+                    <button id="boton-toggle-agenda" class="boton-agenda activa">Agenda Abierta</button>
+                </div>
+                <button id="boton-cerrar-sesion" class="boton-salir">Cerrar Sesión</button>
+            </div>
+
+            <!-- Resumen de Gestion -->
+            <section class="seccion-metricas">
+                <div class="tarjeta-metrica">
+                    <h3>Pedidos Pendientes</h3>
+                    <p class="valor-metrica" id="total-pendientes">0</p>
+                </div>
+                <div class="tarjeta-metrica">
+                    <h3>En Elaboración</h3>
+                    <p class="valor-metrica" id="total-elaboracion">0</p>
+                </div>
+                <div class="tarjeta-metrica">
+                    <h3>Total Completados</h3>
+                    <p class="valor-metrica" id="total-completados">0</p>
+                </div>
+            </section>
+
+            <!-- Tabla de Encargos Recibidos -->
+            <section class="seccion-gestion-pedidos">
+                <h2>Gestión de Encargos</h2>
+                <div class="contenedor-tabla">
+                    <table class="tabla-pedidos">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Contacto</th>
+                                <th>Tipo de pieza</th>
+                                <th>Fecha entrega</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpo-tabla-pedidos">
+                            <!-- Fila referencial sin datos falsos -->
+                            <tr>
+                                <td>dd/mm/aaaa</td>
+                                <td>Nombre del cliente</td>
+                                <td>Número de contacto</td>
+                                <td>Tipo de pieza</td>
+                                <td>dd/mm/aaaa</td>
+                                <td><span class="estado-pendiente">Pendiente</span></td>
+                                <td>
+                                    <button class="boton-accion-ver">Ver detalles</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Formulario para Agregar Nuevas Piezas al Catalogo -->
+            <section class="seccion-nuevo-producto">
+                <h2>Agregar Nueva Pieza al Catálogo</h2>
+                <form id="formulario-nuevo-producto" class="formulario-admin-producto">
+                    <div class="grupo-campo">
+                        <label for="nuevo-nombre-producto">Nombre de la pieza *</label>
+                        <input type="text" id="nuevo-nombre-producto" name="nombre" required placeholder="Nombre del amigurumi, llavero o ramo">
+                    </div>
+
+                    <div class="fila-campos">
+                        <div class="grupo-campo">
+                            <label for="nueva-categoria-producto">Categoría *</label>
+                            <select id="nueva-categoria-producto" name="categoria" required>
+                                <option value="" disabled selected>Seleccionar categoría</option>
+                                <option value="amigurumis">Amigurumis</option>
+                                <option value="llaveros">Llaveros</option>
+                                <option value="flores">Ramos de Flores</option>
+                            </select>
+                        </div>
+
+                        <div class="grupo-campo">
+                            <label for="nuevo-precio-producto">Precio referencial (USD) *</label>
+                            <input type="text" id="nuevo-precio-producto" name="precio" required placeholder="Ej: $15.00">
+                        </div>
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label for="nueva-descripcion-producto">Descripción de la pieza *</label>
+                        <textarea id="nueva-descripcion-producto" name="descripcion" rows="3" required placeholder="Descripción del amigurumi, materiales y medidas"></textarea>
+                    </div>
+
+                    <div class="grupo-campo">
+                        <label for="nueva-imagen-producto">Ruta o nombre de la imagen *</label>
+                        <input type="text" id="nueva-imagen-producto" name="imagen" required placeholder="images/nombre-imagen.jpg">
+                    </div>
+
+                    <button type="submit" class="boton-guardar-producto">Guardar pieza en catálogo</button>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
