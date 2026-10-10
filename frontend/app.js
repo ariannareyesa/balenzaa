@@ -1,6 +1,26 @@
 // BALENZAA
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // ----------------------------------------------------------------------
+    // 0. Banner de Estado de la Agenda (Tienda pública)
+    // ----------------------------------------------------------------------
+    const bannerAgenda = document.getElementById('banner-estado-agenda');
+    if (bannerAgenda) {
+        const estaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
+        if (estaCerrada) {
+            bannerAgenda.textContent = 'Agenda cerrada';
+            bannerAgenda.style.backgroundColor = 'var(--rosa-pastel, #FDE2E4)';
+            bannerAgenda.style.color = 'var(--tinta, #4A2433)';
+            bannerAgenda.style.border = '1px solid var(--rosa-claro, #F8BBD0)';
+        } else {
+            bannerAgenda.textContent = 'Agenda abierta';
+            bannerAgenda.style.backgroundColor = 'var(--verde-menta, #D8F3DC)';
+            bannerAgenda.style.color = 'var(--verde-texto, #2D6A4F)';
+            bannerAgenda.style.border = '1px solid #B7E4C7';
+        }
+    }
+
     // 1. Filtrado de Categorías en el Catálogo (Fix display bug)
     const botonesFiltro = document.querySelectorAll('.boton-filtro');
     const tarjetasProducto = document.querySelectorAll('.tarjeta-producto');
@@ -24,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const coincideFlores = (filtro.includes('flor') || filtro.includes('ramo')) && (textoCategoria.includes('flor') || textoCategoria.includes('ramo') || dataCategoria.includes('flor'));
 
                     if (coincideTodos || coincideAmigurumi || coincideLlavero || coincideFlores) {
-                        // Limpiar el inline style para respetar el CSS original intacto
                         tarjeta.style.display = '';
                     } else {
                         tarjeta.style.display = 'none';
@@ -111,6 +130,217 @@ document.addEventListener('DOMContentLoaded', () => {
 
             alert(`¡Gracias, ${nombre}! Tu encargo ha sido registrado con éxito en Balenzaa.` + (suscribir ? ' Te has sumado al Club Balenzaa 💌' : ''));
             formPedido.reset();
+        });
+    }
+
+    // 4. Panel de Administración (admin.html)
+    const formLoginAdmin = document.getElementById('formulario-login-admin');
+    const seccionLoginAdmin = document.getElementById('seccion-login-admin');
+    const panelContenido = document.getElementById('panel-contenido');
+    const errorLogin = document.getElementById('error-login');
+    const botonSalir = document.getElementById('boton-cerrar-sesion');
+    const botonToggleAgenda = document.getElementById('boton-toggle-agenda');
+    const cuerpoTablaPedidos = document.getElementById('cuerpo-tabla-pedidos');
+    const formNuevaPieza = document.getElementById('formulario-nueva-pieza');
+
+    // Métricas
+    const elPendientes = document.querySelector('.tarjeta-metrica:nth-child(1) .numero-metrica, #pedidos-pendientes');
+    const elElaboracion = document.querySelector('.tarjeta-metrica:nth-child(2) .numero-metrica, #pedidos-elaboracion');
+    const elCompletados = document.querySelector('.tarjeta-metrica:nth-child(3) .numero-metrica, #pedidos-completados');
+
+    // Sincronizar estado inicial de agenda
+    function actualizarVisualAgenda(cerrada) {
+        if (!botonToggleAgenda) return;
+        if (cerrada) {
+            botonToggleAgenda.textContent = 'Agenda Cerrada';
+            botonToggleAgenda.style.backgroundColor = '#F8D7DA';
+            botonToggleAgenda.style.color = '#721C24';
+            botonToggleAgenda.classList.add('cerrada');
+        } else {
+            botonToggleAgenda.textContent = 'Agenda Abierta';
+            botonToggleAgenda.style.backgroundColor = '#C3E6CB';
+            botonToggleAgenda.style.color = '#155724';
+            botonToggleAgenda.classList.remove('cerrada');
+        }
+    }
+
+    const agendaGuardadaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
+    actualizarVisualAgenda(agendaGuardadaCerrada);
+
+    // Cargar y sincronizar pedidos en tabla y métricas
+    function renderizarPedidos() {
+        if (!cuerpoTablaPedidos) return;
+
+        const pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+        cuerpoTablaPedidos.innerHTML = '';
+
+        let pendientes = 0;
+        let elaboracion = 0;
+        let completados = 0;
+
+        if (pedidos.length === 0) {
+            cuerpoTablaPedidos.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 1.5rem; color: var(--tinta);">No hay pedidos registrados aún.</td></tr>';
+        } else {
+            pedidos.forEach((p, index) => {
+                const estado = p.estado || 'Pendiente';
+                if (estado === 'Pendiente') pendientes++;
+                else if (estado === 'En elaboración') elaboracion++;
+                else if (estado === 'Completado') completados++;
+
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${p.fechaCreacion || 'Hoy'}</td>
+                    <td><strong>${p.nombre}</strong></td>
+                    <td>
+                        ${p.correo}
+                        ${p.suscritoClub ? '<br><span style="font-size:0.75rem; background:var(--rosa-pastel); color:var(--tinta); padding:2px 8px; border-radius:999px;">Club 💌</span>' : ''}
+                    </td>
+                    <td>${p.producto}</td>
+                    <td>${p.fechaEntrega || 'Sin fecha'}</td>
+                    <td>
+                        <span class="badge-estado badge-${estado.toLowerCase().replace(/\s+/g, '-')}">
+                            ${estado}
+                        </span>
+                    </td>
+                    <td>
+                        <select class="select-cambio-estado" data-index="${index}" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--rosa-claro); font-size: 0.82rem; cursor: pointer;">
+                            <option value="Pendiente" ${estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+                            <option value="En elaboración" ${estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
+                            <option value="Completado" ${estado === 'Completado' ? 'selected' : ''}>Completado</option>
+                        </select>
+                    </td>
+                `;
+                cuerpoTablaPedidos.appendChild(fila);
+            });
+        }
+
+        // Actualizar contadores
+        if (elPendientes) elPendientes.textContent = pendientes;
+        if (elElaboracion) elElaboracion.textContent = elaboracion;
+        if (elCompletados) elCompletados.textContent = completados;
+
+        // Event listener para selects de cambio de estado
+        document.querySelectorAll('.select-cambio-estado').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const i = e.target.dataset.index;
+                pedidos[i].estado = e.target.value;
+                localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidos));
+                renderizarPedidos();
+            });
+        });
+    }
+
+    // Mantener sesión abierta si ya existe token
+    const tokenGuardado = localStorage.getItem('balenzaa_token');
+    if (tokenGuardado && seccionLoginAdmin && panelContenido) {
+        seccionLoginAdmin.style.display = 'none';
+        panelContenido.style.display = 'block';
+        renderizarPedidos();
+    }
+
+    // Iniciar Sesión
+    if (formLoginAdmin) {
+        formLoginAdmin.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const usuario = document.getElementById('usuario-admin').value.trim();
+            const clave = document.getElementById('clave-admin').value.trim();
+
+            try {
+                const respuesta = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, clave })
+                });
+
+                const data = await respuesta.json();
+
+                if (respuesta.ok && data.token) {
+                    localStorage.setItem('balenzaa_token', data.token);
+                    seccionLoginAdmin.style.display = 'none';
+                    panelContenido.style.display = 'block';
+                    if (errorLogin) errorLogin.style.display = 'none';
+                    renderizarPedidos();
+                } else {
+                    if (errorLogin) {
+                        errorLogin.textContent = data.mensaje || 'Usuario o contraseña incorrectos';
+                        errorLogin.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                // Respaldo de desarrollo mientras levantamos el servidor en Node
+                if (usuario === 'RomiReyes' && clave === 'presidentedebalenzaa04') {
+                    localStorage.setItem('balenzaa_token', 'temp-dev-token');
+                    seccionLoginAdmin.style.display = 'none';
+                    panelContenido.style.display = 'block';
+                    if (errorLogin) errorLogin.style.display = 'none';
+                    renderizarPedidos();
+                } else if (errorLogin) {
+                    errorLogin.textContent = 'Credenciales incorrectas';
+                    errorLogin.style.display = 'block';
+                }
+            }
+        });
+    }
+
+    // Cerrar Sesión
+    if (botonSalir) {
+        botonSalir.addEventListener('click', () => {
+            localStorage.removeItem('balenzaa_token');
+            panelContenido.style.display = 'none';
+            seccionLoginAdmin.style.display = 'block';
+            if (formLoginAdmin) formLoginAdmin.reset();
+        });
+    }
+
+    // Agenda
+    if (botonToggleAgenda) {
+        botonToggleAgenda.addEventListener('click', () => {
+            const actualmenteCerrada = botonToggleAgenda.classList.contains('cerrada');
+            const nuevoEstadoCerrada = !actualmenteCerrada;
+            localStorage.setItem('balenzaa_agenda_cerrada', nuevoEstadoCerrada);
+            actualizarVisualAgenda(nuevoEstadoCerrada);
+        });
+    }
+
+    // Agregar Nueva Pieza
+    if (formNuevaPieza) {
+        formNuevaPieza.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const nombre = document.getElementById('nombre-nueva-pieza')?.value.trim();
+            const categoria = document.getElementById('categoria-nueva-pieza')?.value;
+            const precio = document.getElementById('precio-nueva-pieza')?.value;
+            const descripcion = document.getElementById('descripcion-nueva-pieza')?.value.trim();
+            const archivoInput = document.getElementById('imagen-producto-admin');
+
+            const archivo = archivoInput?.files[0];
+            if (!archivo) {
+                alert('Por favor selecciona una fotografía.');
+                return;
+            }
+
+            const lector = new FileReader();
+            lector.onload = function (evento) {
+                const imagenBase64 = evento.target.result;
+
+                const nuevaPieza = {
+                    id: Date.now(),
+                    nombre,
+                    categoria,
+                    precio,
+                    descripcion,
+                    imagen: imagenBase64
+                };
+
+                const catalogoDinamico = JSON.parse(localStorage.getItem('balenzaa_catalogo_extra') || '[]');
+                catalogoDinamico.push(nuevaPieza);
+                localStorage.setItem('balenzaa_catalogo_extra', JSON.stringify(catalogoDinamico));
+
+                alert(`¡Pieza "${nombre}" agregada al catálogo exitosamente! 🧶`);
+                formNuevaPieza.reset();
+            };
+
+            lector.readAsDataURL(archivo);
         });
     }
 });
