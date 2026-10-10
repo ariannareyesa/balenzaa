@@ -555,6 +555,71 @@ ul {
   opacity: 0.75;
 }
 
+.grupo-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.8rem 0 1.2rem;
+  text-align: left;
+}
+
+.grupo-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--rosa);
+  cursor: pointer;
+}
+
+.grupo-checkbox label {
+  font-size: 0.9rem;
+  color: var(--tinta);
+  font-weight: 500;
+  cursor: pointer;
+  line-height: 1.3;
+}
+
+.boton-confirmar-pedido {
+  display: block;
+  width: fit-content;
+  margin: 0.8rem auto 0;
+  background-color: var(--rosa);
+  color: var(--crema);
+  font-family: var(--f-cuerpo);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: var(--radio-pill);
+  cursor: pointer;
+  box-shadow: none;
+  transition: background-color 0.2s ease;
+}
+
+.boton-confirmar-pedido:hover {
+  background-color: var(--rojo, #d84a56);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.texto-dudas-pedido {
+  text-align: center;
+  margin-top: 1.1rem;
+  font-size: 0.88rem;
+  color: var(--tinta);
+  line-height: 1.4;
+}
+
+.texto-dudas-pedido a {
+  color: var(--rosa);
+  font-weight: 700;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.texto-dudas-pedido a:hover {
+  color: var(--rojo);
+}
+
 /* --------------------------------------------------------------------------
    9. GUÍA DE CUIDADOS
    -------------------------------------------------------------------------- */
@@ -803,6 +868,7 @@ textarea:focus {
   text-align: left;
   font-family: var(--f-cuerpo);
   color: var(--tinta);
+  box-shadow: 0 4px 15px rgba(74, 36, 51, 0.08);
 }
 
 @keyframes flota {
@@ -823,9 +889,16 @@ textarea:focus {
   border-radius: var(--radio-tarjeta);
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(74, 36, 51, 0.18);
+  display: none;
+  flex-direction: column;
+}
+
+.popup-balenzia.activo {
+  display: flex;
 }
 
 .cabecera-popup-balenzia {
+  width: 100%;
   background-color: var(--azul);
   padding: 0.8rem 1rem;
   display: flex;
@@ -840,64 +913,80 @@ textarea:focus {
 }
 
 .perfil-balenzia .avatar-balenzia {
-  width: 46px;
-  height: 46px;
+  width: 36px;
+  height: 36px;
 }
 
 .perfil-balenzia h4 {
   font-size: 1.05rem;
+  color: var(--tinta);
 }
 
 .perfil-balenzia span {
   font-size: 0.78rem;
+  color: var(--azul-texto);
 }
 
 .btn-cerrar-balenzia {
   background: none;
   border: none;
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   cursor: pointer;
   color: var(--tinta);
+  line-height: 1;
 }
 
 .cuerpo-chat-balenzia {
-  height: 240px;
+  width: 100%;
+  height: 230px;
   overflow-y: auto;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  background-color: var(--crema);
 }
 
 .burbuja-mensaje {
   padding: 0.6rem 0.9rem;
   border-radius: var(--radio-input);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   max-width: 85%;
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .burbuja-mensaje.balenzia {
   background-color: var(--rosa-pastel);
+  color: var(--tinta);
   border-bottom-left-radius: 4px;
+  align-self: flex-start;
 }
 
 .burbuja-mensaje.usuario {
   background-color: var(--amarillo);
+  color: var(--tinta);
   align-self: flex-end;
   border-bottom-right-radius: 4px;
 }
 
 .form-chat-balenzia {
+  width: 100%;
   display: flex;
-  gap: 0.4rem;
+  gap: 0.5rem;
   padding: 0.7rem;
   background-color: var(--blanco);
+  border-top: 1px solid var(--rosa-pastel);
 }
 
 .form-chat-balenzia input {
+  flex: 1;
   padding: 0.5rem 0.9rem;
   font-size: 0.85rem;
   border-radius: var(--radio-pill);
+  border: 1.5px solid var(--rosa-claro);
+  background-color: var(--crema);
+  outline: none;
 }
 
 .btn-enviar-balenzia {
@@ -905,10 +994,11 @@ textarea:focus {
   color: var(--crema);
   border: none;
   border-radius: var(--radio-pill);
-  padding: 0 1rem;
+  padding: 0.5rem 1.1rem;
   cursor: pointer;
   font-family: var(--f-cuerpo);
   font-weight: 700;
+  white-space: nowrap;
 }
 
 /* --------------------------------------------------------------------------
