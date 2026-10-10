@@ -11,35 +11,32 @@
 </head>
 <body>
 
+    <!-- Barra de Navegacion Editorial -->
     <header class="barra-navegacion">
-        <div class="contenedor-navegacion">
-            <a href="#inicio" class="enlace-marca">
-                <span class="nombre-marca">Balenzaa</span>
-            </a>
-            <nav class="menu-enlaces">
-                <a href="#inicio">Inicio</a>
-                <a href="#sobre-mi">Sobre mí</a>
-                <a href="#catalogo">Catálogo</a>
-                <a href="#pedidos">pedidos</a>
-                <a href="#cuidados">Cuidados</a>
-                <a href="#preguntas">Preguntas</a>
-                <a href="#asistente">BalenzIA</a>
+        <div class="contenedor-nav">
+            <a href="#inicio" class="logotipo-marca">Balenzaa</a>
+            <nav>
+                <ul class="menu-navegacion">
+                    <li><a href="#inicio">Inicio</a></li>
+                    <li><a href="#sobre-mi">Sobre mí</a></li>
+                    <li><a href="#catalogo">Catálogo</a></li>
+                    <li><a href="#pedidos">Pedidos</a></li>
+                    <li><a href="#cuidados">Cuidados</a></li>
+                    <li><a href="#preguntas">Preguntas</a></li>
+                </ul>
             </nav>
-            <div class="accion-navegacion">
-                <a href="#pedidos" class="boton-pedido-rapido">Hacer Pedido</a>
-            </div>
+            <a href="#pedidos" class="boton-nav-cta">Hacer pedido</a>
         </div>
     </header>
-<main>
-        <!-- Seccion Portada / Hero -->
-        <section id="inicio" class="seccion-portada">
-            <div class="contenedor-portada">
-                <span class="etiqueta-artesanal">Tejido 100% a mano</span>
-                <h1 class="lema-principal">Un toque dulce, un hilo de amor</h1>
-                <p class="descripcion-portada">
-                    Amigurumis, llaveros y detalles en crochet elaborados con paciencia y dedicación en Guayaquil. Cada pieza cuenta una historia única.
-                </p>
-                <div class="botones-portada">
+
+    <main>
+        <!-- Seccion Hero -->
+        <section id="inicio" class="seccion-hero">
+            <div class="contenedor-hero">
+                <span class="insignia-artesanal">Hecho a mano en Guayaquil</span>
+                <h1 class="titulo-hero">Un toque dulce, un hilo de amor.</h1>
+                <p class="descripcion-hero">Piezas en crochet diseñadas puntada a puntada. Amigurumis, flores eternas y detalles personalizados para regalar con sentido.</p>
+                <div class="botones-hero">
                     <a href="#catalogo" class="boton-primario">Ver catálogo</a>
                     <a href="#pedidos" class="boton-secundario">Personalizar pedido</a>
                 </div>
@@ -268,28 +265,37 @@
             </div>
         </section>
 
-        <!-- Seccion Asistente BalenzIA -->
-        <section id="asistente" class="seccion-asistente">
-            <div class="contenedor-asistente">
-                <div class="encabezado-seccion">
-                    <span class="subtitulo-seccion">Recomendaciones personalizadas</span>
-                    <h2 class="titulo-seccion">Consulta con BalenzIA</h2>
-                    <p class="bajada-seccion">Describe para quién es el detalle o la ocasión, y recibe sugerencias de modelos tejidos.</p>
-                </div>
-                <div class="caja-asistente">
-                    <div class="historial-asistente" id="historial-asistente">
-                        <div class="mensaje-asistente">
-                            <p>¡Hola! Soy BalenzIA. Cuéntame qué tipo de detalle buscas o para qué ocasión especial es, y te sugeriré opciones acordes a nuestro taller.</p>
-                        </div>
+        <!-- Boton Flotante BalenzIA (Ballenita) y su Popup interactivo -->
+    <div class="contenedor-balenzia">
+        <!-- Ventana desplegable cute de BalenzIA -->
+        <div id="ventana-balenzia" class="popup-balenzia" style="display: none;">
+            <div class="cabecera-popup-balenzia">
+                <div class="perfil-balenzia">
+                    <img src="images/balenzIA.png" alt="BalenzIA" class="avatar-balenzia">
+                    <div>
+                        <h4>BalenzIA</h4>
+                        <span>Tu guía en crochet</span>
                     </div>
-                    <form id="formulario-asistente" class="formulario-asistente">
-                        <input type="text" id="entrada-asistente" placeholder="Escribe tu consulta aquí..." required>
-                        <button type="submit" class="boton-enviar-asistente">Consultar</button>
-                    </form>
+                </div>
+                <button type="button" id="cerrar-balenzia" class="btn-cerrar-balenzia" aria-label="Cerrar">&times;</button>
+            </div>
+            <div id="chat-balenzia" class="cuerpo-chat-balenzia">
+                <div class="burbuja-mensaje balenzia">
+                    ¡Hola! Soy BalenzIA. ¿Buscas un regalo para alguien especial o una idea para tejer? Cuéntame y te aconsejo.
                 </div>
             </div>
-        </section>
-    </main>
+            <form id="formulario-balenzia" class="form-chat-balenzia">
+                <input type="text" id="input-balenzia" placeholder="Ej: Regalo para mi amiga que ama los gatos..." required>
+                <button type="submit" class="btn-enviar-balenzia">Enviar</button>
+            </form>
+        </div>
+
+        <!-- Boton disparador con la ballenita -->
+        <button type="button" id="boton-balenzia" class="boton-balenzia" aria-label="Abrir BalenzIA">
+            <img src="images/balenzIA.png" alt="BalenzIA" class="icono-balenzia">
+            <span class="globo-dialogo-balenzia">¿Dudas con tu regalo? ¡Habla conmigo!</span>
+        </button>
+    </div>
     </main>
 
     <!-- Pie de pagina -->
