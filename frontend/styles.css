@@ -578,6 +578,18 @@ ul {
   line-height: 1.3;
 }
 
+#banner-estado-agenda {
+  width: fit-content;
+  margin: 1rem auto 1.5rem;
+  text-align: center;
+  font-family: var(--f-cuerpo);
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 0.4rem 1.3rem;
+  border-radius: var(--radio-pill);
+  display: block;
+}
+
 .boton-confirmar-pedido {
   display: block;
   width: fit-content;
