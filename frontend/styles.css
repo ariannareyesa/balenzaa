@@ -78,14 +78,14 @@ ul {
 
 /* Festones que cuelgan entre secciones */
 .seccion-hero,
-.seccion-catalogo,
+.seccion-pedidos,
 .seccion-cuidados,
 .barra-admin {
   position: relative;
 }
 
 .seccion-hero::after,
-.seccion-catalogo::after,
+.seccion-pedidos::after,
 .seccion-cuidados::after,
 .barra-admin::after {
   content: "";
@@ -151,7 +151,7 @@ ul {
 
 .bajada-seccion {
   margin-top: 0.8rem;
-  opacity: 0.85;
+  opacity: 100;
 }
 
 /* --------------------------------------------------------------------------
@@ -321,7 +321,7 @@ ul {
    6. SECCIÓN SOBRE MÍ
    -------------------------------------------------------------------------- */
 .seccion-sobre-mi {
-  padding: 7rem 1.5rem 5rem 1.5rem;
+  padding: 6rem 1.5rem 5rem 1.5rem;
   position: relative;
   overflow: hidden;
   background:
@@ -334,31 +334,43 @@ ul {
   max-width: 1050px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
+  grid-template-columns: minmax(320px, 420px) 1fr;
   gap: 3.5rem;
   align-items: center;
   position: relative;
+  z-index: 2;
 }
 
 .imagen-sobre-mi {
   position: relative;
-}
-
-.imagen-sobre-mi img {
   width: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
-  border-radius: 999px 999px 28px 28px;
-  position: relative;
-  z-index: 1;
-  background-color: var(--rosa-pastel);
 }
 
-.cuadro-decorativo {
-  position: absolute;
-  inset: 16px -16px -16px 16px;
-  background-color: var(--azul);
-  border-radius: 999px 999px 28px 28px;
+.imagen-sobre-mi img:not(.doodle-flecha-romina),
+.foto-romina {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radio-tarjeta);
+  box-shadow: 0 10px 25px rgba(116, 64, 79, 0.08);
+  display: block;
+}
+
+img.doodle-flecha-romina {
+  position: absolute !important;
+  top: -24px !important;
+  left: -20px !important;
+  width: 65px !important;
+  max-width: 65px !important;
+  height: auto !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+  transform: rotate(-10deg);
+}
+
+.texto-sobre-mi {
+  width: 100%;
 }
 
 .texto-sobre-mi p {
@@ -402,17 +414,22 @@ ul {
    7. CATÁLOGO DE PIEZAS
    -------------------------------------------------------------------------- */
 .seccion-catalogo {
-  --feston: var(--verde);
-  background-color: var(--verde);
+  --feston: var(--azul-claro);
+  background: repeating-linear-gradient(
+    90deg,
+    var(--azul-claro) 0 45px,
+    var(--crema) 45px 90px
+  );
   padding: 5rem 1.5rem 6rem 1.5rem;
 }
 
 .seccion-catalogo .titulo-seccion {
-  color: var(--crema);
+  color: var(--rosa);
 }
 
 .seccion-catalogo .subtitulo-seccion {
-  background-color: var(--crema);
+  background-color: var(--azul);
+  color: var(--azul-texto);
 }
 
 .contenedor-catalogo,
@@ -516,29 +533,86 @@ ul {
    8. PEDIDOS PERSONALIZADOS
    -------------------------------------------------------------------------- */
 .seccion-pedidos {
-  padding: 7rem 1.5rem 5rem 1.5rem;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--azul-claro) 0 45px,
-    var(--crema) 45px 90px
-  );
+  --feston: var(--verde);
+  background-color: var(--verde);
+  padding: 6rem 1.5rem 7rem 1.5rem;
+}
+
+.seccion-pedidos .titulo-seccion {
+  color: var(--crema);
+}
+
+/* Píldora superior armonizada en rosa pastel */
+.seccion-pedidos .subtitulo-seccion {
+  background-color: var(--rosa-pastel);
+  color: var(--tinta);
+  font-weight: 600;
+  border: 1.5px dashed var(--rosa);
+}
+
+.seccion-pedidos .bajada-seccion {
+  color: #F7FBDF;
+  text-align: center;
 }
 
 .contenedor-pedidos {
   max-width: 720px;
+  margin: 0 auto;
 }
 
+/* Banner de agenda integrado suavemente sobre el verde */
+#banner-estado-agenda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  margin: 1rem auto 1.4rem auto;
+  padding: 0.45rem 1.5rem;
+  font-family: var(--f-cuerpo);
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: var(--radio-pill);
+  text-align: center;
+  border: 2px dashed rgba(255, 255, 255, 0.7);
+}
+
+#banner-estado-agenda.agenda-abierta {
+  background-color: var(--crema);
+  color: #2F6224;
+}
+
+#banner-estado-agenda.agenda-cerrada {
+  background-color: var(--rosa-pastel);
+  color: var(--tinta);
+  border-color: var(--rosa);
+}
+
+/* Tarjeta de aviso: crema suave con borde de costura y texto legible */
 .tarjeta-aviso {
-  background-color: var(--amarillo);
+  background-color: var(--crema);
   border-radius: 22px;
-  padding: 1rem 1.4rem;
-  margin-bottom: 1.8rem;
+  padding: 1.1rem 1.5rem;
+  margin-bottom: 2rem;
+  color: var(--tinta);
+  border: 2px dashed var(--rosa-claro);
 }
 
-.formulario-pedido {
+.tarjeta-aviso strong {
+  color: var(--rosa);
+}
+
+/* Tarjeta de formulario con borde entrecortado tipo costura y sin sombra */
+.formulario-encargo {
   background-color: var(--crema);
   border-radius: 32px;
-  padding: 2rem;
+  padding: 2.2rem;
+  border: 2.5px dashed var(--rosa-claro);
+  box-shadow: none;
+}
+
+.formulario-encargo label {
+  color: var(--tinta);
+  font-weight: 700;
 }
 
 .boton-enviar-pedido {
@@ -578,31 +652,6 @@ ul {
   line-height: 1.3;
 }
 
-#banner-estado-agenda {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  margin: 0.8rem auto 1.4rem auto;
-  padding: 0.45rem 1.4rem;
-  font-family: var(--f-cuerpo);
-  font-size: 0.88rem;
-  font-weight: 700;
-  border-radius: var(--radio-pill);
-  text-align: center;
-  border: none;
-}
-
-#banner-estado-agenda.agenda-abierta {
-  background-color: var(--celeste, #bde0fe);
-  color: var(--azul-oscuro, #22577a);
-}
-
-#banner-estado-agenda.agenda-cerrada {
-  background-color: var(--rosa-pastel, #ffcbf2);
-  color: var(--tinta, #6a0572);
-}
-
 .boton-confirmar-pedido {
   display: block;
   width: fit-content;
@@ -617,13 +666,13 @@ ul {
   border-radius: var(--radio-pill);
   cursor: pointer;
   box-shadow: none;
-  transition: background-color 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .boton-confirmar-pedido:hover {
-  background-color: var(--rojo, #d84a56);
+  background-color: #D64F73;
   color: #ffffff;
-  box-shadow: none;
+  transform: translateY(-2px);
 }
 
 .texto-dudas-pedido {
@@ -642,7 +691,7 @@ ul {
 }
 
 .texto-dudas-pedido a:hover {
-  color: var(--rojo);
+  color: #D64F73;
 }
 
 /* --------------------------------------------------------------------------
@@ -1302,6 +1351,44 @@ textarea:focus {
   padding: 0.3rem 0.9rem;
   font-size: 0.8rem;
   background-color: var(--rosa-pastel);
+}
+
+.imagen-sobre-mi {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+/* Solo la foto de Romina */
+.foto-romina {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radio-tarjeta);
+  box-shadow: 0 10px 25px rgba(116, 64, 79, 0.08);
+  display: block;
+}
+
+/* La flecha doodle */
+img.doodle-flecha-romina {
+  position: absolute !important;
+  top: -30px !important;
+  left: -25px !important;
+  width: 70px !important;
+  height: auto !important;
+  max-width: 70px !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+  transform: rotate(-10deg);
+}
+
+@media (max-width: 768px) {
+  img.doodle-flecha-romina {
+    display: none !important;
+  }
 }
 
 /* --------------------------------------------------------------------------
