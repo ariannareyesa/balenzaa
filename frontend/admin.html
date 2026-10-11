@@ -56,7 +56,7 @@
                 <button id="boton-cerrar-sesion" class="boton-salir">Cerrar Sesión</button>
             </div>
 
-            <!-- Resumen de Gestion -->
+            <!-- Resumen de Gestion y Finanzas -->
             <section class="seccion-metricas">
                 <div class="tarjeta-metrica">
                     <h3>Pedidos Pendientes</h3>
@@ -70,9 +70,13 @@
                     <h3>Total Completados</h3>
                     <p class="valor-metrica" id="total-completados">0</p>
                 </div>
+                <div class="tarjeta-metrica" style="background-color: var(--rosa-pastel);">
+                    <h3>Total</h3>
+                    <p class="valor-metrica" id="total-ingresos" style="font-size: 2.4rem;">$0.00</p>
+                </div>
             </section>
 
-            <!-- Tabla de Encargos Recibidos -->
+            <!-- Tabla de Encargos con Control Financiero -->
             <section class="seccion-gestion-pedidos">
                 <h2>Gestión de Encargos</h2>
                 <div class="contenedor-tabla">
@@ -81,24 +85,28 @@
                             <tr>
                                 <th>Fecha</th>
                                 <th>Cliente</th>
-                                <th>Contacto</th>
-                                <th>Tipo de pieza</th>
-                                <th>Fecha entrega</th>
+                                <th>Correo</th>
+                                <th>Celular</th>
+                                <th>Pieza</th>
+                                <th>Entrega</th>
+                                <th>Precio</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="cuerpo-tabla-pedidos">
-                            <!-- Fila referencial sin datos falsos -->
                             <tr>
                                 <td>dd/mm/aaaa</td>
                                 <td>Nombre del cliente</td>
-                                <td>Número de contacto</td>
-                                <td>Tipo de pieza</td>
+                                <td>Número / Correo</td>
+                                <td>Amigurumi</td>
                                 <td>dd/mm/aaaa</td>
+                                <td><strong>$0.00</strong></td>
+                                <td><span style="color: #2F6224; font-weight: 600;">$0.00</span></td>
+                                <td><span style="color: #C93A5B; font-weight: 600;">$0.00</span></td>
                                 <td><span class="estado-pendiente">Pendiente</span></td>
                                 <td>
-                                    <button class="boton-accion-ver">Ver detalles</button>
+                                    <button class="boton-accion-ver">Gestionar</button>
                                 </td>
                             </tr>
                         </tbody>

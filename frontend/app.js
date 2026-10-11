@@ -111,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 id: Date.now(),
                 nombre,
                 correo,
+                celular,
                 producto: document.getElementById('tipo-producto')?.value,
                 detalles: document.getElementById('detalles-pedido')?.value,
                 fechaEntrega: document.getElementById('fecha-entrega')?.value,
@@ -135,12 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const botonSalir = document.getElementById('boton-cerrar-sesion');
     const botonToggleAgenda = document.getElementById('boton-toggle-agenda');
     const cuerpoTablaPedidos = document.getElementById('cuerpo-tabla-pedidos');
-    const formNuevaPieza = document.getElementById('formulario-nueva-pieza');
+    const formNuevaPieza = document.getElementById('formulario-nueva-pieza') || document.getElementById('formulario-nuevo-producto');
 
     // Métricas
-    const elPendientes = document.querySelector('.tarjeta-metrica:nth-child(1) .numero-metrica, #pedidos-pendientes');
-    const elElaboracion = document.querySelector('.tarjeta-metrica:nth-child(2) .numero-metrica, #pedidos-elaboracion');
-    const elCompletados = document.querySelector('.tarjeta-metrica:nth-child(3) .numero-metrica, #pedidos-completados');
+    const elPendientes = document.getElementById('total-pendientes');
+    const elElaboracion = document.getElementById('total-elaboracion');
+    const elCompletados = document.getElementById('total-completados');
+    const elIngresos = document.getElementById('total-ingresos');
 
     // Sincronizar estado inicial de agenda
     function actualizarVisualAgenda(cerrada) {
@@ -161,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const agendaGuardadaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
     actualizarVisualAgenda(agendaGuardadaCerrada);
 
-    // Cargar y sincronizar pedidos en tabla y métricas
     function renderizarPedidos() {
         if (!cuerpoTablaPedidos) return;
 
@@ -171,9 +172,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let pendientes = 0;
         let elaboracion = 0;
         let completados = 0;
+        let totalCobrado = 0;
 
         if (pedidos.length === 0) {
-            cuerpoTablaPedidos.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 1.5rem; color: var(--tinta);">No hay pedidos registrados aún.</td></tr>';
+            cuerpoTablaPedidos.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 1.5rem; color: var(--tinta);">No hay pedidos registrados aún.</td></tr>';
         } else {
             pedidos.forEach((p, index) => {
                 const estado = p.estado || 'Pendiente';
@@ -181,45 +183,85 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (estado === 'En elaboración') elaboracion++;
                 else if (estado === 'Completado') completados++;
 
+                const precioNum = parseFloat(p.precioTotal) || 0;
+
+                // Regla de ingresos según estado
+                if (estado === 'En elaboración') {
+                    totalCobrado += (precioNum * 0.50);
+                } else if (estado === 'Completado') {
+                    totalCobrado += precioNum;
+                }
+
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
                     <td>${p.fechaCreacion || 'Hoy'}</td>
-                    <td><strong>${p.nombre}</strong></td>
+                    <td><strong>${p.nombre || 'Sin nombre'}</strong></td>
                     <td>
-                        ${p.correo}
+                        ${p.correo || 'Sin correo'}
                         ${p.suscritoClub ? '<br><span style="font-size:0.75rem; background:var(--rosa-pastel); color:var(--tinta); padding:2px 8px; border-radius:999px;">Club 💌</span>' : ''}
                     </td>
-                    <td>${p.producto}</td>
-                    <td>${p.fechaEntrega || 'Sin fecha'}</td>
                     <td>
-                        <span class="badge-estado badge-${estado.toLowerCase().replace(/\s+/g, '-')}">
-                            ${estado}
-                        </span>
+                        ${p.celular ? `<a href="https://wa.me/593${p.celular.replace(/^0/, '')}" target="_blank" style="color: #2F6224; font-weight: 600; text-decoration: underline;">${p.celular}</a>` : '<span style="color:#999;">-</span>'}
+                    </td>
+                    <td>${p.producto || 'Diseño especial'}</td>
+                    <td>${p.fechaEntrega || 'Por definir'}</td>
+                    <td>
+                        <input type="number" step="0.50" min="0" class="input-precio-total" data-index="${index}" value="${precioNum > 0 ? precioNum.toFixed(2) : ''}" placeholder="$0.00" style="width: 85px; padding: 5px 8px; border: 1.5px solid var(--rosa-claro); border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.9rem; background-color: #fff;">
                     </td>
                     <td>
-                        <select class="select-cambio-estado" data-index="${index}" style="padding: 4px 24px 4px 8px; min-width: 135px; border-radius: 8px; border: 1px solid var(--rosa-claro); font-size: 0.82rem; cursor: pointer; background-color: #fff;">
+                        <select class="select-cambio-estado" data-index="${index}" style="padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; cursor: pointer; background-color: #fff;">
                             <option value="Pendiente" ${estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                             <option value="En elaboración" ${estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
                             <option value="Completado" ${estado === 'Completado' ? 'selected' : ''}>Completado</option>
                         </select>
+                    </td>
+                    <td>
+                        <button class="boton-eliminar-pedido" data-index="${index}" title="Cancelar o eliminar encargo" style="background-color: #FFE3EC; color: #C93A5B; border: 1px solid #FBC5D6; border-radius: var(--radio-pill); padding: 0.35rem 0.85rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background-color 0.2s ease;">
+                            Eliminar
+                        </button>
                     </td>
                 `;
                 cuerpoTablaPedidos.appendChild(fila);
             });
         }
 
-        // Actualizar contadores
+        // Actualizar tarjetas de métricas
         if (elPendientes) elPendientes.textContent = pendientes;
         if (elElaboracion) elElaboracion.textContent = elaboracion;
         if (elCompletados) elCompletados.textContent = completados;
+        if (elIngresos) elIngresos.textContent = `$${totalCobrado.toFixed(2)}`;
 
-        // Event listener para selects de cambio de estado
+        // Listener: Actualizar precio
+        document.querySelectorAll('.input-precio-total').forEach(inp => {
+            inp.addEventListener('change', (e) => {
+                const i = e.target.dataset.index;
+                pedidos[i].precioTotal = parseFloat(e.target.value) || 0;
+                localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidos));
+                renderizarPedidos();
+            });
+        });
+
+        // Listener: Actualizar estado
         document.querySelectorAll('.select-cambio-estado').forEach(sel => {
             sel.addEventListener('change', (e) => {
                 const i = e.target.dataset.index;
                 pedidos[i].estado = e.target.value;
                 localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidos));
                 renderizarPedidos();
+            });
+        });
+
+        // Listener: Eliminar pedido
+        document.querySelectorAll('.boton-eliminar-pedido').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const i = e.target.dataset.index;
+                const pedidoAEliminar = pedidos[i];
+                const confirma = confirm(`¿Estás segura de eliminar el encargo de ${pedidoAEliminar.nombre || 'este cliente'}?`);
+                if (confirma) {
+                    pedidos.splice(i, 1);
+                    localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidos));
+                    renderizarPedidos();
+                }
             });
         });
     }
