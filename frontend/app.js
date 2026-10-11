@@ -216,8 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         </select>
                     </td>
                     <td>
-                        <button class="boton-eliminar-pedido" data-index="${index}" title="Cancelar o eliminar encargo" style="background-color: #FFE3EC; color: #C93A5B; border: 1px solid #FBC5D6; border-radius: var(--radio-pill); padding: 0.35rem 0.85rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background-color 0.2s ease;">
-                            Eliminar
+                        <button class="boton-eliminar-pedido" data-index="${index}" title="Eliminar encargo" style="background: none; border: none; color: #C93A5B; font-size: 1.15rem; font-weight: 700; cursor: pointer; padding: 4px 8px; line-height: 1; transition: transform 0.15s ease;">
+                            ✕
                         </button>
                     </td>
                 `;
