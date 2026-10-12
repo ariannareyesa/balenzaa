@@ -55,7 +55,7 @@
                     <span class="subtitulo-seccion">Conoce a la creadora</span>
                     <h2 class="titulo-seccion">El corazón detrás de Balenzaa</h2>
                     <p>
-                        ¡Hola! Soy Romina Reyes, estudiante de bachillerato y la creadora de Balenzaa.
+                        ¡Hola! Soy Romina Reyes, la creadora de Balenzaa.
                     </p>
                     <p>
                         Todo lo que ves aquí se teje bajo pedido, sin prisas y cuidando cada puntada para que te lleves un recuerdo especial, ya sea un regalo para alguien querido o un detalle para ti.
@@ -87,64 +87,11 @@
                     <p class="bajada-seccion">Piezas tejidas a mano bajo pedido. Precios y detalles referenciales según especificaciones del cliente.</p>
                 </div>
 
-                <!-- Filtros de Categorias -->
-                <div class="contenedor-filtros">
-                    <button class="boton-filtro activo" data-categoria="todos">Todos</button>
-                    <button class="boton-filtro" data-categoria="amigurumis">Amigurumis</button>
-                    <button class="boton-filtro" data-categoria="llaveros">Llaveros</button>
-                    <button class="boton-filtro" data-categoria="flores">Ramos de Flores</button>
-                </div>
+                <!-- Filtros Dinamicos de Categorias -->
+                <div class="contenedor-filtros" id="contenedor-filtros-catalogo"></div>
 
-                <!-- Grilla de Productos -->
-                <div class="grilla-productos" id="contenedor-productos">
-                    <!-- Tarjeta 1: Amigurumi -->
-                    <article class="tarjeta-producto" data-categoria="amigurumis">
-                        <div class="imagen-producto">
-                            <img src="images/amigurumi.jpg" alt="Amigurumi a crochet" onerror="this.style.display='none'">
-                            <span class="etiqueta-categoria">Amigurumi</span>
-                        </div>
-                        <div class="info-producto">
-                            <h3 class="nombre-producto">Nombre del amigurumi</h3>
-                            <p class="descripcion-producto">Descripción del amigurumi y detalles de tejido.</p>
-                            <div class="pie-tarjeta">
-                                <span class="precio-producto">Precio referencial</span>
-                                <a href="https://wa.me/593983462196" target="_blank" class="boton-consultar">Consultar</a>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- Tarjeta 2: Llavero -->
-                    <article class="tarjeta-producto" data-categoria="llaveros">
-                        <div class="imagen-producto">
-                            <img src="images/llavero.jpg" alt="Llavero a crochet" onerror="this.style.display='none'">
-                            <span class="etiqueta-categoria">Llavero</span>
-                        </div>
-                        <div class="info-producto">
-                            <h3 class="nombre-producto">Nombre del llavero</h3>
-                            <p class="descripcion-producto">Descripción del llavero y opciones de personalización.</p>
-                            <div class="pie-tarjeta">
-                                <span class="precio-producto">Precio referencial</span>
-                                <a href="https://wa.me/593983462196" target="_blank" class="boton-consultar">Consultar</a>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- Tarjeta 3: Flores -->
-                    <article class="tarjeta-producto" data-categoria="flores">
-                        <div class="imagen-producto">
-                            <img src="images/ramo.jpg" alt="Ramo de flores a crochet" onerror="this.style.display='none'">
-                            <span class="etiqueta-categoria">Ramos de Flores</span>
-                        </div>
-                        <div class="info-producto">
-                            <h3 class="nombre-producto">Nombre del ramo de flores</h3>
-                            <p class="descripcion-producto">Descripción del ramo de flores y cantidad de piezas.</p>
-                            <div class="pie-tarjeta">
-                                <span class="precio-producto">Precio referencial</span>
-                                <a href="https://wa.me/593983462196" target="_blank" class="boton-consultar">Consultar</a>
-                            </div>
-                        </div>
-                    </article>
-                </div>
+                <!-- Grilla de Productos Dinamica -->
+                <div class="grilla-productos" id="contenedor-catalogo-tienda"></div>
             </div>
         </section>
 
@@ -167,59 +114,63 @@
 
                 <!-- Formulario de Pedido -->
                 <form class="formulario-encargo" id="formulario-pedido">
-            <div class="grupo-campo">
-                <label for="nombre-cliente">Tu nombre completo</label>
-                <input type="text" id="nombre-cliente" required placeholder="Ej: Romina Reyes">
-            </div>
+                    <div class="grupo-campo">
+                        <label for="nombre-cliente">Tu nombre completo</label>
+                        <input type="text" id="nombre-cliente" required placeholder="Ej: Romina Reyes">
+                    </div>
 
-            <div class="grupo-campo">
-                <label for="correo-cliente">Correo electrónico</label>
-                <input type="email" id="correo-cliente" required placeholder="tu-correo@email.com">
-            </div>
+                    <div class="grupo-campo">
+                        <label for="correo-cliente">Correo electrónico</label>
+                        <input type="email" id="correo-cliente" required placeholder="tu-correo@email.com">
+                    </div>
 
-            <div class="grupo-campo">
-                <label for="celular-cliente">Número de WhatsApp / Celular</label>
-                <input type="tel" id="celular-cliente" required placeholder="Ej: 0912345678">
-            </div>
+                    <div class="grupo-campo">
+                        <label for="celular-cliente">Número de WhatsApp / Celular</label>
+                        <input type="tel" id="celular-cliente" required placeholder="Ej: 0912345678">
+                    </div>
 
-            <div class="grupo-campo">
-                <label for="tipo-producto">¿Qué te gustaría encargar?</label>
-                <select id="tipo-producto" required>
-                    <option value="" disabled selected>Selecciona una opción</option>
-                    <option value="Amigurumi">Amigurumi</option>
-                    <option value="Llavero">Llavero en crochet</option>
-                    <option value="Ramo de Flores">Ramo de flores</option>
-                    <option value="Otro">Otro</option>
-                </select>
-            </div>
+                    <div class="grupo-campo">
+                        <label for="tipo-producto">¿Qué te gustaría encargar?</label>
+                        <select id="tipo-producto" required>
+                            <option value="" disabled selected>Selecciona qué deseas encargar</option>
+                        </select>
+                    </div>
 
-            <div class="grupo-campo">
-                <label for="detalles-pedido">Detalles, colores o medidas</label>
-                <textarea id="detalles-pedido" rows="3" placeholder="Cuéntame colores de preferencia, referencias o dedicatoria..." required></textarea>
-            </div>
+                    <div class="grupo-campo">
+                        <label for="detalles-pedido">Detalles, colores o medidas</label>
+                        <textarea id="detalles-pedido" rows="3" placeholder="Cuéntame colores de preferencia, referencias o dedicatoria..." required></textarea>
+                    </div>
 
-            <div class="grupo-campo">
-                <label for="fecha-entrega">¿Para qué fecha lo necesitas?</label>
-                <input type="date" id="fecha-entrega" required>
-            </div>
+                    <div class="grupo-campo">
+                        <label for="imagen-referencia-pedido">Foto o diseño de referencia (opcional)</label>
+                        <div class="contenedor-input-archivo">
+                            <input type="file" id="imagen-referencia-pedido" accept="image/*" class="input-archivo-oculto">
+                            <label for="imagen-referencia-pedido" class="boton-subir-archivo">
+                                Subir imagen
+                            </label>
+                            <span id="nombre-archivo-pedido" class="texto-nombre-archivo">Ningún archivo seleccionado</span>
+                        </div>
+                    </div>
 
-            <!-- Casilla de marketing -->
-            <div class="grupo-checkbox">
-                <input type="checkbox" id="suscribir-newsletter">
-                <label for="suscribir-newsletter">
-                    Quiero suscribirme al Club Balenzaa para recibir sorpresas y novedades.
-                </label>
-            </div>
+                    <div class="grupo-campo">
+                        <label for="fecha-entrega">¿Para qué fecha lo necesitas?</label>
+                        <input type="date" id="fecha-entrega" required>
+                    </div>
 
-            <!-- Botón de confirmar -->
-            <button type="submit" class="boton-confirmar-pedido">Confirmar pedido</button>
+                    <div class="grupo-checkbox">
+                        <input type="checkbox" id="suscribir-newsletter">
+                        <label for="suscribir-newsletter">
+                            Quiero suscribirme al Club Balenzaa para recibir sorpresas y novedades.
+                        </label>
+                    </div>
 
-            <!-- Enlace alternativo para WhatsApp -->
-            <p class="texto-dudas-pedido">
-                ¿Tienes dudas antes de ordenar o prefieres consultar directamente?<br>
-                <a href="https://wa.me/593983462196" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
-            </p>
-        </form>
+                    <button type="submit" class="boton-confirmar-pedido">Confirmar pedido</button>
+
+                    <p class="texto-dudas-pedido">
+                        ¿Tienes dudas antes de ordenar o prefieres consultar directamente?<br>
+                        <a href="https://wa.me/593983462196" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
+                    </p>
+                </form>
             </div>
         </section>
 
@@ -263,55 +214,53 @@
                 <div class="lista-acordeon">
                     <details class="item-acordeon">
                         <summary>¿Con cuánta anticipación debo realizar mi encargo?</summary>
-                        <p>Respuesta pendiente de confirmación.</p>
+                        <p>Te recomendamos realizar tu pedido con al menos 1 o 2 semanas de anticipación para garantizar disponibilidad.</p>
                     </details>
                     <details class="item-acordeon">
                         <summary>¿Cuáles son las modalidades de pago y cómo se gestiona el abono inicial?</summary>
-                        <p>Respuesta pendiente de confirmación.</p>
+                        <p>Se solicita un anticipo del 50% para comenzar la elaboración de tu pieza y el saldo restante momentos antes de la entrega.</p>
                     </details>
                     <details class="item-acordeon">
                         <summary>¿Cuáles son las modalidades de entrega en Guayaquil?</summary>
-                        <p>Respuesta pendiente de confirmación.</p>
+                        <p>Realizamos entregas coordinadas en puntos específicos y envíos a domicilio dentro de la ciudad.</p>
                     </details>
                     <details class="item-acordeon">
                         <summary>¿Es posible solicitar un diseño personalizado que no esté en el catálogo?</summary>
-                        <p>Respuesta pendiente de confirmación.</p>
+                        <p>¡Sí! Puedes adjuntar una foto o diseño de referencia en el formulario de pedidos. Te contactaremos para coordinar los detalles.</p>
                     </details>
                 </div>
             </div>
         </section>
 
-        <!-- Boton Flotante BalenzIA (Ballenita) y su Popup interactivo -->
-    <div class="contenedor-balenzia">
-        <!-- Ventana desplegable cute de BalenzIA -->
-        <div id="ventana-balenzia" class="popup-balenzia">
-            <div class="cabecera-popup-balenzia">
-                <div class="perfil-balenzia">
-                    <img src="images/balenzIA.png" alt="BalenzIA" class="avatar-balenzia">
-                    <div>
-                        <h4>BalenzIA</h4>
-                        <span>Tu guía en crochet</span>
+        <!-- Boton Flotante BalenzIA y Popup -->
+        <div class="contenedor-balenzia">
+            <div id="ventana-balenzia" class="popup-balenzia">
+                <div class="cabecera-popup-balenzia">
+                    <div class="perfil-balenzia">
+                        <img src="images/balenzIA.png" alt="BalenzIA" class="avatar-balenzia">
+                        <div>
+                            <h4>BalenzIA</h4>
+                            <span>Tu guía en crochet</span>
+                        </div>
+                    </div>
+                    <button type="button" id="cerrar-balenzia" class="btn-cerrar-balenzia" aria-label="Cerrar">&times;</button>
+                </div>
+                <div id="chat-balenzia" class="cuerpo-chat-balenzia">
+                    <div class="burbuja-mensaje balenzia">
+                        ¡Hola! Soy BalenzIA. ¿Buscas un regalo para alguien especial o un detalle para ti? Cuéntame y te aconsejo.
                     </div>
                 </div>
-                <button type="button" id="cerrar-balenzia" class="btn-cerrar-balenzia" aria-label="Cerrar">&times;</button>
+                <form id="formulario-balenzia" class="form-chat-balenzia">
+                    <input type="text" id="input-balenzia" placeholder="Ej: Busco un amigurumi..." required>
+                    <button type="submit" class="btn-enviar-balenzia">Enviar</button>
+                </form>
             </div>
-            <div id="chat-balenzia" class="cuerpo-chat-balenzia">
-                <div class="burbuja-mensaje balenzia">
-                    ¡Hola! Soy BalenzIA. ¿Buscas un regalo para alguien especial o un detalle para ti? Cuéntame y te aconsejo.
-                </div>
-            </div>
-            <form id="formulario-balenzia" class="form-chat-balenzia">
-                <input type="text" id="input-balenzia" placeholder="Ej: Busco un amigurumi..." required>
-                <button type="submit" class="btn-enviar-balenzia">Enviar</button>
-            </form>
-        </div>
 
-        <!-- Boton disparador con la ballenita -->
-        <button type="button" id="boton-balenzia" class="boton-balenzia" aria-label="Abrir BalenzIA">
-            <img src="images/balenzIA.png" alt="BalenzIA" class="icono-balenzia">
-            <span class="globo-dialogo-balenzia">¿Dudas con tu regalo? ¡Habla conmigo!</span>
-        </button>
-    </div>
+            <button type="button" id="boton-balenzia" class="boton-balenzia" aria-label="Abrir BalenzIA">
+                <img src="images/balenzIA.png" alt="BalenzIA" class="icono-balenzia">
+                <span class="globo-dialogo-balenzia">¿Dudas con tu regalo? ¡Habla conmigo!</span>
+            </button>
+        </div>
     </main>
 
     <!-- Pie de pagina -->
@@ -345,7 +294,6 @@
         <div class="barra-derechos">
             <p>&copy; 2026 <a href="admin.html" class="enlace-oculto-admin">Balenzaa</a>. Todos los derechos reservados. | Desarrollado por <a href="https://github.com/ariannareyesa" target="_blank" rel="noopener noreferrer" class="enlace-desarrollador">Arianna Reyes</a></p>
         </div>
-
     </footer>
 
     <!-- Boton flotante de WhatsApp -->
@@ -358,6 +306,5 @@
     </a>
 
     <script src="app.js"></script>
-
 </body>
 </html>

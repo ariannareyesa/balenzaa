@@ -1,14 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap');
 
 /* ==========================================================================
    BALENZAA — Hoja de Estilos Oficial
    ========================================================================== */
 
-/* --------------------------------------------------------------------------
-   1. VARIABLES DE DISEÑO & ASSETS SVG
-   -------------------------------------------------------------------------- */
 :root {
-  /* Paleta cromática */
   --crema: #FFF6EC;
   --blanco: #FFFFFF;
   --rosa: #F2678A;
@@ -23,25 +19,22 @@
   --lila-fuerte: #D9C2F5;
   --tinta: #74404F;
 
-  /* Tipografías */
-  --f-titulo: 'DM Serif Display', Georgia, serif;
-  --f-cuerpo: 'DM Sans', system-ui, -apple-system, sans-serif;
+  /* Tipografias */
+  --f-titulo: 'Playfair Display', Georgia, serif;
+  --f-cuerpo: 'Quicksand', system-ui, -apple-system, sans-serif;
 
-  /* Geometrías */
+  /* Geometrias */
   --radio-pill: 999px;
   --radio-tarjeta: 28px;
   --radio-input: 18px;
 
-  /* Patrones de flores integrados (SVG inline) */
+  /* Patrones de flores */
   --flor-crema: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23FFE3EC'%3E%3Ccircle cx='50' cy='24' r='22'/%3E%3Ccircle cx='75' cy='42' r='22'/%3E%3Ccircle cx='66' cy='72' r='22'/%3E%3Ccircle cx='34' cy='72' r='22'/%3E%3Ccircle cx='25' cy='42' r='22'/%3E%3Ccircle cx='50' cy='50' r='24'/%3E%3C/g%3E%3C/svg%3E");
   --flor-rosa: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23F67C9D'%3E%3Ccircle cx='50' cy='24' r='22'/%3E%3Ccircle cx='75' cy='42' r='22'/%3E%3Ccircle cx='66' cy='72' r='22'/%3E%3Ccircle cx='34' cy='72' r='22'/%3E%3Ccircle cx='25' cy='42' r='22'/%3E%3Ccircle cx='50' cy='50' r='24'/%3E%3C/g%3E%3C/svg%3E");
   --flor-blanca: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23fff'%3E%3Ccircle cx='50' cy='22' r='20'/%3E%3Ccircle cx='77' cy='42' r='20'/%3E%3Ccircle cx='67' cy='74' r='20'/%3E%3Ccircle cx='33' cy='74' r='20'/%3E%3Ccircle cx='23' cy='42' r='20'/%3E%3C/g%3E%3Ccircle cx='50' cy='50' r='13' fill='%23FFD45C'/%3E%3C/svg%3E");
   --flor-clara: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23FBC5D6'%3E%3Ccircle cx='50' cy='22' r='20'/%3E%3Ccircle cx='77' cy='42' r='20'/%3E%3Ccircle cx='67' cy='74' r='20'/%3E%3Ccircle cx='33' cy='74' r='20'/%3E%3Ccircle cx='23' cy='42' r='20'/%3E%3C/g%3E%3Ccircle cx='50' cy='50' r='13' fill='%23FFD45C'/%3E%3C/svg%3E");
 }
 
-/* --------------------------------------------------------------------------
-   2. REGLAS BASE
-   -------------------------------------------------------------------------- */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -76,7 +69,6 @@ ul {
   list-style: none;
 }
 
-/* Festones que cuelgan entre secciones */
 .seccion-hero,
 .seccion-pedidos,
 .seccion-cuidados,
@@ -99,9 +91,6 @@ ul {
   background: radial-gradient(circle at 50% 0, var(--feston) 24px, transparent 25px) 0 0 / 50px 25px repeat-x;
 }
 
-/* --------------------------------------------------------------------------
-   3. TIPOGRAFÍA & ENCABEZADOS
-   -------------------------------------------------------------------------- */
 .titulo-seccion,
 .titulo-hero,
 .nombre-producto,
@@ -113,21 +102,17 @@ ul {
 .encabezado-login h2,
 .seccion-gestion-pedidos h2,
 .seccion-nuevo-producto h2,
+.seccion-catalogo-admin h2,
 .columna-pie h4,
 .perfil-balenzia h4 {
   font-family: var(--f-titulo);
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.05;
 }
 
 .titulo-seccion {
   font-size: clamp(2.6rem, 6vw, 4rem);
   color: var(--rosa);
-}
-
-.titulo-seccion em,
-.titulo-hero em {
-  font-style: italic;
 }
 
 .subtitulo-seccion {
@@ -151,12 +136,8 @@ ul {
 
 .bajada-seccion {
   margin-top: 0.8rem;
-  opacity: 100;
 }
 
-/* --------------------------------------------------------------------------
-   4. BOTONES & MICRO-INTERACCIONES
-   -------------------------------------------------------------------------- */
 .boton-nav-cta,
 .boton-primario,
 .boton-secundario,
@@ -209,9 +190,6 @@ ul {
   background-color: var(--crema);
 }
 
-/* --------------------------------------------------------------------------
-   5. NAVEGACIÓN & SECCIÓN HERO
-   -------------------------------------------------------------------------- */
 .barra-navegacion {
   position: sticky;
   top: 0;
@@ -317,9 +295,6 @@ ul {
   flex-wrap: wrap;
 }
 
-/* --------------------------------------------------------------------------
-   6. SECCIÓN SOBRE MÍ
-   -------------------------------------------------------------------------- */
 .seccion-sobre-mi {
   padding: 6rem 1.5rem 5rem 1.5rem;
   position: relative;
@@ -410,9 +385,6 @@ img.doodle-flecha-romina {
   font-size: 0.85rem;
 }
 
-/* --------------------------------------------------------------------------
-   7. CATÁLOGO DE PIEZAS
-   -------------------------------------------------------------------------- */
 .seccion-catalogo {
   --feston: var(--azul-claro);
   background: repeating-linear-gradient(
@@ -421,15 +393,6 @@ img.doodle-flecha-romina {
     var(--crema) 45px 90px
   );
   padding: 5rem 1.5rem 6rem 1.5rem;
-}
-
-.seccion-catalogo .titulo-seccion {
-  color: var(--rosa);
-}
-
-.seccion-catalogo .subtitulo-seccion {
-  background-color: var(--azul);
-  color: var(--azul-texto);
 }
 
 .contenedor-catalogo,
@@ -456,7 +419,7 @@ img.doodle-flecha-romina {
 
 .grilla-productos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.8rem;
 }
 
@@ -523,15 +486,6 @@ img.doodle-flecha-romina {
   font-weight: 700;
 }
 
-.boton-consultar {
-  background-color: var(--rosa-claro);
-  padding: 0.4rem 1.1rem;
-  font-size: 0.85rem;
-}
-
-/* --------------------------------------------------------------------------
-   8. PEDIDOS PERSONALIZADOS
-   -------------------------------------------------------------------------- */
 .seccion-pedidos {
   --feston: var(--verde);
   background-color: var(--verde);
@@ -542,7 +496,6 @@ img.doodle-flecha-romina {
   color: var(--crema);
 }
 
-/* Píldora superior armonizada en rosa pastel */
 .seccion-pedidos .subtitulo-seccion {
   background-color: var(--rosa-pastel);
   color: var(--tinta);
@@ -560,7 +513,6 @@ img.doodle-flecha-romina {
   margin: 0 auto;
 }
 
-/* Banner de agenda integrado suavemente sobre el verde */
 #banner-estado-agenda {
   display: flex;
   align-items: center;
@@ -587,7 +539,6 @@ img.doodle-flecha-romina {
   border-color: var(--rosa);
 }
 
-/* Tarjeta de aviso: crema suave con borde de costura y texto legible */
 .tarjeta-aviso {
   background-color: var(--crema);
   border-radius: 22px;
@@ -601,32 +552,16 @@ img.doodle-flecha-romina {
   color: var(--rosa);
 }
 
-/* Tarjeta de formulario con borde entrecortado tipo costura y sin sombra */
 .formulario-encargo {
   background-color: var(--crema);
   border-radius: 32px;
   padding: 2.2rem;
   border: 2.5px dashed var(--rosa-claro);
-  box-shadow: none;
 }
 
 .formulario-encargo label {
   color: var(--tinta);
   font-weight: 700;
-}
-
-.boton-enviar-pedido {
-  width: 100%;
-  font-size: 1.05rem;
-  background-color: var(--rosa);
-  color: var(--crema);
-}
-
-.aviso-envio {
-  text-align: center;
-  font-size: 0.78rem;
-  margin-top: 0.8rem;
-  opacity: 0.75;
 }
 
 .grupo-checkbox {
@@ -649,7 +584,6 @@ img.doodle-flecha-romina {
   color: var(--tinta);
   font-weight: 500;
   cursor: pointer;
-  line-height: 1.3;
 }
 
 .boton-confirmar-pedido {
@@ -665,7 +599,6 @@ img.doodle-flecha-romina {
   border: none;
   border-radius: var(--radio-pill);
   cursor: pointer;
-  box-shadow: none;
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
@@ -687,16 +620,8 @@ img.doodle-flecha-romina {
   color: var(--rosa);
   font-weight: 700;
   text-decoration: underline;
-  transition: color 0.2s ease;
 }
 
-.texto-dudas-pedido a:hover {
-  color: #D64F73;
-}
-
-/* --------------------------------------------------------------------------
-   9. GUÍA DE CUIDADOS
-   -------------------------------------------------------------------------- */
 .seccion-cuidados {
   --feston: var(--rosa-pastel);
   background-color: var(--rosa-pastel);
@@ -733,9 +658,6 @@ img.doodle-flecha-romina {
   font-size: 0.93rem;
 }
 
-/* --------------------------------------------------------------------------
-   10. PREGUNTAS FRECUENTES
-   -------------------------------------------------------------------------- */
 .seccion-preguntas {
   padding: 7rem 1.5rem 5rem 1.5rem;
   overflow: hidden;
@@ -787,9 +709,6 @@ img.doodle-flecha-romina {
   margin-top: 0.8rem;
 }
 
-/* --------------------------------------------------------------------------
-   11. FORMULARIOS GENERALES
-   -------------------------------------------------------------------------- */
 .grupo-campo {
   margin-bottom: 1.2rem;
   flex: 1;
@@ -830,9 +749,6 @@ textarea:focus {
   border-color: var(--rosa);
 }
 
-/* --------------------------------------------------------------------------
-   12. FOOTER
-   -------------------------------------------------------------------------- */
 .pie-pagina {
   background-color: var(--rosa);
   color: var(--crema);
@@ -902,9 +818,6 @@ textarea:focus {
   cursor: default;
 }
 
-/* --------------------------------------------------------------------------
-   13. ASISTENTE BALENZIA (BOTÓN FLOTANTE & POPUP)
-   -------------------------------------------------------------------------- */
 .contenedor-balenzia {
   position: fixed;
   bottom: 20px;
@@ -946,12 +859,8 @@ textarea:focus {
 }
 
 @keyframes flota {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 .popup-balenzia {
@@ -1082,9 +991,6 @@ textarea:focus {
   white-space: nowrap;
 }
 
-/* --------------------------------------------------------------------------
-   14. BOTÓN FLOTANTE WHATSAPP
-   -------------------------------------------------------------------------- */
 .boton-flotante-whatsapp {
   position: fixed;
   bottom: 20px;
@@ -1102,9 +1008,6 @@ textarea:focus {
   transform: translateY(-2px);
 }
 
-/* --------------------------------------------------------------------------
-   15. PANEL DE CONTROL (ADMIN)
-   -------------------------------------------------------------------------- */
 .cuerpo-admin {
   background:
     var(--flor-crema) -90px 30% / 280px no-repeat fixed,
@@ -1323,77 +1226,50 @@ textarea:focus {
   border-radius: 0 16px 16px 0;
 }
 
-.estado-pendiente,
-.estado-elaboracion,
-.estado-completado,
-.estado-entregado {
-  display: inline-block;
-  border-radius: var(--radio-pill);
-  padding: 0.15rem 0.8rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.estado-pendiente {
-  background-color: var(--amarillo);
-}
-
-.estado-elaboracion {
-  background-color: var(--azul);
-}
-
-.estado-completado,
-.estado-entregado {
-  background-color: var(--verde);
-}
-
-.boton-accion-ver {
-  padding: 0.3rem 0.9rem;
-  font-size: 0.8rem;
-  background-color: var(--rosa-pastel);
-}
-
-.imagen-sobre-mi {
-  position: relative;
+.contenedor-input-archivo {
   display: flex;
-  justify-content: center;
-  max-width: 440px;
-  margin: 0 auto;
+  align-items: center;
+  gap: 1rem;
+  background-color: var(--blanco);
+  border: 1.5px solid var(--rosa-claro);
+  border-radius: var(--radio-pill);
+  padding: 0.4rem 0.6rem;
 }
 
-/* Solo la foto de Romina */
-.foto-romina {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: var(--radio-tarjeta);
-  box-shadow: 0 10px 25px rgba(116, 64, 79, 0.08);
-  display: block;
+.input-archivo-oculto {
+  display: none !important;
 }
 
-/* La flecha doodle */
-img.doodle-flecha-romina {
-  position: absolute !important;
-  top: -30px !important;
-  left: -25px !important;
-  width: 70px !important;
-  height: auto !important;
-  max-width: 70px !important;
-  pointer-events: none !important;
-  z-index: 10 !important;
-  transform: rotate(-10deg);
+.boton-subir-archivo {
+  background-color: var(--rosa-pastel);
+  color: var(--tinta);
+  border: 1px solid var(--rosa-claro);
+  border-radius: var(--radio-pill);
+  padding: 0.5rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
 }
 
-@media (max-width: 768px) {
-  img.doodle-flecha-romina {
-    display: none !important;
-  }
+.boton-subir-archivo:hover {
+  background-color: var(--rosa);
+  color: #fff;
 }
 
-/* --------------------------------------------------------------------------
-   16. MEDIA QUERIES (RESPONSIVE)
-   -------------------------------------------------------------------------- */
+.texto-nombre-archivo {
+  font-size: 0.85rem;
+  color: var(--tinta);
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
 @media (max-width: 800px) {
   .contenedor-sobre-mi,
   .contenedor-pie {

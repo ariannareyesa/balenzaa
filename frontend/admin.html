@@ -41,7 +41,7 @@
             </form>
         </section>
 
-        <!-- Contenedor del Panel Privado (Oculto hasta autenticacion) -->
+        <!-- Contenedor del Panel Privado -->
         <div id="panel-contenido" class="panel-contenido" style="display: none;">
             
             <!-- Barra Superior de Control y Estado de Agenda -->
@@ -95,20 +95,7 @@
                             </tr>
                         </thead>
                         <tbody id="cuerpo-tabla-pedidos">
-                            <tr>
-                                <td>dd/mm/aaaa</td>
-                                <td>Nombre del cliente</td>
-                                <td>Número / Correo</td>
-                                <td>Amigurumi</td>
-                                <td>dd/mm/aaaa</td>
-                                <td><strong>$0.00</strong></td>
-                                <td><span style="color: #2F6224; font-weight: 600;">$0.00</span></td>
-                                <td><span style="color: #C93A5B; font-weight: 600;">$0.00</span></td>
-                                <td><span class="estado-pendiente">Pendiente</span></td>
-                                <td>
-                                    <button class="boton-accion-ver">Gestionar</button>
-                                </td>
-                            </tr>
+                            <!-- Renderizado reactivo desde app.js -->
                         </tbody>
                     </table>
                 </div>
@@ -128,10 +115,12 @@
                             <label for="nueva-categoria-producto">Categoría *</label>
                             <select id="nueva-categoria-producto" name="categoria" required>
                                 <option value="" disabled selected>Seleccionar categoría</option>
-                                <option value="amigurumis">Amigurumis</option>
-                                <option value="llaveros">Llaveros</option>
-                                <option value="flores">Ramos de Flores</option>
+                                <option value="Amigurumis">Amigurumis</option>
+                                <option value="Llaveros">Llaveros</option>
+                                <option value="Ramos de Flores">Ramos de Flores</option>
+                                <option value="__nueva__">+ Crear nueva categoría</option>
                             </select>
+                            <input type="text" id="input-otra-categoria" placeholder="Escribe el nombre de la nueva categoría" style="display: none; margin-top: 0.5rem; padding: 0.5rem; border: 1.5px solid var(--rosa-claro); border-radius: 8px; width: 100%;">
                         </div>
 
                         <div class="grupo-campo">
@@ -147,14 +136,44 @@
 
                     <div class="grupo-campo">
                         <label for="imagen-producto-admin">Foto de la pieza (JPG) *</label>
-                        <input type="file" id="imagen-producto-admin" accept="image/*" required>
+                        <div class="contenedor-input-archivo">
+                            <input type="file" id="imagen-producto-admin" accept="image/*" class="input-archivo-oculto" required>
+                            <label for="imagen-producto-admin" class="boton-subir-archivo">
+                                Subir foto
+                            </label>
+                            <span id="nombre-foto-admin" class="texto-nombre-archivo">Ningún archivo seleccionado</span>
+                        </div>
                     </div>
 
                     <button type="submit" class="boton-guardar-producto">Guardar pieza en catálogo</button>
                 </form>
             </section>
+
+            <!-- Gestión visual del catálogo existente -->
+            <section class="seccion-catalogo-admin" style="background-color: var(--blanco); border-radius: 32px; padding: 2rem; margin-top: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h2 style="color: var(--rosa); font-size: 2rem; margin: 0;">Catálogo Actual</h2>
+                        <p style="font-size: 0.9rem; color: var(--tinta); margin-top: 0.3rem;">Vista previa en vivo de las piezas disponibles en la tienda.</p>
+                    </div>
+                </div>
+
+                <!-- Grilla de productos en admin -->
+                <div class="grilla-productos" id="contenedor-catalogo-admin"></div>
+            </section>
         </div>
     </main>
+
+    <!-- Modal para ver foto de referencia -->
+    <div id="modal-foto-referencia" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1.5rem; box-sizing: border-box;">
+        <div style="background: white; border-radius: 28px; padding: 1.8rem; max-width: 440px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); box-sizing: border-box;"> 
+            <button id="cerrar-modal-foto" style="position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 1.2rem; font-weight: bold; color: #C93A5B; cursor: pointer; padding: 4px 8px; line-height: 1;">✕</button>
+            <h3 style="font-family: var(--f-titulo); color: var(--rosa); margin: 0 0 1.2rem 0; font-size: 1.4rem;">Foto de Referencia</h3>
+            <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; background: #FFF7FA; border: 1.5px solid var(--rosa-claro); border-radius: 18px; padding: 0.8rem; overflow: hidden;">
+                <img id="img-modal-referencia" src="" alt="Referencia" style="max-width: 100%; max-height: 55vh; width: auto; height: auto; object-fit: contain; border-radius: 12px; display: block;">
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
