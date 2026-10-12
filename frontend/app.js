@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Nombre de archivo seleccionado en formulario de pedidos
+    // Subida de imagen de referencia en pedidos
     const inputArchivoRef = document.getElementById('imagen-referencia-pedido');
     const textoNombreArchivo = document.getElementById('nombre-archivo-pedido');
 
@@ -248,7 +248,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     fechaEntrega: document.getElementById('fecha-entrega')?.value,
                     imagenReferencia: imagenRefBase64,
                     suscritoClub: suscribir,
-                    fechaCreacion: new Date().toLocaleDateString('es-EC')
+                    fechaCreacion: new Date().toLocaleDateString('es-EC'),
+                    segundosTejidos: 0,
+                    cronometroActivo: false
                 };
 
                 const pedidosGuardados = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
@@ -286,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cuerpoTablaPedidos = document.getElementById('cuerpo-tabla-pedidos');
     const formNuevaPieza = document.getElementById('formulario-nueva-pieza') || document.getElementById('formulario-nuevo-producto');
 
-    // Modal de imagen de referencia
+    // Modales
     const modalFoto = document.getElementById('modal-foto-referencia');
     const imgModal = document.getElementById('img-modal-referencia');
     const btnCerrarModal = document.getElementById('cerrar-modal-foto');
@@ -322,11 +324,119 @@ document.addEventListener('DOMContentLoaded', () => {
     const agendaGuardadaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
     actualizarVisualAgenda(agendaGuardadaCerrada);
 
-    // Renderizar Pedidos
+    // Formatear segundos a formato HH:MM:SS
+    function formatearTiempo(totalSegundos) {
+        const seg = parseInt(totalSegundos) || 0;
+        const horas = Math.floor(seg / 3600);
+        const minutos = Math.floor((seg % 3600) / 60);
+        const segundos = seg % 60;
+        return [horas, minutos, segundos]
+            .map(v => v < 10 ? '0' + v : v)
+            .join(':');
+    }
+
+    // Estado global de filtros de la tabla de encargos
+    let filtroMesSeleccionado = 'todos';
+    let filtroTipoSeleccionado = 'todos';
+
+    // Barra de filtros dinamicos para Romina
+    function inyectarControlesFiltro() {
+        const seccionGestion = document.querySelector('.seccion-gestion-pedidos');
+        if (!seccionGestion || document.getElementById('barra-filtros-pedidos')) return;
+
+        const contenedorFiltros = document.createElement('div');
+        contenedorFiltros.id = 'barra-filtros-pedidos';
+        contenedorFiltros.style.cssText = 'display: flex; gap: 1rem; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; background: #FFF7FA; padding: 0.9rem 1.2rem; border-radius: 18px; border: 1.5px solid var(--rosa-claro);';
+
+        contenedorFiltros.innerHTML = `
+            <span style="font-weight: 700; color: var(--rosa); font-size: 0.92rem;">Filtrar encargos y métricas:</span>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label for="filtro-mes-pedidos" style="font-size: 0.85rem; font-weight: 600; margin: 0;">Mes:</label>
+                <select id="filtro-mes-pedidos" style="padding: 5px 10px; border-radius: 10px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; background: #fff; width: auto;">
+                    <option value="todos">Todos los meses</option>
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label for="filtro-tipo-pedidos" style="font-size: 0.85rem; font-weight: 600; margin: 0;">Tipo de pieza:</label>
+                <select id="filtro-tipo-pedidos" style="padding: 5px 10px; border-radius: 10px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; background: #fff; width: auto;">
+                    <option value="todos">Todas las piezas</option>
+                </select>
+            </div>
+        `;
+
+        const tabla = seccionGestion.querySelector('.contenedor-tabla');
+        if (tabla) seccionGestion.insertBefore(contenedorFiltros, tabla);
+
+        const selMes = document.getElementById('filtro-mes-pedidos');
+        const selTipo = document.getElementById('filtro-tipo-pedidos');
+
+        selMes.addEventListener('change', (e) => {
+            filtroMesSeleccionado = e.target.value;
+            renderizarPedidos();
+        });
+
+        selTipo.addEventListener('change', (e) => {
+            filtroTipoSeleccionado = e.target.value;
+            renderizarPedidos();
+        });
+    }
+
+    // Actualizar las opciones del select de tipos de productos con base en los pedidos
+    function actualizarOpcionesTipoPieza(pedidos) {
+        const selTipo = document.getElementById('filtro-tipo-pedidos');
+        if (!selTipo) return;
+
+        const valorPrevio = selTipo.value;
+        const tipos = new Set();
+        pedidos.forEach(p => {
+            if (p.producto) tipos.add(p.producto.trim());
+        });
+
+        selTipo.innerHTML = '<option value="todos">Todas las piezas</option>';
+        tipos.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t;
+            opt.textContent = t;
+            selTipo.appendChild(opt);
+        });
+
+        if (Array.from(tipos).includes(valorPrevio)) {
+            selTipo.value = valorPrevio;
+        }
+    }
+
+    // Extraer numero de mes de fecha en formato d/m/aaaa o aaaa-mm-dd
+    function obtenerMesDeFecha(cadenaFecha) {
+        if (!cadenaFecha) return null;
+        if (cadenaFecha.includes('/')) {
+            const partes = cadenaFecha.split('/');
+            return parseInt(partes[1], 10);
+        } else if (cadenaFecha.includes('-')) {
+            const partes = cadenaFecha.split('-');
+            return parseInt(partes[1], 10);
+        }
+        return null;
+    }
+
+    // Renderizar Pedidos en la Tabla aplicando filtros
     function renderizarPedidos() {
         if (!cuerpoTablaPedidos) return;
+        inyectarControlesFiltro();
 
         const pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+        actualizarOpcionesTipoPieza(pedidos);
         cuerpoTablaPedidos.innerHTML = '';
 
         let pendientes = 0;
@@ -334,10 +444,25 @@ document.addEventListener('DOMContentLoaded', () => {
         let completados = 0;
         let totalCobrado = 0;
 
-        if (pedidos.length === 0) {
-            cuerpoTablaPedidos.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 1.5rem; color: var(--tinta);">No hay pedidos registrados aun.</td></tr>';
+        // Filtrar segun mes y tipo de crochet
+        const pedidosFiltrados = pedidos.map((p, indexOriginal) => ({ ...p, indexOriginal })).filter(p => {
+            const cumpleTipo = (filtroTipoSeleccionado === 'todos') || (p.producto && p.producto.trim().toLowerCase() === filtroTipoSeleccionado.trim().toLowerCase());
+
+            let cumpleMes = true;
+            if (filtroMesSeleccionado !== 'todos') {
+                const mesCreacion = obtenerMesDeFecha(p.fechaCreacion);
+                const mesEntrega = obtenerMesDeFecha(p.fechaEntrega);
+                cumpleMes = (mesCreacion === parseInt(filtroMesSeleccionado, 10)) || (mesEntrega === parseInt(filtroMesSeleccionado, 10));
+            }
+
+            return cumpleTipo && cumpleMes;
+        });
+
+        if (pedidosFiltrados.length === 0) {
+            cuerpoTablaPedidos.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 1.5rem; color: var(--tinta);">No se encontraron encargos para los filtros seleccionados.</td></tr>';
         } else {
-            pedidos.forEach((p, index) => {
+            pedidosFiltrados.forEach((p) => {
+                const index = p.indexOriginal;
                 const estado = p.estado || 'Pendiente';
                 if (estado === 'Pendiente') pendientes++;
                 else if (estado === 'En elaboración') elaboracion++;
@@ -351,47 +476,90 @@ document.addEventListener('DOMContentLoaded', () => {
                     totalCobrado += precioNum;
                 }
 
+                const tiempoFormateado = formatearTiempo(p.segundosTejidos || 0);
+                const activo = p.cronometroActivo || false;
+
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
-                    <td>${p.fechaCreacion || 'Hoy'}</td>
+                    <td style="white-space: nowrap;">${p.fechaCreacion || 'Hoy'}</td>
                     <td><strong>${p.nombre || 'Sin nombre'}</strong></td>
                     <td>
                         ${p.correo || 'Sin correo'}
                         ${p.suscritoClub ? '<br><span style="font-size:0.75rem; background:var(--rosa-pastel); color:var(--tinta); padding:2px 8px; border-radius:999px;">Club</span>' : ''}
                     </td>
-                    <td>
-                        ${p.celular ? `<a href="https://wa.me/593${p.celular.replace(/^0/, '')}" target="_blank" style="color: #2F6224; font-weight: 600; text-decoration: underline;">${p.celular}</a>` : '<span style="color:#999;">-</span>'}
+                    <td style="white-space: nowrap;">
+                        ${p.celular ? `<a href="https://wa.me/593${p.celular.replace(/^0/, '')}" target="_blank" rel="noopener noreferrer" style="color: #2F6224; font-weight: 700; text-decoration: underline;">${p.celular}</a>` : '<span style="color:#999;">-</span>'}
                     </td>
                     <td>
                         ${p.producto || 'Diseño especial'}
                         ${p.imagenReferencia ? `<br><button class="boton-ver-foto-ref" data-index="${index}" style="background:none; border:none; padding:0; font-size:0.75rem; color:var(--rosa); font-weight:700; text-decoration:underline; cursor:pointer;">Ver foto</button>` : ''}
                     </td>
-                    <td>${p.fechaEntrega || 'Por definir'}</td>
+                    <td style="white-space: nowrap;">${p.fechaEntrega || 'Por definir'}</td>
                     <td>
-                        <input type="number" step="0.50" min="0" class="input-precio-total" data-index="${index}" value="${precioNum > 0 ? precioNum.toFixed(2) : ''}" placeholder="$0.00" style="width: 85px; padding: 5px 8px; border: 1.5px solid var(--rosa-claro); border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.9rem; background-color: #fff;">
+                        <input type="number" step="0.50" min="0" class="input-precio-total" data-index="${index}" value="${precioNum > 0 ? precioNum.toFixed(2) : ''}" placeholder="$0.00" style="width: 80px; padding: 5px 8px; border: 1.5px solid var(--rosa-claro); border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.9rem; background-color: #fff;">
                     </td>
-                    <td>
-                        <select class="select-cambio-estado" data-index="${index}" style="padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; cursor: pointer; background-color: #fff;">
+                    <td style="white-space: nowrap;">
+                        <select class="select-cambio-estado" data-index="${index}" style="padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; cursor: pointer; background-color: #fff; width: auto; min-width: 130px;">
                             <option value="Pendiente" ${estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                             <option value="En elaboración" ${estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
                             <option value="Completado" ${estado === 'Completado' ? 'selected' : ''}>Completado</option>
                         </select>
                     </td>
                     <td>
-                        <button class="boton-eliminar-pedido" data-index="${index}" title="Eliminar encargo" style="background: none; border: none; color: #C93A5B; font-size: 1.15rem; font-weight: 700; cursor: pointer; padding: 4px 8px; line-height: 1; transition: transform 0.15s ease;">
-                            ✕
-                        </button>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                            <div style="display: inline-flex; align-items: center; gap: 0.35rem; background: #fff; padding: 4px 10px; border-radius: 999px; border: 1.5px solid var(--rosa-claro);">
+                                <span class="timer-display" data-index="${index}" style="font-family: monospace; font-size: 0.84rem; font-weight: 700; color: var(--tinta); min-width: 62px; text-align: center;">${tiempoFormateado}</span>
+                                <button class="btn-toggle-timer" data-index="${index}" title="${activo ? 'Pausar' : 'Iniciar'}" style="background: ${activo ? '#FFD45C' : 'var(--rosa)'}; color: ${activo ? 'var(--tinta)' : '#fff'}; border: none; border-radius: 50%; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; cursor: pointer; line-height: 1; transition: transform 0.15s ease;">
+                                    ${activo ? '❚❚' : '▶'}
+                                </button>
+                                <button class="btn-reset-timer" data-index="${index}" title="Reiniciar a 00:00:00" style="background: none; border: none; color: #999; font-size: 0.9rem; cursor: pointer; padding: 0 3px; line-height: 1;">
+                                    ↺
+                                </button>
+                            </div>
+
+                            <button class="boton-eliminar-pedido" data-index="${index}" title="Eliminar encargo" style="background: none; border: none; color: #C93A5B; font-size: 1.15rem; font-weight: 700; cursor: pointer; padding: 4px; line-height: 1;">
+                                ✕
+                            </button>
+                        </div>
                     </td>
                 `;
                 cuerpoTablaPedidos.appendChild(fila);
             });
         }
 
+        // Actualizar tarjetas de resumen sincronizadas con el filtro activo
         if (elPendientes) elPendientes.textContent = pendientes;
         if (elElaboracion) elElaboracion.textContent = elaboracion;
         if (elCompletados) elCompletados.textContent = completados;
         if (elIngresos) elIngresos.textContent = `$${totalCobrado.toFixed(2)}`;
 
+        // Control del Cronometro: Play / Pausa con guardado en localStorage
+        document.querySelectorAll('.btn-toggle-timer').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const i = e.currentTarget.dataset.index;
+                const pedidosActuales = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+                pedidosActuales[i].cronometroActivo = !pedidosActuales[i].cronometroActivo;
+                localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidosActuales));
+                renderizarPedidos();
+            });
+        });
+
+        // Control del Cronometro: Reiniciar explicitamente
+        document.querySelectorAll('.btn-reset-timer').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const i = e.currentTarget.dataset.index;
+                const confirma = confirm('¿Deseas reiniciar el cronómetro de este encargo a 00:00:00?');
+                if (confirma) {
+                    const pedidosActuales = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+                    pedidosActuales[i].segundosTejidos = 0;
+                    pedidosActuales[i].cronometroActivo = false;
+                    localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidosActuales));
+                    renderizarPedidos();
+                }
+            });
+        });
+
+        // Eventos generales de la tabla
         document.querySelectorAll('.boton-ver-foto-ref').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const i = e.target.dataset.index;
@@ -406,8 +574,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.input-precio-total').forEach(inp => {
             inp.addEventListener('change', (e) => {
                 const i = e.target.dataset.index;
-                pedidos[i].precioTotal = parseFloat(e.target.value) || 0;
-                localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidos));
+                const pedidosActuales = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+                pedidosActuales[i].precioTotal = parseFloat(e.target.value) || 0;
+                localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidosActuales));
                 renderizarPedidos();
             });
         });
@@ -415,8 +584,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.select-cambio-estado').forEach(sel => {
             sel.addEventListener('change', (e) => {
                 const i = e.target.dataset.index;
-                pedidos[i].estado = e.target.value;
-                localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidos));
+                const pedidosActuales = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+                pedidosActuales[i].estado = e.target.value;
+                localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidosActuales));
                 renderizarPedidos();
             });
         });
@@ -424,16 +594,38 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.boton-eliminar-pedido').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const i = e.target.dataset.index;
-                const pedidoAEliminar = pedidos[i];
-                const confirma = confirm(`Estas segura de eliminar el encargo de ${pedidoAEliminar.nombre || 'este cliente'}?`);
+                const pedidosActuales = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+                const pedidoAEliminar = pedidosActuales[i];
+                const confirma = confirm(`¿Estás segura de eliminar el encargo de ${pedidoAEliminar.nombre || 'este cliente'}?`);
                 if (confirma) {
-                    pedidos.splice(i, 1);
-                    localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidos));
+                    pedidosActuales.splice(i, 1);
+                    localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidosActuales));
                     renderizarPedidos();
                 }
             });
         });
     }
+
+    // Intervalo de conteo por segundo para cronometros activos
+    setInterval(() => {
+        const pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+        let huboCambios = false;
+
+        pedidos.forEach((p, idx) => {
+            if (p.cronometroActivo) {
+                p.segundosTejidos = (p.segundosTejidos || 0) + 1;
+                huboCambios = true;
+                const display = document.querySelector(`.timer-display[data-index="${idx}"]`);
+                if (display) {
+                    display.textContent = formatearTiempo(p.segundosTejidos);
+                }
+            }
+        });
+
+        if (huboCambios) {
+            localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidos));
+        }
+    }, 1000);
 
     // --- GESTION VISUAL DEL CATALOGO EN ADMIN ---
     const contenedorCatalogoAdmin = document.getElementById('contenedor-catalogo-admin');
@@ -526,7 +718,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', (e) => {
                 const i = e.target.dataset.index;
                 const prods = obtenerCatalogo();
-                const confirma = confirm(`Estas segura de eliminar "${prods[i].nombre}" del catalogo?`);
+                const confirma = confirm(`¿Estás segura de eliminar "${prods[i].nombre}" del catálogo?`);
                 if (confirma) {
                     prods.splice(i, 1);
                     localStorage.setItem('balenzaa_catalogo', JSON.stringify(prods));
@@ -553,7 +745,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const clave = document.getElementById('clave-admin').value.trim();
 
             try {
-                // Intento con backend real si estuviera encendido
                 const respuesta = await fetch('/api/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -576,7 +767,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             } catch (err) {
-                // Modo desarrollo local: permite acceso si hay campos ingresados sin exponer credenciales
                 if (usuario && clave) {
                     localStorage.setItem('balenzaa_token', 'token-local-dev');
                     seccionLoginAdmin.style.display = 'none';
@@ -610,7 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Nombre de archivo en formulario de nueva pieza (admin)
+    // Subida de imagen en formulario admin
     const inputFotoAdmin = document.getElementById('imagen-producto-admin');
     const textoFotoAdmin = document.getElementById('nombre-foto-admin');
     if (inputFotoAdmin && textoFotoAdmin) {
@@ -627,7 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Agregar Nueva Pieza
+    // Agregar Nueva Pieza al catalogo
     if (formNuevaPieza) {
         formNuevaPieza.addEventListener('submit', (e) => {
             e.preventDefault();
