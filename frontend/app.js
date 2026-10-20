@@ -335,45 +335,79 @@ document.addEventListener('DOMContentLoaded', () => {
             .join(':');
     }
 
-    // Estado global de filtros de la tabla de encargos
+    // Exportar suscriptores del Club Balenzaa a archivo CSV
+    function exportarClubCSV() {
+        const pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+        const suscriptores = pedidos.filter(p => p.suscritoClub && p.correo);
+
+        if (suscriptores.length === 0) {
+            alert('Aún no hay suscriptores registrados en el Club Balenzaa.');
+            return;
+        }
+
+        const filas = [['Nombre', 'Correo', 'Celular', 'Fecha de Registro']];
+        suscriptores.forEach(s => {
+            filas.push([
+                `"${(s.nombre || '').replace(/"/g, '""')}"`,
+                `"${(s.correo || '').replace(/"/g, '""')}"`,
+                `"${(s.celular || '').replace(/"/g, '""')}"`,
+                `"${s.fechaCreacion || ''}"`
+            ]);
+        });
+
+        const csvContenido = '\uFEFF' + filas.map(f => f.join(',')).join('\n');
+        const blob = new Blob([csvContenido], { type: 'text/csv;charset=utf-8;' });
+        const enlace = document.createElement('a');
+        enlace.href = URL.createObjectURL(blob);
+        enlace.download = `club_balenzaa_${new Date().toISOString().slice(0, 10)}.csv`;
+        enlace.click();
+    }
+
+    // Estado global de filtros
     let filtroMesSeleccionado = 'todos';
     let filtroTipoSeleccionado = 'todos';
 
-    // Barra de filtros dinamicos para Romina
+    // Barra de controles con filtros y botón de exportación CSV
     function inyectarControlesFiltro() {
         const seccionGestion = document.querySelector('.seccion-gestion-pedidos');
         if (!seccionGestion || document.getElementById('barra-filtros-pedidos')) return;
 
         const contenedorFiltros = document.createElement('div');
         contenedorFiltros.id = 'barra-filtros-pedidos';
-        contenedorFiltros.style.cssText = 'display: flex; gap: 1rem; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; background: #FFF7FA; padding: 0.9rem 1.2rem; border-radius: 18px; border: 1.5px solid var(--rosa-claro);';
+        contenedorFiltros.style.cssText = 'display: flex; gap: 1rem; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; background: #FFF7FA; padding: 0.9rem 1.2rem; border-radius: 18px; border: 1.5px solid var(--rosa-claro);';
 
         contenedorFiltros.innerHTML = `
-            <span style="font-weight: 700; color: var(--rosa); font-size: 0.92rem;">Filtrar encargos y métricas:</span>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <label for="filtro-mes-pedidos" style="font-size: 0.85rem; font-weight: 600; margin: 0;">Mes:</label>
-                <select id="filtro-mes-pedidos" style="padding: 5px 10px; border-radius: 10px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; background: #fff; width: auto;">
-                    <option value="todos">Todos los meses</option>
-                    <option value="1">Enero</option>
-                    <option value="2">Febrero</option>
-                    <option value="3">Marzo</option>
-                    <option value="4">Abril</option>
-                    <option value="5">Mayo</option>
-                    <option value="6">Junio</option>
-                    <option value="7">Julio</option>
-                    <option value="8">Agosto</option>
-                    <option value="9">Septiembre</option>
-                    <option value="10">Octubre</option>
-                    <option value="11">Noviembre</option>
-                    <option value="12">Diciembre</option>
-                </select>
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <span style="font-weight: 700; color: var(--rosa); font-size: 0.92rem;">Filtrar encargos y métricas:</span>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label for="filtro-mes-pedidos" style="font-size: 0.85rem; font-weight: 600; margin: 0;">Mes:</label>
+                    <select id="filtro-mes-pedidos" style="padding: 5px 10px; border-radius: 10px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; background: #fff; width: auto;">
+                        <option value="todos">Todos los meses</option>
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label for="filtro-tipo-pedidos" style="font-size: 0.85rem; font-weight: 600; margin: 0;">Tipo de pieza:</label>
+                    <select id="filtro-tipo-pedidos" style="padding: 5px 10px; border-radius: 10px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; background: #fff; width: auto;">
+                        <option value="todos">Todas las piezas</option>
+                    </select>
+                </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <label for="filtro-tipo-pedidos" style="font-size: 0.85rem; font-weight: 600; margin: 0;">Tipo de pieza:</label>
-                <select id="filtro-tipo-pedidos" style="padding: 5px 10px; border-radius: 10px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; background: #fff; width: auto;">
-                    <option value="todos">Todas las piezas</option>
-                </select>
-            </div>
+
+            <button id="btn-exportar-club-csv" title="Descargar lista de miembros del Club Balenzaa en CSV" style="background-color: var(--rosa); color: white; border: none; padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: transform 0.15s ease;">
+                Exportar Club CSV
+            </button>
         `;
 
         const tabla = seccionGestion.querySelector('.contenedor-tabla');
@@ -381,6 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const selMes = document.getElementById('filtro-mes-pedidos');
         const selTipo = document.getElementById('filtro-tipo-pedidos');
+        const btnCSV = document.getElementById('btn-exportar-club-csv');
 
         selMes.addEventListener('change', (e) => {
             filtroMesSeleccionado = e.target.value;
@@ -391,9 +426,12 @@ document.addEventListener('DOMContentLoaded', () => {
             filtroTipoSeleccionado = e.target.value;
             renderizarPedidos();
         });
+
+        if (btnCSV) {
+            btnCSV.addEventListener('click', exportarClubCSV);
+        }
     }
 
-    // Actualizar las opciones del select de tipos de productos con base en los pedidos
     function actualizarOpcionesTipoPieza(pedidos) {
         const selTipo = document.getElementById('filtro-tipo-pedidos');
         if (!selTipo) return;
@@ -417,7 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Extraer numero de mes de fecha en formato d/m/aaaa o aaaa-mm-dd
     function obtenerMesDeFecha(cadenaFecha) {
         if (!cadenaFecha) return null;
         if (cadenaFecha.includes('/')) {
@@ -430,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    // Renderizar Pedidos en la Tabla aplicando filtros
+    // Renderizar Pedidos en la Tabla
     function renderizarPedidos() {
         if (!cuerpoTablaPedidos) return;
         inyectarControlesFiltro();
@@ -444,7 +481,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let completados = 0;
         let totalCobrado = 0;
 
-        // Filtrar segun mes y tipo de crochet
         const pedidosFiltrados = pedidos.map((p, indexOriginal) => ({ ...p, indexOriginal })).filter(p => {
             const cumpleTipo = (filtroTipoSeleccionado === 'todos') || (p.producto && p.producto.trim().toLowerCase() === filtroTipoSeleccionado.trim().toLowerCase());
 
@@ -527,13 +563,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Actualizar tarjetas de resumen sincronizadas con el filtro activo
         if (elPendientes) elPendientes.textContent = pendientes;
         if (elElaboracion) elElaboracion.textContent = elaboracion;
         if (elCompletados) elCompletados.textContent = completados;
         if (elIngresos) elIngresos.textContent = `$${totalCobrado.toFixed(2)}`;
 
-        // Control del Cronometro: Play / Pausa con guardado en localStorage
+        // Control del Cronometro: Play / Pausa
         document.querySelectorAll('.btn-toggle-timer').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const i = e.currentTarget.dataset.index;
@@ -544,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Control del Cronometro: Reiniciar explicitamente
+        // Control del Cronometro: Reiniciar
         document.querySelectorAll('.btn-reset-timer').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const i = e.currentTarget.dataset.index;
@@ -606,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Intervalo de conteo por segundo para cronometros activos
+    // Conteo continuo para cronometros activos
     setInterval(() => {
         const pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
         let huboCambios = false;
