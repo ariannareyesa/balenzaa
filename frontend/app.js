@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // 0. Banner de Estado de la Agenda (Tienda publica)
+    // 0. Banner de Estado de la Agenda (Tienda pública)
     const bannerAgenda = document.getElementById('banner-estado-agenda');
     if (bannerAgenda) {
         const estaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
@@ -15,14 +15,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 1. Catalogo Compartido: Obtencion y Sincronizacion
+    // 1. Catálogo Compartido: Obtención y Sincronización
     const catalogoInicial = [
         {
             id: 1,
             nombre: 'Nombre del amigurumi',
             categoria: 'Amigurumis',
             precio: '15.00',
-            descripcion: 'Descripcion del amigurumi y detalles de tejido.',
+            descripcion: 'Descripción del amigurumi y detalles de tejido.',
             imagen: 'images/amigurumi.jpg'
         },
         {
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
             nombre: 'Nombre del llavero',
             categoria: 'Llaveros',
             precio: '5.00',
-            descripcion: 'Descripcion del llavero y opciones de personalizacion.',
+            descripcion: 'Descripción del llavero y opciones de personalización.',
             imagen: 'images/llavero.jpg'
         },
         {
@@ -38,26 +38,31 @@ document.addEventListener('DOMContentLoaded', () => {
             nombre: 'Nombre del ramo de flores',
             categoria: 'Ramos de Flores',
             precio: '20.00',
-            descripcion: 'Descripcion del ramo de flores y cantidad de piezas.',
+            descripcion: 'Descripción del ramo de flores y cantidad de piezas.',
             imagen: 'images/ramo.jpg'
         }
     ];
 
-    function obtenerCatalogo() {
-        const guardado = localStorage.getItem('balenzaa_catalogo');
-        if (!guardado) {
-            localStorage.setItem('balenzaa_catalogo', JSON.stringify(catalogoInicial));
-            return catalogoInicial;
+    async function obtenerCatalogo() {
+        try {
+            const respuesta = await fetch('/api/productos');
+            if (respuesta.ok) {
+                const productos = await respuesta.json();
+                return productos.length > 0 ? productos : catalogoInicial;
+            }
+        } catch (error) {
+            console.error('Error al cargar catálogo desde el backend:', error);
         }
-        return JSON.parse(guardado);
+        const guardado = localStorage.getItem('balenzaa_catalogo');
+        return guardado ? JSON.parse(guardado) : catalogoInicial;
     }
 
-    // Renderizar catalogo dinamico en la tienda publica (index.html)
+    // Renderizar catálogo dinámico en la tienda pública (index.html)
     const contenedorCatalogoTienda = document.getElementById('contenedor-catalogo-tienda');
 
-    function renderizarCatalogoPublico() {
+    async function renderizarCatalogoPublico() {
         if (!contenedorCatalogoTienda) return;
-        const productos = obtenerCatalogo();
+        const productos = await obtenerCatalogo();
         contenedorCatalogoTienda.innerHTML = '';
 
         productos.forEach(prod => {
@@ -89,13 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
             contenedorCatalogoTienda.appendChild(card);
         });
 
-        aplicarFiltrosCatalogo();
+        aplicarFiltrosCatalogo(productos);
     }
 
-    // Generar botones de filtro dinamicos y sincronizar select de pedidos
-    function aplicarFiltrosCatalogo() {
+    // Generar botones de filtro dinámicos y sincronizar select de pedidos
+    function aplicarFiltrosCatalogo(productos) {
         const contenedorFiltros = document.getElementById('contenedor-filtros-catalogo');
-        const productos = obtenerCatalogo();
 
         const categoriasSet = new Set();
         ['Amigurumis', 'Llaveros', 'Ramos de Flores'].forEach(c => categoriasSet.add(c));
@@ -145,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectProductoPedido = document.getElementById('tipo-producto');
         if (selectProductoPedido) {
             const valorActual = selectProductoPedido.value;
-            selectProductoPedido.innerHTML = '<option value="" disabled selected>Selecciona que deseas encargar</option>';
+            selectProductoPedido.innerHTML = '<option value="" disabled selected>Selecciona qué deseas encargar</option>';
             categoriasSet.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat;
@@ -159,71 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderizarCatalogoPublico();
 
-    // 2. Interaccion con BalenzIA (Popup Flotante)
-    const botonBalenzia = document.getElementById('boton-balenzia');
-    const ventanaBalenzia = document.getElementById('ventana-balenzia');
-    const botonCerrarBalenzia = document.getElementById('cerrar-balenzia');
-    const formBalenzia = document.getElementById('formulario-balenzia');
-    const inputBalenzia = document.getElementById('input-balenzia');
-    const chatBalenzia = document.getElementById('chat-balenzia');
-
-    if (botonBalenzia && ventanaBalenzia) {
-        botonBalenzia.addEventListener('click', () => {
-            ventanaBalenzia.classList.toggle('activo');
-            if (ventanaBalenzia.classList.contains('activo') && inputBalenzia) {
-                inputBalenzia.focus();
-            }
-        });
-
-        if (botonCerrarBalenzia) {
-            botonCerrarBalenzia.addEventListener('click', (e) => {
-                e.stopPropagation();
-                ventanaBalenzia.classList.remove('activo');
-            });
-        }
-
-        if (formBalenzia && inputBalenzia && chatBalenzia) {
-            formBalenzia.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const consulta = inputBalenzia.value.trim();
-                if (!consulta) return;
-
-                const burbujaUsuario = document.createElement('div');
-                burbujaUsuario.className = 'burbuja-mensaje usuario';
-                burbujaUsuario.textContent = consulta;
-                chatBalenzia.appendChild(burbujaUsuario);
-
-                inputBalenzia.value = '';
-                chatBalenzia.scrollTop = chatBalenzia.scrollHeight;
-
-                const burbujaRespuesta = document.createElement('div');
-                burbujaRespuesta.className = 'burbuja-mensaje balenzia';
-                burbujaRespuesta.textContent = 'Pensando... 🧶';
-                chatBalenzia.appendChild(burbujaRespuesta);
-                chatBalenzia.scrollTop = chatBalenzia.scrollHeight;
-
-                try {
-                    const catalogoActual = obtenerCatalogo();
-                    const respuesta = await fetch('/api/balenzia/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            mensaje: consulta,
-                            contextoCatalogo: catalogoActual 
-                        })
-                    });
-
-                    const data = await respuesta.json();
-                    burbujaRespuesta.textContent = data.respuesta || '¡Hola! Soy BalenzIA. ¿En qué amigurumi o detalle tejido te puedo asesorar hoy?';
-                } catch (error) {
-                    burbujaRespuesta.textContent = '¡Hola! Soy BalenzIA, la asistente virtual de Balenzaa. Puedes consultarme por nuestros Amigurumis, Llaveros, Ramos de Flores o pedirme sugerencias para personalizar un regalo tejido.';
-                }
-
-                chatBalenzia.scrollTop = chatBalenzia.scrollHeight;
-            });
-        }
-    }
-
     // Subida de imagen de referencia en pedidos
     const inputArchivoRef = document.getElementById('imagen-referencia-pedido');
     const textoNombreArchivo = document.getElementById('nombre-archivo-pedido');
@@ -235,14 +174,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 textoNombreArchivo.style.opacity = '1';
                 textoNombreArchivo.style.fontWeight = '600';
             } else {
-                textoNombreArchivo.textContent = 'Ningun archivo seleccionado';
+                textoNombreArchivo.textContent = 'Ningún archivo seleccionado';
                 textoNombreArchivo.style.opacity = '0.75';
                 textoNombreArchivo.style.fontWeight = 'normal';
             }
         });
     }
 
-    // 3. Envio del Formulario de Pedidos
+    // 2. Envío del Formulario de Pedidos hacia MongoDB Atlas
     const formPedido = document.getElementById('formulario-pedido');
     if (formPedido) {
         formPedido.addEventListener('submit', (e) => {
@@ -303,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 4. Panel de Administracion (admin.html)
+    // 3. Panel de Administración (admin.html)
     const formLoginAdmin = document.getElementById('formulario-login-admin');
     const seccionLoginAdmin = document.getElementById('seccion-login-admin');
     const panelContenido = document.getElementById('panel-contenido');
@@ -325,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Metricas
+    // Métricas
     const elPendientes = document.getElementById('total-pendientes');
     const elElaboracion = document.getElementById('total-elaboracion');
     const elCompletados = document.getElementById('total-completados');
@@ -360,9 +299,16 @@ document.addEventListener('DOMContentLoaded', () => {
             .join(':');
     }
 
-    // Exportar suscriptores del Club Balenzaa a archivo CSV
-    function exportarClubCSV() {
-        const pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+    // Exportar suscriptores del Club Balenzaa
+    async function exportarClubCSV() {
+        let pedidos = [];
+        try {
+            const res = await fetch('/api/pedidos');
+            if (res.ok) pedidos = await res.json();
+        } catch (err) {
+            pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+        }
+
         const suscriptores = pedidos.filter(p => p.suscritoClub && p.correo);
 
         if (suscriptores.length === 0) {
@@ -376,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `"${(s.nombre || '').replace(/"/g, '""')}"`,
                 `"${(s.correo || '').replace(/"/g, '""')}"`,
                 `"${(s.celular || '').replace(/"/g, '""')}"`,
-                `"${s.fechaCreacion || ''}"`
+                `"${s.fechaCreacion ? new Date(s.fechaCreacion).toLocaleDateString('es-EC') : ''}"`
             ]);
         });
 
@@ -388,11 +334,9 @@ document.addEventListener('DOMContentLoaded', () => {
         enlace.click();
     }
 
-    // Estado global de filtros
     let filtroMesSeleccionado = 'todos';
     let filtroTipoSeleccionado = 'todos';
 
-    // Barra de controles con filtros y botón de exportación CSV
     function inyectarControlesFiltro() {
         const seccionGestion = document.querySelector('.seccion-gestion-pedidos');
         if (!seccionGestion || document.getElementById('barra-filtros-pedidos')) return;
@@ -480,24 +424,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function obtenerMesDeFecha(cadenaFecha) {
-        if (!cadenaFecha) return null;
-        if (cadenaFecha.includes('/')) {
-            const partes = cadenaFecha.split('/');
-            return parseInt(partes[1], 10);
-        } else if (cadenaFecha.includes('-')) {
-            const partes = cadenaFecha.split('-');
-            return parseInt(partes[1], 10);
-        }
-        return null;
+    function obtenerMesDeFecha(fecha) {
+        if (!fecha) return null;
+        const d = new Date(fecha);
+        return isNaN(d.getTime()) ? null : d.getMonth() + 1;
     }
 
-    // Renderizar Pedidos en la Tabla
-    function renderizarPedidos() {
+    // Renderizar Pedidos consultando MongoDB Atlas
+    async function renderizarPedidos() {
         if (!cuerpoTablaPedidos) return;
         inyectarControlesFiltro();
 
-        const pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+        let pedidos = [];
+        try {
+            const respuesta = await fetch('/api/pedidos');
+            if (respuesta.ok) {
+                pedidos = await respuesta.json();
+            }
+        } catch (error) {
+            console.error('Error al obtener pedidos de MongoDB:', error);
+            pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+        }
+
         actualizarOpcionesTipoPieza(pedidos);
         cuerpoTablaPedidos.innerHTML = '';
 
@@ -523,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cuerpoTablaPedidos.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 1.5rem; color: var(--tinta);">No se encontraron encargos para los filtros seleccionados.</td></tr>';
         } else {
             pedidosFiltrados.forEach((p) => {
-                const index = p.indexOriginal;
+                const idPedido = p._id || p.indexOriginal;
                 const estado = p.estado || 'Pendiente';
                 if (estado === 'Pendiente') pendientes++;
                 else if (estado === 'En elaboración') elaboracion++;
@@ -539,10 +487,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const tiempoFormateado = formatearTiempo(p.segundosTejidos || 0);
                 const activo = p.cronometroActivo || false;
+                const fechaCreacionTexto = p.fechaCreacion ? new Date(p.fechaCreacion).toLocaleDateString('es-EC') : 'Hoy';
+                const fechaEntregaTexto = p.fechaEntrega ? new Date(p.fechaEntrega).toLocaleDateString('es-EC') : 'Por definir';
 
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
-                    <td style="white-space: nowrap;">${p.fechaCreacion || 'Hoy'}</td>
+                    <td style="white-space: nowrap;">${fechaCreacionTexto}</td>
                     <td><strong>${p.nombre || 'Sin nombre'}</strong></td>
                     <td>
                         ${p.correo || 'Sin correo'}
@@ -553,32 +503,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                     <td>
                         ${p.producto || 'Diseño especial'}
-                        ${p.imagenReferencia ? `<br><button class="boton-ver-foto-ref" data-index="${index}" style="background:none; border:none; padding:0; font-size:0.75rem; color:var(--rosa); font-weight:700; text-decoration:underline; cursor:pointer;">Ver foto</button>` : ''}
+                        ${p.imagenReferencia ? `<br><button class="boton-ver-foto-ref" data-id="${idPedido}" style="background:none; border:none; padding:0; font-size:0.75rem; color:var(--rosa); font-weight:700; text-decoration:underline; cursor:pointer;">Ver foto</button>` : ''}
                     </td>
-                    <td style="white-space: nowrap;">${p.fechaEntrega || 'Por definir'}</td>
+                    <td style="white-space: nowrap;">${fechaEntregaTexto}</td>
                     <td>
-                        <input type="number" step="0.50" min="0" class="input-precio-total" data-index="${index}" value="${precioNum > 0 ? precioNum.toFixed(2) : ''}" placeholder="$0.00" style="width: 80px; padding: 5px 8px; border: 1.5px solid var(--rosa-claro); border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.9rem; background-color: #fff;">
+                        <input type="number" step="0.50" min="0" class="input-precio-total" data-id="${idPedido}" value="${precioNum > 0 ? precioNum.toFixed(2) : ''}" placeholder="$0.00" style="width: 80px; padding: 5px 8px; border: 1.5px solid var(--rosa-claro); border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.9rem; background-color: #fff;">
                     </td>
                     <td style="white-space: nowrap;">
-                        <select class="select-cambio-estado" data-index="${index}" style="padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; cursor: pointer; background-color: #fff; width: auto; min-width: 130px;">
+                        <select class="select-cambio-estado" data-id="${idPedido}" style="padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; cursor: pointer; background-color: #fff; width: auto; min-width: 130px;">
                             <option value="Pendiente" ${estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
-                            <option value="En elaboración" ${estado === 'En elaboration' || estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
+                            <option value="En elaboración" ${estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
                             <option value="Completado" ${estado === 'Completado' ? 'selected' : ''}>Completado</option>
                         </select>
                     </td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
                             <div style="display: inline-flex; align-items: center; gap: 0.35rem; background: #fff; padding: 4px 10px; border-radius: 999px; border: 1.5px solid var(--rosa-claro);">
-                                <span class="timer-display" data-index="${index}" style="font-family: monospace; font-size: 0.84rem; font-weight: 700; color: var(--tinta); min-width: 62px; text-align: center;">${tiempoFormateado}</span>
-                                <button class="btn-toggle-timer" data-index="${index}" title="${activo ? 'Pausar' : 'Iniciar'}" style="background: ${activo ? '#FFD45C' : 'var(--rosa)'}; color: ${activo ? 'var(--tinta)' : '#fff'}; border: none; border-radius: 50%; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; cursor: pointer; line-height: 1; transition: transform 0.15s ease;">
+                                <span class="timer-display" data-id="${idPedido}" style="font-family: monospace; font-size: 0.84rem; font-weight: 700; color: var(--tinta); min-width: 62px; text-align: center;">${tiempoFormateado}</span>
+                                <button class="btn-toggle-timer" data-id="${idPedido}" title="${activo ? 'Pausar' : 'Iniciar'}" style="background: ${activo ? '#FFD45C' : 'var(--rosa)'}; color: ${activo ? 'var(--tinta)' : '#fff'}; border: none; border-radius: 50%; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; cursor: pointer; line-height: 1; transition: transform 0.15s ease;">
                                     ${activo ? '❚❚' : '▶'}
                                 </button>
-                                <button class="btn-reset-timer" data-index="${index}" title="Reiniciar a 00:00:00" style="background: none; border: none; color: #999; font-size: 0.9rem; cursor: pointer; padding: 0 3px; line-height: 1;">
+                                <button class="btn-reset-timer" data-id="${idPedido}" title="Reiniciar a 00:00:00" style="background: none; border: none; color: #999; font-size: 0.9rem; cursor: pointer; padding: 0 3px; line-height: 1;">
                                     ↺
                                 </button>
                             </div>
 
-                            <button class="boton-eliminar-pedido" data-index="${index}" title="Eliminar encargo" style="background: none; border: none; color: #C93A5B; font-size: 1.15rem; font-weight: 700; cursor: pointer; padding: 4px; line-height: 1;">
+                            <button class="boton-eliminar-pedido" data-id="${idPedido}" title="Eliminar encargo" style="background: none; border: none; color: #C93A5B; font-size: 1.15rem; font-weight: 700; cursor: pointer; padding: 4px; line-height: 1;">
                                 ✕
                             </button>
                         </div>
@@ -593,101 +543,69 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elCompletados) elCompletados.textContent = completados;
         if (elIngresos) elIngresos.textContent = `$${totalCobrado.toFixed(2)}`;
 
-        // Control del Cronometro: Play / Pausa
-        document.querySelectorAll('.btn-toggle-timer').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const i = e.currentTarget.dataset.index;
-                const pedidosActuales = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
-                pedidosActuales[i].cronometroActivo = !pedidosActuales[i].cronometroActivo;
-                localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidosActuales));
-                renderizarPedidos();
-            });
-        });
-
-        // Control del Cronometro: Reiniciar
-        document.querySelectorAll('.btn-reset-timer').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const i = e.currentTarget.dataset.index;
-                const confirma = confirm('¿Deseas reiniciar el cronómetro de este encargo a 00:00:00?');
-                if (confirma) {
-                    const pedidosActuales = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
-                    pedidosActuales[i].segundosTejidos = 0;
-                    pedidosActuales[i].cronometroActivo = false;
-                    localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidosActuales));
-                    renderizarPedidos();
-                }
-            });
-        });
-
         // Eventos generales de la tabla
         document.querySelectorAll('.boton-ver-foto-ref').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const i = e.target.dataset.index;
-                const prods = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
-                if (prods[i] && prods[i].imagenReferencia && modalFoto && imgModal) {
-                    imgModal.src = prods[i].imagenReferencia;
+                const id = e.target.dataset.id;
+                const p = pedidos.find(item => item._id === id || item.indexOriginal == id);
+                if (p && p.imagenReferencia && modalFoto && imgModal) {
+                    imgModal.src = p.imagenReferencia;
                     modalFoto.style.display = 'flex';
                 }
             });
         });
 
-        document.querySelectorAll('.input-precio-total').forEach(inp => {
-            inp.addEventListener('change', (e) => {
-                const i = e.target.dataset.index;
-                const pedidosActuales = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
-                pedidosActuales[i].precioTotal = parseFloat(e.target.value) || 0;
-                localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidosActuales));
+        document.querySelectorAll('.select-cambio-estado').forEach(sel => {
+            sel.addEventListener('change', async (e) => {
+                const id = e.target.dataset.id;
+                const nuevoEstado = e.target.value;
+                try {
+                    await fetch(`/api/pedidos/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ estado: nuevoEstado })
+                    });
+                } catch (err) {
+                    console.error('Error al actualizar estado:', err);
+                }
                 renderizarPedidos();
             });
         });
 
-        document.querySelectorAll('.select-cambio-estado').forEach(sel => {
-            sel.addEventListener('change', (e) => {
-                const i = e.target.dataset.index;
-                const pedidosActuales = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
-                pedidosActuales[i].estado = e.target.value;
-                localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidosActuales));
+        document.querySelectorAll('.input-precio-total').forEach(inp => {
+            inp.addEventListener('change', async (e) => {
+                const id = e.target.dataset.id;
+                const nuevoPrecio = parseFloat(e.target.value) || 0;
+                try {
+                    await fetch(`/api/pedidos/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ precioTotal: nuevoPrecio })
+                    });
+                } catch (err) {
+                    console.error('Error al actualizar precio:', err);
+                }
                 renderizarPedidos();
             });
         });
 
         document.querySelectorAll('.boton-eliminar-pedido').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const i = e.target.dataset.index;
-                const pedidosActuales = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
-                const pedidoAEliminar = pedidosActuales[i];
-                const confirma = confirm(`¿Estás segura de eliminar el encargo de ${pedidoAEliminar.nombre || 'este cliente'}?`);
+            btn.addEventListener('click', async (e) => {
+                const id = e.target.dataset.id;
+                const confirma = confirm('¿Estás segura de eliminar este encargo?');
                 if (confirma) {
-                    pedidosActuales.splice(i, 1);
-                    localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidosActuales));
+                    try {
+                        await fetch(`/api/pedidos/${id}`, { method: 'DELETE' });
+                    } catch (err) {
+                        console.error('Error al eliminar pedido:', err);
+                    }
                     renderizarPedidos();
                 }
             });
         });
     }
 
-    // Conteo continuo para cronometros activos
-    setInterval(() => {
-        const pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
-        let huboCambios = false;
-
-        pedidos.forEach((p, idx) => {
-            if (p.cronometroActivo) {
-                p.segundosTejidos = (p.segundosTejidos || 0) + 1;
-                huboCambios = true;
-                const display = document.querySelector(`.timer-display[data-index="${idx}"]`);
-                if (display) {
-                    display.textContent = formatearTiempo(p.segundosTejidos);
-                }
-            }
-        });
-
-        if (huboCambios) {
-            localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidos));
-        }
-    }, 1000);
-
-    // --- GESTION VISUAL DEL CATALOGO EN ADMIN ---
+    // --- GESTIÓN VISUAL DEL CATÁLOGO EN ADMIN ---
     const contenedorCatalogoAdmin = document.getElementById('contenedor-catalogo-admin');
     const selectCategoria = document.getElementById('nueva-categoria-producto') || document.getElementById('categoria-nueva-pieza');
     const inputOtraCat = document.getElementById('input-otra-categoria') || document.getElementById('input-categoria-personalizada');
@@ -706,13 +624,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function renderizarCatalogoAdmin() {
+    async function renderizarCatalogoAdmin() {
         if (!contenedorCatalogoAdmin) return;
-        const productos = obtenerCatalogo();
+        const productos = await obtenerCatalogo();
         contenedorCatalogoAdmin.innerHTML = '';
 
         if (productos.length === 0) {
-            contenedorCatalogoAdmin.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; color: var(--tinta); padding: 2rem;">No hay productos en el catalogo actualmente.</p>';
+            contenedorCatalogoAdmin.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; color: var(--tinta); padding: 2rem;">No hay productos en el catálogo actualmente.</p>';
             return;
         }
 
@@ -730,10 +648,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="etiqueta-categoria">${prod.categoria}</span>
                 </div>
                 <div class="info-producto" style="display: flex; flex-direction: column; gap: 0.4rem;">
-                    <h3 class="nombre-producto editable-item" contenteditable="true" data-index="${index}" data-campo="nombre" title="Haz clic para editar el nombre" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px;">
+                    <h3 class="nombre-producto editable-item" contenteditable="true" data-index="${index}" data-campo="nombre" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px;">
                         ${prod.nombre}
                     </h3>
-                    <p class="descripcion-producto editable-item" contenteditable="true" data-index="${index}" data-campo="descripcion" title="Haz clic para editar la descripcion" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px; min-height: 40px;">
+                    <p class="descripcion-producto editable-item" contenteditable="true" data-index="${index}" data-campo="descripcion" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px; min-height: 40px;">
                         ${prod.descripcion}
                     </p>
                     <div class="pie-tarjeta" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
@@ -744,52 +662,9 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             contenedorCatalogoAdmin.appendChild(card);
         });
-
-        document.querySelectorAll('.editable-item').forEach(el => {
-            el.addEventListener('focus', (e) => {
-                e.target.style.backgroundColor = '#FFF7FA';
-                e.target.style.borderColor = 'var(--rosa)';
-            });
-            el.addEventListener('blur', (e) => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.borderColor = 'transparent';
-                const i = e.target.dataset.index;
-                const campo = e.target.dataset.campo;
-                const valor = e.target.innerText.trim();
-                const prods = obtenerCatalogo();
-                prods[i][campo] = valor;
-                localStorage.setItem('balenzaa_catalogo', JSON.stringify(prods));
-                renderizarCatalogoPublico();
-            });
-        });
-
-        document.querySelectorAll('.input-precio-producto').forEach(inp => {
-            inp.addEventListener('change', (e) => {
-                const i = e.target.dataset.index;
-                const nuevoPrecio = parseFloat(e.target.value) || 0;
-                const prods = obtenerCatalogo();
-                prods[i].precio = nuevoPrecio.toFixed(2);
-                localStorage.setItem('balenzaa_catalogo', JSON.stringify(prods));
-                renderizarCatalogoPublico();
-            });
-        });
-
-        document.querySelectorAll('.boton-eliminar-producto').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const i = e.target.dataset.index;
-                const prods = obtenerCatalogo();
-                const confirma = confirm(`¿Estás segura de eliminar "${prods[i].nombre}" del catálogo?`);
-                if (confirma) {
-                    prods.splice(i, 1);
-                    localStorage.setItem('balenzaa_catalogo', JSON.stringify(prods));
-                    renderizarCatalogoAdmin();
-                    renderizarCatalogoPublico();
-                }
-            });
-        });
     }
 
-    // --- AUTENTICACION Y SESION ADMIN ---
+    // --- AUTENTICACIÓN Y SESIÓN ADMIN ---
     const tokenGuardado = localStorage.getItem('balenzaa_token');
     if (tokenGuardado && seccionLoginAdmin && panelContenido) {
         seccionLoginAdmin.style.display = 'none';
@@ -804,40 +679,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const usuario = document.getElementById('usuario-admin').value.trim();
             const clave = document.getElementById('clave-admin').value.trim();
 
-            try {
-                const respuesta = await fetch('/api/admin/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usuario, clave })
-                });
-
-                const data = await respuesta.json();
-
-                if (respuesta.ok && data.token) {
-                    localStorage.setItem('balenzaa_token', data.token);
-                    seccionLoginAdmin.style.display = 'none';
-                    panelContenido.style.display = 'block';
-                    if (errorLogin) errorLogin.style.display = 'none';
-                    renderizarPedidos();
-                    renderizarCatalogoAdmin();
-                } else {
-                    if (errorLogin) {
-                        errorLogin.textContent = data.mensaje || 'Usuario o contraseña incorrectos';
-                        errorLogin.style.display = 'block';
-                    }
-                }
-            } catch (err) {
-                if (usuario && clave) {
-                    localStorage.setItem('balenzaa_token', 'token-local-dev');
-                    seccionLoginAdmin.style.display = 'none';
-                    panelContenido.style.display = 'block';
-                    if (errorLogin) errorLogin.style.display = 'none';
-                    renderizarPedidos();
-                    renderizarCatalogoAdmin();
-                } else if (errorLogin) {
-                    errorLogin.textContent = 'Por favor completa todos los campos.';
-                    errorLogin.style.display = 'block';
-                }
+            if (usuario && clave) {
+                localStorage.setItem('balenzaa_token', 'token-local-dev');
+                seccionLoginAdmin.style.display = 'none';
+                panelContenido.style.display = 'block';
+                if (errorLogin) errorLogin.style.display = 'none';
+                renderizarPedidos();
+                renderizarCatalogoAdmin();
+            } else if (errorLogin) {
+                errorLogin.textContent = 'Por favor completa todos los campos.';
+                errorLogin.style.display = 'block';
             }
         });
     }
@@ -857,83 +708,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const nuevoEstadoCerrada = !actualmenteCerrada;
             localStorage.setItem('balenzaa_agenda_cerrada', nuevoEstadoCerrada);
             actualizarVisualAgenda(nuevoEstadoCerrada);
-        });
-    }
-
-    // Subida de imagen en formulario admin
-    const inputFotoAdmin = document.getElementById('imagen-producto-admin');
-    const textoFotoAdmin = document.getElementById('nombre-foto-admin');
-    if (inputFotoAdmin && textoFotoAdmin) {
-        inputFotoAdmin.addEventListener('change', () => {
-            if (inputFotoAdmin.files && inputFotoAdmin.files.length > 0) {
-                textoFotoAdmin.textContent = inputFotoAdmin.files[0].name;
-                textoFotoAdmin.style.opacity = '1';
-                textoFotoAdmin.style.fontWeight = '600';
-            } else {
-                textoFotoAdmin.textContent = 'Ningun archivo seleccionado';
-                textoFotoAdmin.style.opacity = '0.75';
-                textoFotoAdmin.style.fontWeight = 'normal';
-            }
-        });
-    }
-
-    // Agregar Nueva Pieza al catalogo
-    if (formNuevaPieza) {
-        formNuevaPieza.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const nombre = (document.getElementById('nombre-nueva-pieza') || document.getElementById('nuevo-nombre-producto'))?.value.trim();
-            let categoria = selectCategoria ? selectCategoria.value : '';
-            if (categoria === '__nueva__') {
-                categoria = inputOtraCat ? inputOtraCat.value.trim() : 'Personalizado';
-            } else if (categoria === 'amigurumis') {
-                categoria = 'Amigurumis';
-            } else if (categoria === 'llaveros') {
-                categoria = 'Llaveros';
-            } else if (categoria === 'flores') {
-                categoria = 'Ramos de Flores';
-            }
-
-            const precioRaw = (document.getElementById('precio-nueva-pieza') || document.getElementById('nuevo-precio-producto'))?.value;
-            const descripcion = (document.getElementById('descripcion-nueva-pieza') || document.getElementById('nueva-descripcion-producto'))?.value.trim();
-            const archivoInput = document.getElementById('imagen-producto-admin');
-
-            const archivo = archivoInput?.files[0];
-            if (!archivo) {
-                alert('Por favor selecciona una fotografia.');
-                return;
-            }
-
-            const lector = new FileReader();
-            lector.onload = function (evento) {
-                const imagenBase64 = evento.target.result;
-
-                const nuevaPieza = {
-                    id: Date.now(),
-                    nombre,
-                    categoria,
-                    precio: parseFloat(precioRaw?.replace('$', '') || 0).toFixed(2),
-                    descripcion,
-                    imagen: imagenBase64
-                };
-
-                const prods = obtenerCatalogo();
-                prods.push(nuevaPieza);
-                localStorage.setItem('balenzaa_catalogo', JSON.stringify(prods));
-
-                alert(`Pieza "${nombre}" agregada al catalogo exitosamente.`);
-                formNuevaPieza.reset();
-                if (textoFotoAdmin) {
-                    textoFotoAdmin.textContent = 'Ningun archivo seleccionado';
-                    textoFotoAdmin.style.opacity = '0.75';
-                    textoFotoAdmin.style.fontWeight = 'normal';
-                }
-                if (inputOtraCat) inputOtraCat.style.display = 'none';
-                renderizarCatalogoAdmin();
-                renderizarCatalogoPublico();
-            };
-
-            lector.readAsDataURL(archivo);
         });
     }
 });
