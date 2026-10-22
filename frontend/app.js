@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (formBalenzia && inputBalenzia && chatBalenzia) {
-            formBalenzia.addEventListener('submit', (e) => {
+            formBalenzia.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const consulta = inputBalenzia.value.trim();
                 if (!consulta) return;
@@ -196,13 +196,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 inputBalenzia.value = '';
                 chatBalenzia.scrollTop = chatBalenzia.scrollHeight;
 
-                setTimeout(() => {
-                    const burbujaRespuesta = document.createElement('div');
-                    burbujaRespuesta.className = 'burbuja-mensaje balenzia';
-                    burbujaRespuesta.textContent = 'mensaje provisional';
-                    chatBalenzia.appendChild(burbujaRespuesta);
-                    chatBalenzia.scrollTop = chatBalenzia.scrollHeight;
-                }, 400);
+                const burbujaRespuesta = document.createElement('div');
+                burbujaRespuesta.className = 'burbuja-mensaje balenzia';
+                burbujaRespuesta.textContent = 'Pensando... 🧶';
+                chatBalenzia.appendChild(burbujaRespuesta);
+                chatBalenzia.scrollTop = chatBalenzia.scrollHeight;
+
+                try {
+                    const catalogoActual = obtenerCatalogo();
+                    const respuesta = await fetch('/api/balenzia/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            mensaje: consulta,
+                            contextoCatalogo: catalogoActual 
+                        })
+                    });
+
+                    const data = await respuesta.json();
+                    burbujaRespuesta.textContent = data.respuesta || '¡Hola! Soy BalenzIA. ¿En qué amigurumi o detalle tejido te puedo asesorar hoy?';
+                } catch (error) {
+                    burbujaRespuesta.textContent = '¡Hola! Soy BalenzIA, la asistente virtual de Balenzaa. Puedes consultarme por nuestros Amigurumis, Llaveros, Ramos de Flores o pedirme sugerencias para personalizar un regalo tejido.';
+                }
+
+                chatBalenzia.scrollTop = chatBalenzia.scrollHeight;
             });
         }
     }
@@ -537,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="white-space: nowrap;">
                         <select class="select-cambio-estado" data-index="${index}" style="padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; cursor: pointer; background-color: #fff; width: auto; min-width: 130px;">
                             <option value="Pendiente" ${estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
-                            <option value="En elaboración" ${estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
+                            <option value="En elaboración" ${estado === 'En elaboration' || estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
                             <option value="Completado" ${estado === 'Completado' ? 'selected' : ''}>Completado</option>
                         </select>
                     </td>
