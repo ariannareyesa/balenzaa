@@ -97,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
         aplicarFiltrosCatalogo(productos);
     }
 
-    // Generar botones de filtro dinámicos y sincronizar select de pedidos
     function aplicarFiltrosCatalogo(productos) {
         const contenedorFiltros = document.getElementById('contenedor-filtros-catalogo');
 
@@ -112,9 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (contenedorFiltros) {
-            contenedorFiltros.innerHTML = `
-                <button class="boton-filtro activo" data-filtro="todos">Todos</button>
-            `;
+            contenedorFiltros.innerHTML = `<button class="boton-filtro activo" data-filtro="todos">Todos</button>`;
 
             categoriasSet.forEach(cat => {
                 const btn = document.createElement('button');
@@ -163,7 +160,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderizarCatalogoPublico();
 
-    // Subida de imagen de referencia en pedidos
+    function formatearFechaTexto(fechaIso) {
+        if (!fechaIso) return 'Por definir';
+        const partes = fechaIso.split('T')[0].split('-');
+        if (partes.length === 3) {
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+        return new Date(fechaIso).toLocaleDateString('es-EC');
+    }
+
+    function obtenerMesDeFecha(fechaIso) {
+        if (!fechaIso) return null;
+        const partes = fechaIso.split('T')[0].split('-');
+        return partes.length === 3 ? parseInt(partes[1], 10) : new Date(fechaIso).getMonth() + 1;
+    }
+
     const inputArchivoRef = document.getElementById('imagen-referencia-pedido');
     const textoNombreArchivo = document.getElementById('nombre-archivo-pedido');
 
@@ -181,26 +192,84 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. Envío del Formulario de Pedidos hacia MongoDB Atlas
+    // 2. Envío del Formulario de Pedidos
     const formPedido = document.getElementById('formulario-pedido');
     if (formPedido) {
         formPedido.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            const nombre = document.getElementById('nombre-cliente')?.value.trim();
-            const correo = document.getElementById('correo-cliente')?.value.trim();
-            const celular = document.getElementById('celular-cliente')?.value.trim();
-            const suscribir = document.getElementById('suscribir-newsletter')?.checked;
+            formPedido.querySelectorAll('.mensaje-error-campo').forEach(el => el.remove());
+            formPedido.querySelectorAll('input, select, textarea').forEach(input => {
+                input.style.borderColor = '';
+            });
+
+            const inputNombre = document.getElementById('nombre-cliente');
+            const inputCorreo = document.getElementById('correo-cliente');
+            const inputCelular = document.getElementById('celular-cliente');
+            const inputProducto = document.getElementById('tipo-producto');
+            const inputDetalles = document.getElementById('detalles-pedido');
+            const inputFecha = document.getElementById('fecha-entrega');
+
+            const nombre = inputNombre?.value.trim();
+            const correo = inputCorreo?.value.trim();
+            const celular = inputCelular?.value.trim();
+            const producto = inputProducto?.value;
+            const detalles = inputDetalles?.value.trim();
+            const fechaEntrega = inputFecha?.value;
+            const suscribir = document.getElementById('suscribir-newsletter')?.checked || false;
             const archivoReferencia = inputArchivoRef?.files[0];
+
+            function mostrarErrorCampo(inputEl, mensaje) {
+                if (!inputEl) return;
+                inputEl.style.borderColor = '#C93A5B';
+                
+                const errorTexto = document.createElement('span');
+                errorTexto.className = 'mensaje-error-campo';
+                errorTexto.style.cssText = 'color: #C93A5B; font-size: 0.8rem; font-weight: 600; margin-top: 4px; display: block;';
+                errorTexto.textContent = mensaje;
+                
+                inputEl.parentNode.appendChild(errorTexto);
+                inputEl.focus();
+            }
+
+            if (!nombre) {
+                mostrarErrorCampo(inputNombre, 'Por favor, ingresa tu nombre completo.');
+                return;
+            }
+
+            if (!correo || !correo.includes('@') || !correo.includes('.')) {
+                mostrarErrorCampo(inputCorreo, 'Por favor, ingresa un correo válido con @ y dominio.');
+                return;
+            }
+
+            if (!celular || celular.length < 8) {
+                mostrarErrorCampo(inputCelular, 'Por favor, ingresa un número de teléfono o WhatsApp válido.');
+                return;
+            }
+
+            if (!producto) {
+                mostrarErrorCampo(inputProducto, 'Selecciona una categoría o tipo de pieza.');
+                return;
+            }
+
+            if (!detalles) {
+                mostrarErrorCampo(inputDetalles, 'Por favor, cuéntanos detalles sobre tu encargo.');
+                return;
+            }
+
+            if (!fechaEntrega) {
+                mostrarErrorCampo(inputFecha, 'Selecciona la fecha para la que necesitas tu pedido.');
+                return;
+            }
 
             async function registrarPedido(imagenRefBase64 = null) {
                 const nuevoPedido = {
                     nombre,
                     correo,
                     celular,
-                    producto: document.getElementById('tipo-producto')?.value,
-                    detalles: document.getElementById('detalles-pedido')?.value,
-                    fechaEntrega: document.getElementById('fecha-entrega')?.value,
+                    producto,
+                    detalles,
+                    fechaEntrega,
                     imagenReferencia: imagenRefBase64,
                     suscritoClub: suscribir
                 };
@@ -215,18 +284,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const resultado = await respuesta.json();
 
                     if (respuesta.ok) {
-                        alert(`¡Gracias, ${nombre}! Tu encargo ha sido registrado en MongoDB Atlas con éxito.`);
+                        alert(`¡Gracias, ${nombre}! Tu encargo ha sido registrado con éxito.`);
                         formPedido.reset();
                         if (textoNombreArchivo) {
                             textoNombreArchivo.textContent = 'Ningún archivo seleccionado';
                             textoNombreArchivo.style.opacity = '0.75';
                         }
                     } else {
-                        alert(`Error al registrar encargo: ${resultado.error}`);
+                        alert(`Atención: ${resultado.error || 'Error al registrar pedido'}`);
                     }
                 } catch (error) {
                     console.error('Error al conectar con el servidor:', error);
-                    alert('Hubo un error de conexión al enviar el pedido.');
+                    alert('Hubo un error de conexión al enviar el pedido. Intenta nuevamente.');
                 }
             }
 
@@ -250,9 +319,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const botonSalir = document.getElementById('boton-cerrar-sesion');
     const botonToggleAgenda = document.getElementById('boton-toggle-agenda');
     const cuerpoTablaPedidos = document.getElementById('cuerpo-tabla-pedidos');
-    const formNuevaPieza = document.getElementById('formulario-nueva-pieza') || document.getElementById('formulario-nuevo-producto');
+    const contenedorCatalogoAdmin = document.getElementById('contenedor-catalogo-admin');
 
-    // Modales
     const modalFoto = document.getElementById('modal-foto-referencia');
     const imgModal = document.getElementById('img-modal-referencia');
     const btnCerrarModal = document.getElementById('cerrar-modal-foto');
@@ -264,7 +332,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Métricas
     const elPendientes = document.getElementById('total-pendientes');
     const elElaboracion = document.getElementById('total-elaboracion');
     const elCompletados = document.getElementById('total-completados');
@@ -288,7 +355,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const agendaGuardadaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
     actualizarVisualAgenda(agendaGuardadaCerrada);
 
-    // Formatear segundos a formato HH:MM:SS
     function formatearTiempo(totalSegundos) {
         const seg = parseInt(totalSegundos) || 0;
         const horas = Math.floor(seg / 3600);
@@ -297,41 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return [horas, minutos, segundos]
             .map(v => v < 10 ? '0' + v : v)
             .join(':');
-    }
-
-    // Exportar suscriptores del Club Balenzaa
-    async function exportarClubCSV() {
-        let pedidos = [];
-        try {
-            const res = await fetch('/api/pedidos');
-            if (res.ok) pedidos = await res.json();
-        } catch (err) {
-            pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
-        }
-
-        const suscriptores = pedidos.filter(p => p.suscritoClub && p.correo);
-
-        if (suscriptores.length === 0) {
-            alert('Aún no hay suscriptores registrados en el Club Balenzaa.');
-            return;
-        }
-
-        const filas = [['Nombre', 'Correo', 'Celular', 'Fecha de Registro']];
-        suscriptores.forEach(s => {
-            filas.push([
-                `"${(s.nombre || '').replace(/"/g, '""')}"`,
-                `"${(s.correo || '').replace(/"/g, '""')}"`,
-                `"${(s.celular || '').replace(/"/g, '""')}"`,
-                `"${s.fechaCreacion ? new Date(s.fechaCreacion).toLocaleDateString('es-EC') : ''}"`
-            ]);
-        });
-
-        const csvContenido = '\uFEFF' + filas.map(f => f.join(',')).join('\n');
-        const blob = new Blob([csvContenido], { type: 'text/csv;charset=utf-8;' });
-        const enlace = document.createElement('a');
-        enlace.href = URL.createObjectURL(blob);
-        enlace.download = `club_balenzaa_${new Date().toISOString().slice(0, 10)}.csv`;
-        enlace.click();
     }
 
     let filtroMesSeleccionado = 'todos';
@@ -352,18 +383,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <label for="filtro-mes-pedidos" style="font-size: 0.85rem; font-weight: 600; margin: 0;">Mes:</label>
                     <select id="filtro-mes-pedidos" style="padding: 5px 10px; border-radius: 10px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; background: #fff; width: auto;">
                         <option value="todos">Todos los meses</option>
-                        <option value="1">Enero</option>
-                        <option value="2">Febrero</option>
-                        <option value="3">Marzo</option>
-                        <option value="4">Abril</option>
-                        <option value="5">Mayo</option>
-                        <option value="6">Junio</option>
-                        <option value="7">Julio</option>
-                        <option value="8">Agosto</option>
-                        <option value="9">Septiembre</option>
-                        <option value="10">Octubre</option>
-                        <option value="11">Noviembre</option>
-                        <option value="12">Diciembre</option>
+                        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                        <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                        <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
                     </select>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -373,10 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </select>
                 </div>
             </div>
-
-            <button id="btn-exportar-club-csv" title="Descargar lista de miembros del Club Balenzaa en CSV" style="background-color: var(--rosa); color: white; border: none; padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: transform 0.15s ease;">
-                Exportar Club CSV
-            </button>
         `;
 
         const tabla = seccionGestion.querySelector('.contenedor-tabla');
@@ -384,21 +403,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const selMes = document.getElementById('filtro-mes-pedidos');
         const selTipo = document.getElementById('filtro-tipo-pedidos');
-        const btnCSV = document.getElementById('btn-exportar-club-csv');
 
-        selMes.addEventListener('change', (e) => {
+        if (selMes) selMes.addEventListener('change', (e) => {
             filtroMesSeleccionado = e.target.value;
             renderizarPedidos();
         });
 
-        selTipo.addEventListener('change', (e) => {
+        if (selTipo) selTipo.addEventListener('change', (e) => {
             filtroTipoSeleccionado = e.target.value;
             renderizarPedidos();
         });
-
-        if (btnCSV) {
-            btnCSV.addEventListener('click', exportarClubCSV);
-        }
     }
 
     function actualizarOpcionesTipoPieza(pedidos) {
@@ -424,13 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function obtenerMesDeFecha(fecha) {
-        if (!fecha) return null;
-        const d = new Date(fecha);
-        return isNaN(d.getTime()) ? null : d.getMonth() + 1;
-    }
-
-    // Renderizar Pedidos consultando MongoDB Atlas
+    // Renderizar Pedidos con Cronómetro
     async function renderizarPedidos() {
         if (!cuerpoTablaPedidos) return;
         inyectarControlesFiltro();
@@ -442,8 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 pedidos = await respuesta.json();
             }
         } catch (error) {
-            console.error('Error al obtener pedidos de MongoDB:', error);
-            pedidos = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
+            console.error('Error al obtener pedidos:', error);
         }
 
         actualizarOpcionesTipoPieza(pedidos);
@@ -468,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (pedidosFiltrados.length === 0) {
-            cuerpoTablaPedidos.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 1.5rem; color: var(--tinta);">No se encontraron encargos para los filtros seleccionados.</td></tr>';
+            cuerpoTablaPedidos.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 1.5rem; color: var(--tinta);">No se encontraron encargos.</td></tr>';
         } else {
             pedidosFiltrados.forEach((p) => {
                 const idPedido = p._id || p.indexOriginal;
@@ -487,8 +494,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const tiempoFormateado = formatearTiempo(p.segundosTejidos || 0);
                 const activo = p.cronometroActivo || false;
-                const fechaCreacionTexto = p.fechaCreacion ? new Date(p.fechaCreacion).toLocaleDateString('es-EC') : 'Hoy';
-                const fechaEntregaTexto = p.fechaEntrega ? new Date(p.fechaEntrega).toLocaleDateString('es-EC') : 'Por definir';
+                const fechaCreacionTexto = p.fechaCreacion ? formatearFechaTexto(p.fechaCreacion) : 'Hoy';
+                const fechaEntregaTexto = p.fechaEntrega ? formatearFechaTexto(p.fechaEntrega) : 'Por definir';
 
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
@@ -543,7 +550,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elCompletados) elCompletados.textContent = completados;
         if (elIngresos) elIngresos.textContent = `$${totalCobrado.toFixed(2)}`;
 
-        // Eventos generales de la tabla
         document.querySelectorAll('.boton-ver-foto-ref').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
@@ -605,25 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- GESTIÓN VISUAL DEL CATÁLOGO EN ADMIN ---
-    const contenedorCatalogoAdmin = document.getElementById('contenedor-catalogo-admin');
-    const selectCategoria = document.getElementById('nueva-categoria-producto') || document.getElementById('categoria-nueva-pieza');
-    const inputOtraCat = document.getElementById('input-otra-categoria') || document.getElementById('input-categoria-personalizada');
-
-    if (selectCategoria && inputOtraCat) {
-        selectCategoria.addEventListener('change', (e) => {
-            if (e.target.value === '__nueva__') {
-                inputOtraCat.style.display = 'block';
-                inputOtraCat.required = true;
-                inputOtraCat.focus();
-            } else {
-                inputOtraCat.style.display = 'none';
-                inputOtraCat.required = false;
-                inputOtraCat.value = '';
-            }
-        });
-    }
-
+    // Renderizar Productos Editables en el Panel Admin
     async function renderizarCatalogoAdmin() {
         if (!contenedorCatalogoAdmin) return;
         const productos = await obtenerCatalogo();
@@ -648,10 +636,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="etiqueta-categoria">${prod.categoria}</span>
                 </div>
                 <div class="info-producto" style="display: flex; flex-direction: column; gap: 0.4rem;">
-                    <h3 class="nombre-producto editable-item" contenteditable="true" data-index="${index}" data-campo="nombre" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px;">
+                    <h3 class="nombre-producto editable-item" contenteditable="true" data-index="${index}" data-campo="nombre" title="Haz clic para editar el nombre" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px;">
                         ${prod.nombre}
                     </h3>
-                    <p class="descripcion-producto editable-item" contenteditable="true" data-index="${index}" data-campo="descripcion" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px; min-height: 40px;">
+                    <p class="descripcion-producto editable-item" contenteditable="true" data-index="${index}" data-campo="descripcion" title="Haz clic para editar la descripción" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px; min-height: 40px;">
                         ${prod.descripcion}
                     </p>
                     <div class="pie-tarjeta" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
@@ -662,9 +650,55 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             contenedorCatalogoAdmin.appendChild(card);
         });
+
+        // Eventos para edicion de nombre y descripcion
+        document.querySelectorAll('.editable-item').forEach(el => {
+            el.addEventListener('focus', (e) => {
+                e.target.style.backgroundColor = '#FFF7FA';
+                e.target.style.borderColor = 'var(--rosa)';
+            });
+            el.addEventListener('blur', async (e) => {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.borderColor = 'transparent';
+                const i = e.target.dataset.index;
+                const campo = e.target.dataset.campo;
+                const valor = e.target.innerText.trim();
+                const prods = await obtenerCatalogo();
+                prods[i][campo] = valor;
+                localStorage.setItem('balenzaa_catalogo', JSON.stringify(prods));
+                renderizarCatalogoPublico();
+            });
+        });
+
+        // Evento para edicion de precio
+        document.querySelectorAll('.input-precio-producto').forEach(inp => {
+            inp.addEventListener('change', async (e) => {
+                const i = e.target.dataset.index;
+                const nuevoPrecio = parseFloat(e.target.value) || 0;
+                const prods = await obtenerCatalogo();
+                prods[i].precio = nuevoPrecio.toFixed(2);
+                localStorage.setItem('balenzaa_catalogo', JSON.stringify(prods));
+                renderizarCatalogoPublico();
+            });
+        });
+
+        // Evento para eliminar producto
+        document.querySelectorAll('.boton-eliminar-producto').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const i = e.target.dataset.index;
+                const prods = await obtenerCatalogo();
+                const confirma = confirm(`¿Estás segura de eliminar "${prods[i].nombre}" del catálogo?`);
+                if (confirma) {
+                    prods.splice(i, 1);
+                    localStorage.setItem('balenzaa_catalogo', JSON.stringify(prods));
+                    renderizarCatalogoAdmin();
+                    renderizarCatalogoPublico();
+                }
+            });
+        });
     }
 
-    // --- AUTENTICACIÓN Y SESIÓN ADMIN ---
+    // Autenticación Admin
     const tokenGuardado = localStorage.getItem('balenzaa_token');
     if (tokenGuardado && seccionLoginAdmin && panelContenido) {
         seccionLoginAdmin.style.display = 'none';
