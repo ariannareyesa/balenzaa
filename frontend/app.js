@@ -254,9 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const suscribir = document.getElementById('suscribir-newsletter')?.checked;
             const archivoReferencia = inputArchivoRef?.files[0];
 
-            function registrarPedido(imagenRefBase64 = null) {
+            async function registrarPedido(imagenRefBase64 = null) {
                 const nuevoPedido = {
-                    id: Date.now(),
                     nombre,
                     correo,
                     celular,
@@ -264,22 +263,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     detalles: document.getElementById('detalles-pedido')?.value,
                     fechaEntrega: document.getElementById('fecha-entrega')?.value,
                     imagenReferencia: imagenRefBase64,
-                    suscritoClub: suscribir,
-                    fechaCreacion: new Date().toLocaleDateString('es-EC'),
-                    segundosTejidos: 0,
-                    cronometroActivo: false
+                    suscritoClub: suscribir
                 };
 
-                const pedidosGuardados = JSON.parse(localStorage.getItem('balenzaa_pedidos') || '[]');
-                pedidosGuardados.push(nuevoPedido);
-                localStorage.setItem('balenzaa_pedidos', JSON.stringify(pedidosGuardados));
+                try {
+                    const respuesta = await fetch('/api/pedidos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(nuevoPedido)
+                    });
 
-                alert(`Gracias, ${nombre}! Tu encargo ha sido registrado con exito en Balenzaa.` + (suscribir ? ' Te has sumado al Club Balenzaa' : ''));
-                formPedido.reset();
-                if (textoNombreArchivo) {
-                    textoNombreArchivo.textContent = 'Ningun archivo seleccionado';
-                    textoNombreArchivo.style.opacity = '0.75';
-                    textoNombreArchivo.style.fontWeight = 'normal';
+                    const resultado = await respuesta.json();
+
+                    if (respuesta.ok) {
+                        alert(`¡Gracias, ${nombre}! Tu encargo ha sido registrado en MongoDB Atlas con éxito.`);
+                        formPedido.reset();
+                        if (textoNombreArchivo) {
+                            textoNombreArchivo.textContent = 'Ningún archivo seleccionado';
+                            textoNombreArchivo.style.opacity = '0.75';
+                        }
+                    } else {
+                        alert(`Error al registrar encargo: ${resultado.error}`);
+                    }
+                } catch (error) {
+                    console.error('Error al conectar con el servidor:', error);
+                    alert('Hubo un error de conexión al enviar el pedido.');
                 }
             }
 
