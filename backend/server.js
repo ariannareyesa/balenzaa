@@ -12,7 +12,6 @@ const Producto = require('./models/Producto');
 const Usuario = require('./models/Usuario');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middlewares
 app.use(cors());
@@ -22,31 +21,35 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Servir frontend estático de forma dinámica para Vercel/Local
 app.use(express.static(path.resolve(__dirname, '../frontend')));
 
-// Conexión a MongoDB Atlas
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Conectado exitosamente a MongoDB Atlas'))
-  .catch((err) => console.error('Error al conectar a MongoDB:', err));
+// Caché de conexión a MongoDB para Serverless (Vercel)
+let cachedDb = null;
 
-// Middleware de seguridad JWT para proteger rutas privadas
-function verificarToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Acceso denegado. Token no proporcionado.' });
+async function conectarDB() {
+    if (cachedDb && mongoose.connection.readyState === 1) {
+        return cachedDb;
     }
-
     try {
-        const verificado = jwt.verify(token, process.env.JWT_SECRET);
-        req.usuario = verificado;
-        next();
-    } catch (error) {
-        res.status(403).json({ error: 'Token inválido o expirado.' });
+        const db = await mongoose.connect(process.env.MONGODB_URI);
+        cachedDb = db;
+        console.log('Conectado exitosamente a MongoDB Atlas');
+        return db;
+    } catch (err) {
+        console.error('Error al conectar a MongoDB:', err);
+        throw err;
     }
 }
 
-// RUTA AUTENTICACIÓN ADMIN
+// Middleware para asegurar conexión a la BD en cada petición si es necesario
+app.use(async (req, res, next) => {
+    try {
+        await conectarDB();
+        next();
+    } catch (error) {
+        res.status(500).json({ error: 'Error de conexión con la base de datos.' });
+    }
+});
 
+// RUTA AUTENTICACIÓN ADMIN
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { usuario, clave } = req.body;
@@ -80,7 +83,6 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // RUTAS API PEDIDOS
-
 app.post('/api/pedidos', async (req, res) => {
     try {
         const nuevoPedido = new Pedido(req.body);
@@ -120,7 +122,6 @@ app.delete('/api/pedidos/:id', async (req, res) => {
 });
 
 // RUTAS API PRODUCTOS (CATÁLOGO)
-
 app.get('/api/productos', async (req, res) => {
     try {
         const productos = await Producto.find().sort({ createdAt: -1 });
@@ -167,9 +168,12 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.resolve(__dirname, '../frontend/admin.html'));
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+// Iniciar servidor localmente si no estamos en Vercel
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    });
+}
 
 module.exports = app;
