@@ -553,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="white-space: nowrap;">
                         <select class="select-cambio-estado" data-id="${idPedido}" style="padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; cursor: pointer; background-color: #fff; width: auto; min-width: 130px;">
                             <option value="Pendiente" ${estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
-                            <option value="En elaboración" ${estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
+                            <option value="En elaboración" ${estado === 'En elaboration' || estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
                             <option value="Completado" ${estado === 'Completado' ? 'selected' : ''}>Completado</option>
                         </select>
                     </td>
@@ -755,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Formulario para agregar una nueva pieza al catálogo en MongoDB (Enlazado a IDs exactos de admin.html)
+    // Formulario para agregar una nueva pieza al catálogo en MongoDB
     const formNuevaPieza = document.getElementById('formulario-nuevo-producto');
     if (formNuevaPieza) {
         formNuevaPieza.addEventListener('submit', async (e) => {
@@ -770,7 +770,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const nombre = elNombre ? elNombre.value.trim() : '';
 
-            // Limpieza del precio: quita signo $ y convierte a número
             let rawPrecio = elPrecio ? elPrecio.value.replace(/[^0-9.]/g, '') : '0';
             const precio = parseFloat(rawPrecio) || 0;
 
@@ -836,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Autenticación Admin
+    // 3. Autenticación Admin con JWT Real (MongoDB Atlas)
     const tokenGuardado = localStorage.getItem('balenzaa_token');
     if (tokenGuardado && seccionLoginAdmin && panelContenido) {
         seccionLoginAdmin.style.display = 'none';
@@ -851,16 +850,43 @@ document.addEventListener('DOMContentLoaded', () => {
             const usuario = document.getElementById('usuario-admin').value.trim();
             const clave = document.getElementById('clave-admin').value.trim();
 
-            if (usuario && clave) {
-                localStorage.setItem('balenzaa_token', 'token-local-dev');
-                seccionLoginAdmin.style.display = 'none';
-                panelContenido.style.display = 'block';
-                if (errorLogin) errorLogin.style.display = 'none';
-                renderizarPedidos();
-                renderizarCatalogoAdmin();
-            } else if (errorLogin) {
-                errorLogin.textContent = 'Por favor completa todos los campos.';
-                errorLogin.style.display = 'block';
+            if (!usuario || !clave) {
+                if (errorLogin) {
+                    errorLogin.textContent = 'Por favor completa todos los campos.';
+                    errorLogin.style.display = 'block';
+                }
+                return;
+            }
+
+            try {
+                const respuesta = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, clave })
+                });
+
+                const datos = await respuesta.json();
+
+                if (respuesta.ok) {
+                    // Guardar JWT real
+                    localStorage.setItem('balenzaa_token', datos.token);
+                    seccionLoginAdmin.style.display = 'none';
+                    panelContenido.style.display = 'block';
+                    if (errorLogin) errorLogin.style.display = 'none';
+                    renderizarPedidos();
+                    renderizarCatalogoAdmin();
+                } else {
+                    if (errorLogin) {
+                        errorLogin.textContent = datos.error || 'Credenciales incorrectas.';
+                        errorLogin.style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Error al iniciar sesión:', error);
+                if (errorLogin) {
+                    errorLogin.textContent = 'Error al conectar con el servidor.';
+                    errorLogin.style.display = 'block';
+                }
             }
         });
     }
