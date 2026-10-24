@@ -19,8 +19,8 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Servir frontend estático
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Servir frontend estático de forma dinámica para Vercel/Local
+app.use(express.static(path.resolve(__dirname, '../frontend')));
 
 // Conexión a MongoDB Atlas
 mongoose.connect(process.env.MONGODB_URI)
@@ -158,16 +158,18 @@ app.delete('/api/productos/:id', async (req, res) => {
     }
 });
 
-// Servir páginas frontend
+// Servir páginas frontend dinámicamente
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+  res.sendFile(path.resolve(__dirname, '../frontend/index.html'));
 });
 
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/admin.html'));
+  res.sendFile(path.resolve(__dirname, '../frontend/admin.html'));
 });
 
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+module.exports = app;
