@@ -175,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return partes.length === 3 ? parseInt(partes[1], 10) : new Date(fechaIso).getMonth() + 1;
     }
 
+    // Indicador visual de archivo en formulario de pedidos
     const inputArchivoRef = document.getElementById('imagen-referencia-pedido');
     const textoNombreArchivo = document.getElementById('nombre-archivo-pedido');
 
@@ -188,6 +189,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 textoNombreArchivo.textContent = 'Ningún archivo seleccionado';
                 textoNombreArchivo.style.opacity = '0.75';
                 textoNombreArchivo.style.fontWeight = 'normal';
+            }
+        });
+    }
+
+    // Indicador visual de archivo en formulario de nueva pieza (Admin)
+    const inputFotoPieza = document.getElementById('foto-nueva-pieza') || document.getElementById('imagen-nueva-pieza') || document.querySelector('#formulario-nueva-pieza input[type="file"]') || document.querySelector('#formulario-nuevo-producto input[type="file"]');
+    const textoFotoPieza = document.getElementById('nombre-archivo-pieza') || document.getElementById('nombre-archivo-producto') || inputFotoPieza?.parentNode?.querySelector('span');
+
+    if (inputFotoPieza && textoFotoPieza) {
+        inputFotoPieza.addEventListener('change', () => {
+            if (inputFotoPieza.files && inputFotoPieza.files.length > 0) {
+                textoFotoPieza.textContent = inputFotoPieza.files[0].name;
+                textoFotoPieza.style.opacity = '1';
+                textoFotoPieza.style.fontWeight = '600';
+            } else {
+                textoFotoPieza.textContent = 'Ningún archivo seleccionado';
+                textoFotoPieza.style.opacity = '0.75';
+                textoFotoPieza.style.fontWeight = 'normal';
             }
         });
     }
@@ -519,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="white-space: nowrap;">
                         <select class="select-cambio-estado" data-id="${idPedido}" style="padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; cursor: pointer; background-color: #fff; width: auto; min-width: 130px;">
                             <option value="Pendiente" ${estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
-                            <option value="En elaboración" ${estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
+                            <option value="En elaboración" ${estado === 'En elaboration' ? 'selected' : ''}>En elaboración</option>
                             <option value="Completado" ${estado === 'Completado' ? 'selected' : ''}>Completado</option>
                         </select>
                     </td>
@@ -611,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Renderizar Productos Editables en el Panel Admin
+    // Renderizar Productos Editables en el Panel Admin (Conectado a MongoDB)
     async function renderizarCatalogoAdmin() {
         if (!contenedorCatalogoAdmin) return;
         const productos = await obtenerCatalogo();
@@ -622,13 +641,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        productos.forEach((prod, index) => {
+        productos.forEach((prod) => {
+            const idProd = prod._id;
             const card = document.createElement('article');
             card.className = 'tarjeta-producto';
             card.style.position = 'relative';
 
             card.innerHTML = `
-                <button class="boton-eliminar-producto" data-index="${index}" title="Eliminar pieza" style="position: absolute; top: 10px; right: 10px; z-index: 10; background: white; border: none; border-radius: 50%; width: 28px; height: 28px; color: #C93A5B; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">
+                <button class="boton-eliminar-producto" data-id="${idProd}" title="Eliminar pieza" style="position: absolute; top: 10px; right: 10px; z-index: 10; background: white; border: none; border-radius: 50%; width: 28px; height: 28px; color: #C93A5B; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">
                     ✕
                 </button>
                 <div class="imagen-producto">
@@ -636,22 +656,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="etiqueta-categoria">${prod.categoria}</span>
                 </div>
                 <div class="info-producto" style="display: flex; flex-direction: column; gap: 0.4rem;">
-                    <h3 class="nombre-producto editable-item" contenteditable="true" data-index="${index}" data-campo="nombre" title="Haz clic para editar el nombre" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px;">
+                    <h3 class="nombre-producto editable-item" contenteditable="true" data-id="${idProd}" data-campo="nombre" title="Haz clic para editar el nombre" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px;">
                         ${prod.nombre}
                     </h3>
-                    <p class="descripcion-producto editable-item" contenteditable="true" data-index="${index}" data-campo="descripcion" title="Haz clic para editar la descripción" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px; min-height: 40px;">
+                    <p class="descripcion-producto editable-item" contenteditable="true" data-id="${idProd}" data-campo="descripcion" title="Haz clic para editar la descripción" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px; min-height: 40px;">
                         ${prod.descripcion}
                     </p>
                     <div class="pie-tarjeta" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
                         <span style="font-size: 0.85rem; font-weight: 600;">Precio (USD):</span>
-                        <input type="number" step="0.50" min="0" class="input-precio-producto" data-index="${index}" value="${parseFloat(prod.precio || 0).toFixed(2)}" style="width: 85px; padding: 4px 6px; border: 1.5px solid var(--rosa-claro); border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.9rem; background: #fff;">
+                        <input type="number" step="0.50" min="0" class="input-precio-producto" data-id="${idProd}" value="${parseFloat(prod.precio || 0).toFixed(2)}" style="width: 85px; padding: 4px 6px; border: 1.5px solid var(--rosa-claro); border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.9rem; background: #fff;">
                     </div>
                 </div>
             `;
             contenedorCatalogoAdmin.appendChild(card);
         });
 
-        // Eventos para edicion de nombre y descripcion
+        // Eventos para edición de nombre y descripción
         document.querySelectorAll('.editable-item').forEach(el => {
             el.addEventListener('focus', (e) => {
                 e.target.style.backgroundColor = '#FFF7FA';
@@ -660,41 +680,137 @@ document.addEventListener('DOMContentLoaded', () => {
             el.addEventListener('blur', async (e) => {
                 e.target.style.backgroundColor = 'transparent';
                 e.target.style.borderColor = 'transparent';
-                const i = e.target.dataset.index;
+                const id = e.target.dataset.id;
                 const campo = e.target.dataset.campo;
                 const valor = e.target.innerText.trim();
-                const prods = await obtenerCatalogo();
-                prods[i][campo] = valor;
-                localStorage.setItem('balenzaa_catalogo', JSON.stringify(prods));
-                renderizarCatalogoPublico();
-            });
-        });
 
-        // Evento para edicion de precio
-        document.querySelectorAll('.input-precio-producto').forEach(inp => {
-            inp.addEventListener('change', async (e) => {
-                const i = e.target.dataset.index;
-                const nuevoPrecio = parseFloat(e.target.value) || 0;
-                const prods = await obtenerCatalogo();
-                prods[i].precio = nuevoPrecio.toFixed(2);
-                localStorage.setItem('balenzaa_catalogo', JSON.stringify(prods));
-                renderizarCatalogoPublico();
-            });
-        });
+                if (!id) return;
 
-        // Evento para eliminar producto
-        document.querySelectorAll('.boton-eliminar-producto').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const i = e.target.dataset.index;
-                const prods = await obtenerCatalogo();
-                const confirma = confirm(`¿Estás segura de eliminar "${prods[i].nombre}" del catálogo?`);
-                if (confirma) {
-                    prods.splice(i, 1);
-                    localStorage.setItem('balenzaa_catalogo', JSON.stringify(prods));
-                    renderizarCatalogoAdmin();
+                try {
+                    await fetch(`/api/productos/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ [campo]: valor })
+                    });
                     renderizarCatalogoPublico();
+                } catch (err) {
+                    console.error('Error al actualizar producto:', err);
                 }
             });
+        });
+
+        // Evento para edición de precio
+        document.querySelectorAll('.input-precio-producto').forEach(inp => {
+            inp.addEventListener('change', async (e) => {
+                const id = e.target.dataset.id;
+                const nuevoPrecio = parseFloat(e.target.value) || 0;
+
+                if (!id) return;
+
+                try {
+                    await fetch(`/api/productos/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ precio: nuevoPrecio })
+                    });
+                    renderizarCatalogoPublico();
+                } catch (err) {
+                    console.error('Error al actualizar precio:', err);
+                }
+            });
+        });
+
+        // Evento para eliminar producto de MongoDB
+        document.querySelectorAll('.boton-eliminar-producto').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = e.target.dataset.id;
+                if (!id) return;
+
+                const confirma = confirm('¿Estás segura de eliminar esta pieza del catálogo?');
+                if (confirma) {
+                    try {
+                        await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+                        renderizarCatalogoAdmin();
+                        renderizarCatalogoPublico();
+                    } catch (err) {
+                        console.error('Error al eliminar producto:', err);
+                    }
+                }
+            });
+        });
+    }
+
+    // Formulario para agregar una nueva pieza al catálogo en MongoDB
+    const formNuevaPieza = document.getElementById('formulario-nueva-pieza') || document.getElementById('formulario-nuevo-producto');
+    if (formNuevaPieza) {
+        formNuevaPieza.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const inputNombre = document.getElementById('nombre-nueva-pieza') || document.getElementById('nombre-nuevo-producto') || document.getElementById('nombre-pieza');
+            const selectCat = document.getElementById('nueva-categoria-producto') || document.getElementById('categoria-nueva-pieza') || document.getElementById('categoria-pieza');
+            const inputOtraCat = document.getElementById('input-otra-categoria') || document.getElementById('input-categoria-personalizada');
+            const inputPrecio = document.getElementById('precio-nueva-pieza') || document.getElementById('precio-nuevo-producto') || document.getElementById('precio-pieza');
+            const inputDesc = document.getElementById('descripcion-nueva-pieza') || document.getElementById('descripcion-nuevo-producto') || document.getElementById('descripcion-pieza');
+            const inputFoto = document.getElementById('foto-nueva-pieza') || document.getElementById('imagen-nueva-pieza') || formNuevaPieza.querySelector('input[type="file"]');
+
+            const nombre = inputNombre?.value.trim();
+            let categoria = selectCat?.value;
+            if (categoria === '__nueva__' && inputOtraCat?.value.trim()) {
+                categoria = inputOtraCat.value.trim();
+            }
+            const precio = parseFloat(inputPrecio?.value) || 0;
+            const descripcion = inputDesc?.value.trim() || '';
+
+            if (!nombre || !categoria || precio <= 0) {
+                alert('Por favor completa el nombre, la categoría y un precio válido.');
+                return;
+            }
+
+            async function enviarAProductos(imagenBase64 = 'images/amigurumi.jpg') {
+                const nuevoProducto = {
+                    nombre,
+                    categoria,
+                    precio,
+                    descripcion,
+                    imagen: imagenBase64
+                };
+
+                try {
+                    const respuesta = await fetch('/api/productos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(nuevoProducto)
+                    });
+
+                    if (respuesta.ok) {
+                        alert('¡Pieza agregada con éxito al catálogo!');
+                        formNuevaPieza.reset();
+                        if (inputOtraCat) inputOtraCat.style.display = 'none';
+                        if (textoFotoPieza) {
+                            textoFotoPieza.textContent = 'Ningún archivo seleccionado';
+                            textoFotoPieza.style.opacity = '0.75';
+                        }
+                        renderizarCatalogoAdmin();
+                        renderizarCatalogoPublico();
+                    } else {
+                        alert('Error al guardar el producto en la base de datos.');
+                    }
+                } catch (err) {
+                    console.error('Error al enviar producto:', err);
+                    alert('Ocurrió un error al conectar con el servidor.');
+                }
+            }
+
+            const archivoFoto = inputFoto?.files ? inputFoto.files[0] : null;
+            if (archivoFoto) {
+                const lector = new FileReader();
+                lector.onload = function (evento) {
+                    enviarAProductos(evento.target.result);
+                };
+                lector.readAsDataURL(archivoFoto);
+            } else {
+                enviarAProductos('images/amigurumi.jpg');
+            }
         });
     }
 
