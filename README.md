@@ -27,19 +27,19 @@ Plataforma web full-stack desarrollada para Balenzaa, un emprendimiento artesana
 
 ## Arquitectura del Proyecto
 
-balenzaa/
-├── backend/
-│   ├── models/             # Esquemas de Mongoose (Pedido, Producto, Usuario)
-│   ├── crearAdmin.js       # Script de creación inicial de administrador
-│   ├── server.js           # Servidor Express & conexión Mongoose
-│   └── package.json
-├── frontend/
-│   ├── admin.html          # Panel de administración
-│   ├── app.js              # Lógica de cliente y peticiones API
-│   ├── index.html          # Tienda pública
-│   ├── styles.css          # Estilos y diseño responsivo
-│   └── images/             # Recursos gráficos
-└── README.md
+- balenzaa/
+  - backend/
+    - models/ (Esquemas de Mongoose: Pedido, Producto, Usuario)
+    - crearAdmin.js (Script de creación inicial de administrador)
+    - server.js (Servidor Express & conexión Mongoose)
+    - package.json
+  - frontend/
+    - admin.html (Panel de administración)
+    - app.js (Lógica de cliente y peticiones API)
+    - index.html (Tienda pública)
+    - styles.css (Estilos y diseño responsivo)
+    - images/ (Recursos gráficos)
+  - README.md
 
 ---
 
@@ -65,13 +65,13 @@ cd balenzaa/backend
 npm install
 
 ### 2. Variables de Entorno (.env)
-Crea un archivo .env dentro de la carpeta backend/ con esta estructura:
+Crea un archivo .env dentro de la carpeta backend/ configurando los siguientes parámetros:
 
-PORT=3000
-MONGODB_URI=tu_cadena_de_conexion_mongodb
-JWT_SECRET=tu_clave_secreta_jwt
-ADMIN_USER=tu_usuario_admin
-ADMIN_PASS=tu_clave_admin
+- PORT=3000
+- MONGODB_URI=tu_cadena_de_conexion_mongodb
+- JWT_SECRET=tu_clave_secreta_jwt
+- ADMIN_USER=tu_usuario_admin
+- ADMIN_PASS=tu_clave_admin
 
 ### 3. Crear usuario administrador e iniciar
 
