@@ -194,8 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Indicador visual de archivo en formulario de nueva pieza (Admin)
-    const inputFotoPieza = document.getElementById('foto-nueva-pieza') || document.getElementById('imagen-nueva-pieza') || document.querySelector('#formulario-nueva-pieza input[type="file"]') || document.querySelector('#formulario-nuevo-producto input[type="file"]');
-    const textoFotoPieza = document.getElementById('nombre-archivo-pieza') || document.getElementById('nombre-archivo-producto') || inputFotoPieza?.parentNode?.querySelector('span');
+    const inputFotoPieza = document.getElementById('imagen-producto-admin');
+    const textoFotoPieza = document.getElementById('nombre-foto-admin');
 
     if (inputFotoPieza && textoFotoPieza) {
         inputFotoPieza.addEventListener('change', () => {
@@ -207,6 +207,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 textoFotoPieza.textContent = 'Ningún archivo seleccionado';
                 textoFotoPieza.style.opacity = '0.75';
                 textoFotoPieza.style.fontWeight = 'normal';
+            }
+        });
+    }
+
+    // Mostrar/ocultar input para nueva categoría en admin
+    const selectCatAdmin = document.getElementById('nueva-categoria-producto');
+    const inputOtraCatAdmin = document.getElementById('input-otra-categoria');
+
+    if (selectCatAdmin && inputOtraCatAdmin) {
+        selectCatAdmin.addEventListener('change', () => {
+            if (selectCatAdmin.value === '__nueva__') {
+                inputOtraCatAdmin.style.display = 'block';
+                inputOtraCatAdmin.focus();
+            } else {
+                inputOtraCatAdmin.style.display = 'none';
             }
         });
     }
@@ -538,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="white-space: nowrap;">
                         <select class="select-cambio-estado" data-id="${idPedido}" style="padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; cursor: pointer; background-color: #fff; width: auto; min-width: 130px;">
                             <option value="Pendiente" ${estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
-                            <option value="En elaboración" ${estado === 'En elaboration' ? 'selected' : ''}>En elaboración</option>
+                            <option value="En elaboración" ${estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
                             <option value="Completado" ${estado === 'Completado' ? 'selected' : ''}>Completado</option>
                         </select>
                     </td>
@@ -740,29 +755,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Formulario para agregar una nueva pieza al catálogo en MongoDB
-    const formNuevaPieza = document.getElementById('formulario-nueva-pieza') || document.getElementById('formulario-nuevo-producto');
+    // Formulario para agregar una nueva pieza al catálogo en MongoDB (Enlazado a IDs exactos de admin.html)
+    const formNuevaPieza = document.getElementById('formulario-nuevo-producto');
     if (formNuevaPieza) {
         formNuevaPieza.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const inputNombre = document.getElementById('nombre-nueva-pieza') || document.getElementById('nombre-nuevo-producto') || document.getElementById('nombre-pieza');
-            const selectCat = document.getElementById('nueva-categoria-producto') || document.getElementById('categoria-nueva-pieza') || document.getElementById('categoria-pieza');
-            const inputOtraCat = document.getElementById('input-otra-categoria') || document.getElementById('input-categoria-personalizada');
-            const inputPrecio = document.getElementById('precio-nueva-pieza') || document.getElementById('precio-nuevo-producto') || document.getElementById('precio-pieza');
-            const inputDesc = document.getElementById('descripcion-nueva-pieza') || document.getElementById('descripcion-nuevo-producto') || document.getElementById('descripcion-pieza');
-            const inputFoto = document.getElementById('foto-nueva-pieza') || document.getElementById('imagen-nueva-pieza') || formNuevaPieza.querySelector('input[type="file"]');
+            const elNombre = document.getElementById('nuevo-nombre-producto');
+            const elSelectCat = document.getElementById('nueva-categoria-producto');
+            const elOtraCat = document.getElementById('input-otra-categoria');
+            const elPrecio = document.getElementById('nuevo-precio-producto');
+            const elDesc = document.getElementById('nueva-descripcion-producto');
+            const elFoto = document.getElementById('imagen-producto-admin');
 
-            const nombre = inputNombre?.value.trim();
-            let categoria = selectCat?.value;
-            if (categoria === '__nueva__' && inputOtraCat?.value.trim()) {
-                categoria = inputOtraCat.value.trim();
+            const nombre = elNombre ? elNombre.value.trim() : '';
+
+            // Limpieza del precio: quita signo $ y convierte a número
+            let rawPrecio = elPrecio ? elPrecio.value.replace(/[^0-9.]/g, '') : '0';
+            const precio = parseFloat(rawPrecio) || 0;
+
+            let categoria = elSelectCat ? elSelectCat.value : '';
+            if (categoria === '__nueva__' && elOtraCat && elOtraCat.value.trim()) {
+                categoria = elOtraCat.value.trim();
             }
-            const precio = parseFloat(inputPrecio?.value) || 0;
-            const descripcion = inputDesc?.value.trim() || '';
+
+            const descripcion = elDesc ? elDesc.value.trim() : '';
 
             if (!nombre || !categoria || precio <= 0) {
-                alert('Por favor completa el nombre, la categoría y un precio válido.');
+                alert('Por favor completa el nombre, selecciona una categoría y un precio válido.');
                 return;
             }
 
@@ -785,11 +805,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (respuesta.ok) {
                         alert('¡Pieza agregada con éxito al catálogo!');
                         formNuevaPieza.reset();
-                        if (inputOtraCat) inputOtraCat.style.display = 'none';
+                        
+                        if (elOtraCat) elOtraCat.style.display = 'none';
                         if (textoFotoPieza) {
                             textoFotoPieza.textContent = 'Ningún archivo seleccionado';
                             textoFotoPieza.style.opacity = '0.75';
                         }
+                        
                         renderizarCatalogoAdmin();
                         renderizarCatalogoPublico();
                     } else {
@@ -801,7 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            const archivoFoto = inputFoto?.files ? inputFoto.files[0] : null;
+            const archivoFoto = elFoto?.files ? elFoto.files[0] : null;
             if (archivoFoto) {
                 const lector = new FileReader();
                 lector.onload = function (evento) {
