@@ -4,13 +4,14 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-// 1. IMPORTAR EL MODELO DE PEDIDOS
+// IMPORTAR MODELOS
 const Pedido = require('./models/Pedido');
+const Producto = require('./models/Producto');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
-// Middlewares (límite aumentado para aceptar imágenes de referencia)
+// Middlewares
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -23,7 +24,8 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Conectado exitosamente a MongoDB Atlas'))
   .catch((err) => console.error('Error al conectar a MongoDB:', err));
 
-// 2. RUTA PARA RECIBIR PEDIDOS DESDE LA TIENDA
+// RUTAS API PEDIDOS
+
 app.post('/api/pedidos', async (req, res) => {
     try {
         const nuevoPedido = new Pedido(req.body);
@@ -35,13 +37,69 @@ app.post('/api/pedidos', async (req, res) => {
     }
 });
 
-// 3. RUTA PARA CONSULTAR PEDIDOS (PARA EL PANEL ADMIN)
 app.get('/api/pedidos', async (req, res) => {
     try {
         const pedidos = await Pedido.find().sort({ fechaCreacion: -1 });
         res.json(pedidos);
     } catch (err) {
         res.status(500).json({ error: 'Error al obtener pedidos' });
+    }
+});
+
+app.put('/api/pedidos/:id', async (req, res) => {
+    try {
+        const pedidoActualizado = await Pedido.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(pedidoActualizado);
+    } catch (err) {
+        res.status(400).json({ error: 'Error al actualizar el pedido' });
+    }
+});
+
+app.delete('/api/pedidos/:id', async (req, res) => {
+    try {
+        await Pedido.findByIdAndDelete(req.params.id);
+        res.json({ mensaje: 'Pedido eliminado con éxito' });
+    } catch (err) {
+        res.status(400).json({ error: 'Error al eliminar el pedido' });
+    }
+});
+
+// RUTAS API PRODUCTOS (CATÁLOGO)
+
+app.get('/api/productos', async (req, res) => {
+    try {
+        const productos = await Producto.find().sort({ createdAt: -1 });
+        res.json(productos);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al obtener productos del catálogo' });
+    }
+});
+
+app.post('/api/productos', async (req, res) => {
+    try {
+        const nuevoProducto = new Producto(req.body);
+        await nuevoProducto.save();
+        res.status(201).json(nuevoProducto);
+    } catch (err) {
+        res.status(400).json({ error: 'Error al agregar producto al catálogo' });
+    }
+});
+
+app.put('/api/productos/:id', async (req, res) => {
+    try {
+        const productoActualizado = await Producto.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(productoActualizado);
+    } catch (err) {
+        res.status(400).json({ error: 'Error al actualizar producto' });
+    }
+});
+
+app.delete('/api/productos/:id', async (req, res) => {
+    try {
+        await Producto.findByIdAndDelete(req.params.id);
+        res.json({ mensaje: 'Producto eliminado con éxito' });
+    } catch (err) {
+        res.status(400).json({ error: 'Error al eliminar producto' });
     }
 });
 
