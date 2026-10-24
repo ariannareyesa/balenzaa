@@ -4,7 +4,6 @@ const cors = require('cors');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const serverless = require('serverless-http');
 require('dotenv').config();
 
 // IMPORTAR MODELOS
@@ -13,38 +12,42 @@ const Producto = require('./models/Producto');
 const Usuario = require('./models/Usuario');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Middlewares
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Caché de conexión a MongoDB para Serverless
-let cachedDb = null;
+// Definir la ruta absoluta hacia el frontend
+const frontendPath = path.resolve(__dirname, '..', 'frontend');
+console.log('📁 Carpeta frontend configurada en:', frontendPath);
 
-async function conectarDB() {
-    if (cachedDb && mongoose.connection.readyState === 1) {
-        return cachedDb;
-    }
-    try {
-        const db = await mongoose.connect(process.env.MONGODB_URI);
-        cachedDb = db;
-        console.log('Conectado exitosamente a MongoDB Atlas');
-        return db;
-    } catch (err) {
-        console.error('Error al conectar a MongoDB:', err);
-        throw err;
-    }
-}
+// Servir estáticos
+app.use(express.static(frontendPath));
 
-app.use(async (req, res, next) => {
+// Conexión a MongoDB Atlas
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('✅ Conectado exitosamente a MongoDB Atlas'))
+  .catch((err) => console.error('❌ Error al conectar a MongoDB:', err));
+
+// Middleware de seguridad JWT para proteger rutas privadas
+function verificarToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'Acceso denegado. Token no proporcionado.' });
+    }
+
     try {
-        await conectarDB();
+        const verificado = jwt.verify(token, process.env.JWT_SECRET);
+        req.usuario = verificado;
         next();
     } catch (error) {
-        res.status(500).json({ error: 'Error de conexión con la base de datos.' });
+        res.status(403).json({ error: 'Token inválido o expirado.' });
     }
-});
+}
 
 // RUTA AUTENTICACIÓN ADMIN
 app.post('/api/auth/login', async (req, res) => {
@@ -62,6 +65,7 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         if (!process.env.JWT_SECRET) {
+            console.error('Error: JWT_SECRET no está definido en el .env');
             return res.status(500).json({ error: 'Error de configuración del servidor.' });
         }
 
@@ -85,6 +89,7 @@ app.post('/api/pedidos', async (req, res) => {
         await nuevoPedido.save();
         res.status(201).json({ mensaje: 'Pedido guardado con éxito', pedido: nuevoPedido });
     } catch (err) {
+        console.error('Error al guardar pedido:', err);
         res.status(400).json({ error: err.message || 'Error al registrar el pedido' });
     }
 });
@@ -154,12 +159,21 @@ app.delete('/api/productos/:id', async (req, res) => {
     }
 });
 
-if (process.env.NODE_ENV !== 'production') {
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`Servidor corriendo en http://localhost:${PORT}`);
-    });
-}
+// Rutas explícitas para servir el frontend
+app.get('/', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
 
-// Exportar handler para Netlify Functions
-module.exports.handler = serverless(app);
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'admin.html'));
+});
+
+// Fallback universal
+app.use((req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
+// Iniciar servidor local
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
