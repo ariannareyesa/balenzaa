@@ -21,15 +21,15 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Definir la ruta absoluta hacia el frontend
 const frontendPath = path.resolve(__dirname, '..', 'frontend');
-console.log('📁 Carpeta frontend configurada en:', frontendPath);
+console.log('Carpeta frontend configurada en:', frontendPath);
 
 // Servir estáticos
 app.use(express.static(frontendPath));
 
 // Conexión a MongoDB Atlas
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ Conectado exitosamente a MongoDB Atlas'))
-  .catch((err) => console.error('❌ Error al conectar a MongoDB:', err));
+  .then(() => console.log('Conectado exitosamente a MongoDB Atlas'))
+  .catch((err) => console.error('Error al conectar a MongoDB:', err));
 
 // Middleware de seguridad JWT para proteger rutas privadas
 function verificarToken(req, res, next) {
