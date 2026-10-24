@@ -16,32 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 1. Catálogo Compartido: Obtención y Sincronización
-    const catalogoInicial = [
-        {
-            id: 1,
-            nombre: 'Nombre del amigurumi',
-            categoria: 'Amigurumis',
-            precio: '15.00',
-            descripcion: 'Descripción del amigurumi y detalles de tejido.',
-            imagen: 'images/amigurumi.jpg'
-        },
-        {
-            id: 2,
-            nombre: 'Nombre del llavero',
-            categoria: 'Llaveros',
-            precio: '5.00',
-            descripcion: 'Descripción del llavero y opciones de personalización.',
-            imagen: 'images/llavero.jpg'
-        },
-        {
-            id: 3,
-            nombre: 'Nombre del ramo de flores',
-            categoria: 'Ramos de Flores',
-            precio: '20.00',
-            descripcion: 'Descripción del ramo de flores y cantidad de piezas.',
-            imagen: 'images/ramo.jpg'
-        }
-    ];
+    const catalogoInicial = [];
 
     async function obtenerCatalogo() {
         try {
