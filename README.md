@@ -27,21 +27,21 @@ Plataforma web full-stack desarrollada para Balenzaa, un emprendimiento artesana
 
 ## Arquitectura del Proyecto
 
-- balenzaa/
-  - backend/
-    - models/ (Esquemas de Mongoose: Pedido, Producto, Usuario)
-    - crearAdmin.js (Script de creación inicial de administrador)
-    - server.js (Servidor Express & conexión Mongoose)
-    - package.json
-  - frontend/
-    - admin.html (Panel de administración)
-    - app.js (Lógica de cliente y peticiones API)
-    - index.html (Tienda pública)
-    - styles.css (Estilos y diseño responsivo)
-    - images/ (Recursos gráficos)
-  - README.md
-
----
+```text
+balenzaa/
+├── backend/
+│   ├── models/             # Esquemas de Mongoose (Pedido, Producto, Usuario)
+│   ├── crearAdmin.js       # Script de creación inicial de administrador
+│   ├── server.js           # Servidor Express & conexión Mongoose
+│   └── package.json
+├── frontend/
+│   ├── admin.html          # Panel de administración
+│   ├── app.js              # Lógica de cliente y peticiones API
+│   ├── index.html          # Tienda pública
+│   ├── styles.css          # Estilos y diseño responsivo
+│   └── images/             # Recursos gráficos
+├──
+```
 
 ## Stack Técnico
 
