@@ -418,7 +418,8 @@ img.doodle-flecha-romina {
 
 .grilla-productos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 320px));
+  justify-content: center;
   gap: 1.8rem;
 }
 
@@ -427,6 +428,8 @@ img.doodle-flecha-romina {
   border-radius: var(--radio-tarjeta);
   overflow: hidden;
   transition: transform 0.25s ease;
+  width: 100%;
+  max-width: 320px;
 }
 
 .tarjeta-producto:hover {
