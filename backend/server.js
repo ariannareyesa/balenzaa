@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const serverless = require('serverless-http');
 require('dotenv').config();
 
 // IMPORTAR MODELOS
@@ -18,10 +19,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Servir frontend estático de forma dinámica para Vercel/Local
-app.use(express.static(path.resolve(__dirname, '../frontend')));
-
-// Caché de conexión a MongoDB para Serverless (Vercel)
+// Caché de conexión a MongoDB para Serverless
 let cachedDb = null;
 
 async function conectarDB() {
@@ -39,7 +37,6 @@ async function conectarDB() {
     }
 }
 
-// Middleware para asegurar conexión a la BD en cada petición si es necesario
 app.use(async (req, res, next) => {
     try {
         await conectarDB();
@@ -65,7 +62,6 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         if (!process.env.JWT_SECRET) {
-            console.error('Error: JWT_SECRET no está definido en el .env');
             return res.status(500).json({ error: 'Error de configuración del servidor.' });
         }
 
@@ -89,7 +85,6 @@ app.post('/api/pedidos', async (req, res) => {
         await nuevoPedido.save();
         res.status(201).json({ mensaje: 'Pedido guardado con éxito', pedido: nuevoPedido });
     } catch (err) {
-        console.error('Error al guardar pedido:', err);
         res.status(400).json({ error: err.message || 'Error al registrar el pedido' });
     }
 });
@@ -121,7 +116,7 @@ app.delete('/api/pedidos/:id', async (req, res) => {
     }
 });
 
-// RUTAS API PRODUCTOS (CATÁLOGO)
+// RUTAS API PRODUCTOS
 app.get('/api/productos', async (req, res) => {
     try {
         const productos = await Producto.find().sort({ createdAt: -1 });
@@ -159,16 +154,6 @@ app.delete('/api/productos/:id', async (req, res) => {
     }
 });
 
-// Servir páginas frontend dinámicamente
-app.get('/', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../frontend/index.html'));
-});
-
-app.get('/admin', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../frontend/admin.html'));
-});
-
-// Iniciar servidor localmente si no estamos en Vercel
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
@@ -176,4 +161,5 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
-module.exports = app;
+// Exportar handler para Netlify Functions
+module.exports.handler = serverless(app);
