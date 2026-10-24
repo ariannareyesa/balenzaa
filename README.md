@@ -45,24 +45,27 @@ balenzaa/
 
 ## Stack Técnico
 
-- ![Node.js](https://img.shields.io/badge/Node.js-v18+-68A063?style=for-the-badge&logo=node.js&logoColor=white) **Backend:** Entorno de ejecución en JavaScript asíncrono sobre Node.js.
-- ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white) **Framework:** Arquitectura de API RESTful con enrutamiento dinámico.
-- ![MongoDB](https://img.shields.io/badge/MongoDB_Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white) **Base de Datos:** Persistencia NoSQL en la nube mediante MongoDB Atlas y ODM Mongoose.
-- ![JavaScript](https://img.shields.io/badge/JavaScript_ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black) **Lenguaje Principal:** JavaScript ES6+ asíncrono (`async/await`, Fetch API).
-- ![JSON Web Tokens](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white) **Seguridad:** Autenticación con JSON Web Tokens y encriptación de claves con `bcryptjs`.
-- ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white) **Frontend:** Maquetación semántica, CSS Custom Properties, Layouts en Flexbox y Grid.
+| Tecnología | Rol en la Aplicación |
+| :--- | :--- |
+| ![Node.js](https://img.shields.io/badge/Node.js-v18+-68A063?style=for-the-badge&logo=node.js&logoColor=white) | **Backend:** Entorno de ejecución asíncrono sobre Node.js. |
+| ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white) | **Framework:** API RESTful y middleware de rutas. |
+| ![MongoDB](https://img.shields.io/badge/MongoDB_Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white) | **Base de Datos:** Persistencia NoSQL con Mongoose ODM. |
+| ![JavaScript](https://img.shields.io/badge/JavaScript_ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black) | **Lógica:** Desarrollo en JavaScript ES6+ (Async/Await, Fetch API). |
+| ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white) | **Seguridad:** Autenticación por Tokens y hashing con bcryptjs. |
+| ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white) | **Frontend:** HTML5 semántico, CSS Custom Properties, Flexbox y Grid. |
 
 ---
 
 ## Instalación y Uso Local
 
 ### 1. Clonar el repositorio e instalar dependencias
+
 git clone https://github.com/ariannareyesa/balenzaa.git
 cd balenzaa/backend
 npm install
 
 ### 2. Variables de Entorno (.env)
-Crea un archivo .env dentro de la carpeta backend/ con esta estructura de ejemplo:
+Crea un archivo .env dentro de la carpeta backend/ con esta estructura:
 
 PORT=3000
 MONGODB_URI=tu_cadena_de_conexion_mongodb
@@ -71,6 +74,7 @@ ADMIN_USER=tu_usuario_admin
 ADMIN_PASS=tu_clave_admin
 
 ### 3. Crear usuario administrador e iniciar
+
 node crearAdmin.js
 npm start
 
