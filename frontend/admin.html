@@ -121,7 +121,7 @@
                 </div>
             </section>
 
-            <!-- Gestión visual del catálogo existente (Ahora en 4 columnas) -->
+            <!-- Gestión visual del catálogo existente -->
             <section class="seccion-catalogo-admin" style="background-color: var(--blanco); border-radius: 32px; padding: 2rem; margin-top: 2rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                     <div>
@@ -261,6 +261,18 @@
 
                 <button type="submit" class="boton-guardar-producto" style="margin-top: 0.5rem; width: 100%; text-align: center; background-color: var(--rosa); color: #fff;">Guardar pieza en catálogo</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación Personalizado -->
+    <div id="modal-confirmacion" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1.5rem; box-sizing: border-box;">
+        <div style="background: white; border-radius: 28px; padding: 2rem; max-width: 420px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); box-sizing: border-box; display: flex; flex-direction: column; gap: 1.2rem;">
+            <h3 style="font-family: var(--f-titulo); color: var(--rosa); margin: 0; font-size: 1.4rem;">Confirmación</h3>
+            <p id="texto-mensaje-confirmacion" style="font-family: var(--f-cuerpo); color: var(--tinta); margin: 0; font-size: 1rem;"></p>
+            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                <button id="btn-cancelar-confirmacion" style="flex: 1; background: var(--crema); color: var(--tinta); border: 1.5px solid var(--rosa-claro); border-radius: var(--radio-pill); padding: 0.6rem 1rem; font-weight: 700; cursor: pointer;">Cancelar</button>
+                <button id="btn-aceptar-confirmacion" style="flex: 1; background: var(--rosa); color: white; border: none; border-radius: var(--radio-pill); padding: 0.6rem 1rem; font-weight: 700; cursor: pointer;">Aceptar</button>
+            </div>
         </div>
     </div>
 

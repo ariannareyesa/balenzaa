@@ -27,6 +27,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3500);
     }
 
+    // Modal de Confirmación Personalizado Estilo Balenzaa
+    function mostrarConfirmacion(mensaje, callbackAceptar) {
+        const modal = document.getElementById('modal-confirmacion');
+        const textoMsg = document.getElementById('texto-mensaje-confirmacion');
+        const btnAceptar = document.getElementById('btn-aceptar-confirmacion');
+        const btnCancelar = document.getElementById('btn-cancelar-confirmacion');
+
+        if (!modal || !textoMsg || !btnAceptar || !btnCancelar) {
+            if (confirm(mensaje)) callbackAceptar();
+            return;
+        }
+
+        textoMsg.textContent = mensaje;
+        modal.style.display = 'flex';
+
+        const nuevoBtnAceptar = btnAceptar.cloneNode(true);
+        const nuevoBtnCancelar = btnCancelar.cloneNode(true);
+        btnAceptar.parentNode.replaceChild(nuevoBtnAceptar, btnAceptar);
+        btnCancelar.parentNode.replaceChild(nuevoBtnCancelar, btnCancelar);
+
+        document.getElementById('btn-aceptar-confirmacion').onclick = () => {
+            modal.style.display = 'none';
+            callbackAceptar();
+        };
+
+        document.getElementById('btn-cancelar-confirmacion').onclick = () => {
+            modal.style.display = 'none';
+        };
+
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+    }
+
     const menuHamburguesa = document.getElementById('menuHamburguesa');
     const menuNavegacion = document.getElementById('menuNavegacion');
 
@@ -815,27 +851,27 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        // Evento para reiniciar cronómetro con modal de confirmación elegante
         document.querySelectorAll('.btn-reset-timer').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
-                const confirma = confirm('¿Reiniciar el cronómetro de este encargo a 00:00:00?');
-                if (!confirma) return;
-
-                try {
-                    await fetch(`/api/pedidos/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            segundosTejidos: 0, 
-                            cronometroActivo: false 
-                        })
-                    });
-                    mostrarToast('Cronómetro reiniciado.', 'exito');
-                    renderizarPedidos();
-                } catch (err) {
-                    console.error('Error al reiniciar cronómetro:', err);
-                    mostrarToast('Error al reiniciar cronómetro.', 'error');
-                }
+                mostrarConfirmacion('¿Reiniciar el cronómetro de este encargo a 00:00:00?', async () => {
+                    try {
+                        await fetch(`/api/pedidos/${id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                segundosTejidos: 0, 
+                                cronometroActivo: false 
+                            })
+                        });
+                        mostrarToast('Cronómetro reiniciado.', 'exito');
+                        renderizarPedidos();
+                    } catch (err) {
+                        console.error('Error al reiniciar cronómetro:', err);
+                        mostrarToast('Error al reiniciar cronómetro.', 'error');
+                    }
+                });
             });
         });
 
@@ -888,11 +924,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        // Evento para eliminar pedido con modal de confirmación elegante
         document.querySelectorAll('.boton-eliminar-pedido').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
-                const confirma = confirm('¿Estás segura de eliminar este encargo?');
-                if (confirma) {
+                mostrarConfirmacion('¿Estás segura de eliminar este encargo?', async () => {
                     try {
                         await fetch(`/api/pedidos/${id}`, { method: 'DELETE' });
                         mostrarToast('Encargo eliminado.', 'exito');
@@ -901,7 +937,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         mostrarToast('Error al eliminar el encargo.', 'error');
                     }
                     renderizarPedidos();
-                }
+                });
             });
         });
     }
@@ -997,13 +1033,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        // Evento para eliminar producto con modal de confirmación elegante
         document.querySelectorAll('.boton-eliminar-producto').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
                 if (!id) return;
 
-                const confirma = confirm('¿Estás segura de eliminar esta pieza del catálogo?');
-                if (confirma) {
+                mostrarConfirmacion('¿Estás segura de eliminar esta pieza del catálogo?', async () => {
                     try {
                         await fetch(`/api/productos/${id}`, { method: 'DELETE' });
                         renderizarCatalogoAdmin();
@@ -1013,7 +1049,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error('Error al eliminar producto:', err);
                         mostrarToast('Error al eliminar pieza.', 'error');
                     }
-                }
+                });
             });
         });
     }
