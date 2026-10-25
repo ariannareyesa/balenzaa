@@ -187,6 +187,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return partes.length === 3 ? parseInt(partes[1], 10) : new Date(fechaIso).getMonth() + 1;
     }
 
+    // Bloquear fechas pasadas en el input de fecha de entrega del formulario de pedidos
+    const inputFechaEntrega = document.getElementById('fecha-entrega');
+    const hoyStr = new Date().toISOString().split('T')[0];
+    if (inputFechaEntrega) {
+        inputFechaEntrega.min = hoyStr;
+    }
+
     const inputArchivoRef = document.getElementById('imagen-referencia-pedido');
     const textoNombreArchivo = document.getElementById('nombre-archivo-pedido');
 
@@ -299,8 +306,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (!fechaEntrega) {
-                mostrarErrorCampo(inputFecha, 'Selecciona la fecha para la que necesitas tu pedido.');
+            if (!fechaEntrega || fechaEntrega < hoyStr) {
+                mostrarErrorCampo(inputFecha, 'Selecciona una fecha válida a partir de hoy.');
                 return;
             }
 
@@ -378,6 +385,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const elCompletados = document.getElementById('total-completados');
     const elIngresos = document.getElementById('total-ingresos');
 
+    // Estado y control robusto para la agenda
+    let agendaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
+
     function actualizarVisualAgenda(cerrada) {
         if (!botonToggleAgenda) return;
         if (cerrada) {
@@ -393,8 +403,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const agendaGuardadaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
-    actualizarVisualAgenda(agendaGuardadaCerrada);
+    actualizarVisualAgenda(agendaCerrada);
+
+    if (botonToggleAgenda) {
+        botonToggleAgenda.addEventListener('click', () => {
+            agendaCerrada = !agendaCerrada;
+            localStorage.setItem('balenzaa_agenda_cerrada', agendaCerrada);
+            actualizarVisualAgenda(agendaCerrada);
+            mostrarToast(agendaCerrada ? 'Agenda cerrada para nuevos pedidos.' : 'Agenda abierta para nuevos pedidos.', 'exito');
+        });
+    }
 
     function formatearTiempo(totalSegundos) {
         const seg = parseInt(totalSegundos) || 0;
@@ -408,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let filtroMesSeleccionado = 'todos';
     let filtroTipoSeleccionado = 'todos';
-    let estadoFiltroAdmin = 'todos'; // Nuevo filtro por pestaña de estado
+    let estadoFiltroAdmin = 'todos';
 
     function inyectarControlesFiltro() {
         const seccionGestion = document.querySelector('.seccion-gestion-pedidos');
@@ -419,7 +437,6 @@ document.addEventListener('DOMContentLoaded', () => {
         contenedorFiltros.style.cssText = 'display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.2rem; background: #FFF7FA; padding: 1rem 1.2rem; border-radius: 18px; border: 1.5px solid var(--rosa-claro);';
 
         contenedorFiltros.innerHTML = `
-            <!-- Pestañas de Filtro Rápido por Estado -->
             <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; border-bottom: 1.5px solid var(--rosa-claro); padding-bottom: 0.8rem;">
                 <span style="font-weight: 700; color: var(--rosa); font-size: 0.92rem; margin-right: 0.5rem;">Estado:</span>
                 <button class="btn-filtro-estado activo" data-estado="todos" style="padding: 0.4rem 1rem; border-radius: 999px; border: 1.5px solid var(--rosa-claro); background: var(--rosa); color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer;">Todos</button>
@@ -428,7 +445,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="btn-filtro-estado" data-estado="Completado" style="padding: 0.4rem 1rem; border-radius: 999px; border: 1.5px solid var(--rosa-claro); background: #fff; color: var(--tinta); font-weight: 700; font-size: 0.85rem; cursor: pointer;">Completados</button>
             </div>
 
-            <!-- Filtros por Mes y Tipo de Pieza -->
             <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap;">
                 <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -454,7 +470,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const tabla = seccionGestion.querySelector('.contenedor-tabla');
         if (tabla) seccionGestion.insertBefore(contenedorFiltros, tabla);
 
-        // Eventos para los botones de estado
         contenedorFiltros.querySelectorAll('.btn-filtro-estado').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 contenedorFiltros.querySelectorAll('.btn-filtro-estado').forEach(b => {
@@ -545,7 +560,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return cumpleEstado && cumpleTipo && cumpleMes;
         });
 
-        // Contadores globales para métricas superiores
         pedidos.forEach(p => {
             const estado = p.estado || 'Pendiente';
             if (estado === 'Pendiente') pendientes++;
@@ -943,16 +957,6 @@ document.addEventListener('DOMContentLoaded', () => {
             seccionLoginAdmin.style.display = 'block';
             if (formLoginAdmin) formLoginAdmin.reset();
             mostrarToast('Sesión cerrada.', 'exito');
-        });
-    }
-
-    if (botonToggleAgenda) {
-        botonToggleAgenda.addEventListener('click', () => {
-            const actualmenteCerrada = botonToggleAgenda.classList.contains('cerrada');
-            const nuevoEstadoCerrada = !actualualmenteCerrada;
-            localStorage.setItem('balenzaa_agenda_cerrada', nuevoEstadoCerrada);
-            actualizarVisualAgenda(nuevoEstadoCerrada);
-            mostrarToast(nuevoEstadoCerrada ? 'Agenda cerrada para nuevos pedidos.' : 'Agenda abierta para nuevos pedidos.', 'exito');
         });
     }
 });
