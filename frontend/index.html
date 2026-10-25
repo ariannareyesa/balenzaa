@@ -11,12 +11,20 @@
 </head>
 <body>
 
-    <!-- Barra de Navegacion Editorial -->
+    <!-- Barra de Navegación Editorial -->
     <header class="barra-navegacion">
         <div class="contenedor-nav">
             <a href="#inicio" class="logotipo-marca">Balenzaa</a>
+            
+            <!-- Botón del menú hamburguesa para móviles -->
+            <button class="menu-hamburguesa" id="menuHamburguesa" aria-label="Abrir menú">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
             <nav>
-                <ul class="menu-navegacion">
+                <ul class="menu-navegacion" id="menuNavegacion">
                     <li><a href="#inicio">Inicio</a></li>
                     <li><a href="#sobre-mi">Sobre mí</a></li>
                     <li><a href="#catalogo">Catálogo</a></li>
@@ -30,7 +38,7 @@
     </header>
 
     <main>
-        <!-- Seccion Hero -->
+        <!-- Sección Hero principal -->
         <section id="inicio" class="seccion-hero">
             <div class="contenedor-hero">
                 <span class="insignia-artesanal">Hecho a mano en Guayaquil</span>
@@ -43,7 +51,7 @@
             </div>
         </section>
 
-        <!-- Seccion Sobre mi / Balenzaa -->
+        <!-- Sección Sobre mí -->
         <section id="sobre-mi" class="seccion-sobre-mi">
             <div class="contenedor-sobre-mi">
                 <div class="imagen-sobre-mi">
@@ -78,7 +86,7 @@
             </div>
         </section>
 
-        <!-- Seccion Catalogo -->
+        <!-- Sección Catálogo -->
         <section id="catalogo" class="seccion-catalogo">
             <div class="contenedor-catalogo">
                 <div class="encabezado-seccion">
@@ -87,15 +95,15 @@
                     <p class="bajada-seccion">Piezas tejidas a mano bajo pedido. Precios y detalles referenciales según especificaciones del cliente.</p>
                 </div>
 
-                <!-- Filtros Dinamicos de Categorias -->
+                <!-- Filtros dinámicos -->
                 <div class="contenedor-filtros" id="contenedor-filtros-catalogo"></div>
 
-                <!-- Grilla de Productos Dinamica -->
+                <!-- Grilla de productos -->
                 <div class="grilla-productos" id="contenedor-catalogo-tienda"></div>
             </div>
         </section>
 
-        <!-- Seccion Pedidos Personalizados -->
+        <!-- Sección Pedidos -->
         <section id="pedidos" class="seccion-pedidos">
             <div class="contenedor-pedidos">
                 <div class="encabezado-seccion">
@@ -104,15 +112,13 @@
                     <p class="bajada-seccion">Cuéntanos tu idea. Diseñamos y tejemos piezas únicas según tus preferencias.<br>Me contactaré contigo para coordinar los detalles.</p>
                 </div>
                 
-                <!-- Estado de la Agenda -->
                 <div id="banner-estado-agenda"></div>
                 
-                <!-- Aviso de Anticipacion -->
                 <div class="tarjeta-aviso">
                     <p><strong>Aviso importante:</strong> Cada pieza se elabora a mano bajo pedido. Planifica tu encargo con anticipación o consulta a través de nuestro WhatsApp.</p>
                 </div>
 
-                <!-- Formulario de Pedido -->
+                <!-- Formulario de encargo -->
                 <form class="formulario-encargo" id="formulario-pedido" novalidate>
                     <div class="grupo-campo">
                         <label for="nombre-cliente">Tu nombre completo</label>
@@ -174,7 +180,7 @@
             </div>
         </section>
 
-        <!-- Seccion Cuidados del Crochet -->
+        <!-- Sección Cuidados -->
         <section id="cuidados" class="seccion-cuidados">
             <div class="contenedor-cuidados">
                 <div class="encabezado-seccion">
@@ -203,7 +209,7 @@
             </div>
         </section>
 
-        <!-- Seccion Preguntas Frecuentes -->
+        <!-- Sección Preguntas Frecuentes -->
         <section id="preguntas" class="seccion-preguntas">
             <div class="contenedor-preguntas">
                 <div class="encabezado-seccion">
@@ -233,7 +239,7 @@
         </section>
     </main>
 
-    <!-- Pie de pagina -->
+    <!-- Pie de página -->
     <footer class="pie-pagina">
         <div class="contenedor-pie">
             <div class="columna-pie">
@@ -266,7 +272,7 @@
         </div>
     </footer>
 
-    <!-- Boton flotante de WhatsApp -->
+    <!-- Botón flotante de WhatsApp -->
     <a href="https://wa.me/593983462196?text=%C2%A1Hola%20Balenzaa!%20Quiero%20hacer%20un%20pedido" 
        class="boton-flotante-whatsapp" 
        target="_blank" 

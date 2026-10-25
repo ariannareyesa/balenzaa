@@ -2,7 +2,23 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // 0. Banner de Estado de la Agenda (Tienda pública)
+    // Control del menú hamburguesa para dispositivos móviles
+    const menuHamburguesa = document.getElementById('menuHamburguesa');
+    const menuNavegacion = document.getElementById('menuNavegacion');
+
+    if (menuHamburguesa && menuNavegacion) {
+        menuHamburguesa.addEventListener('click', () => {
+            menuNavegacion.classList.toggle('activo');
+        });
+
+        menuNavegacion.querySelectorAll('a').forEach(enlace => {
+            enlace.addEventListener('click', () => {
+                menuNavegacion.classList.remove('activo');
+            });
+        });
+    }
+
+    // Banner de Estado de la Agenda (Tienda pública)
     const bannerAgenda = document.getElementById('banner-estado-agenda');
     if (bannerAgenda) {
         const estaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
@@ -843,7 +859,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const datos = await respuesta.json();
 
                 if (respuesta.ok) {
-                    // Guardar JWT real
                     localStorage.setItem('balenzaa_token', datos.token);
                     seccionLoginAdmin.style.display = 'none';
                     panelContenido.style.display = 'block';

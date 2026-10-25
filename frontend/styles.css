@@ -1,9 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap');
 
-/* ==========================================================================
-   BALENZAA — Hoja de Estilos Oficial
-   ========================================================================== */
-
 :root {
   --crema: #FFF6EC;
   --blanco: #FFFFFF;
@@ -19,16 +15,13 @@
   --lila-fuerte: #D9C2F5;
   --tinta: #74404F;
 
-  /* Tipografias */
   --f-titulo: 'Playfair Display', Georgia, serif;
   --f-cuerpo: 'Quicksand', system-ui, -apple-system, sans-serif;
 
-  /* Geometrias */
   --radio-pill: 999px;
   --radio-tarjeta: 28px;
   --radio-input: 18px;
 
-  /* Patrones de flores */
   --flor-crema: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23FFE3EC'%3E%3Ccircle cx='50' cy='24' r='22'/%3E%3Ccircle cx='75' cy='42' r='22'/%3E%3Ccircle cx='66' cy='72' r='22'/%3E%3Ccircle cx='34' cy='72' r='22'/%3E%3Ccircle cx='25' cy='42' r='22'/%3E%3Ccircle cx='50' cy='50' r='24'/%3E%3C/g%3E%3C/svg%3E");
   --flor-rosa: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23F67C9D'%3E%3Ccircle cx='50' cy='24' r='22'/%3E%3Ccircle cx='75' cy='42' r='22'/%3E%3Ccircle cx='66' cy='72' r='22'/%3E%3Ccircle cx='34' cy='72' r='22'/%3E%3Ccircle cx='25' cy='42' r='22'/%3E%3Ccircle cx='50' cy='50' r='24'/%3E%3C/g%3E%3C/svg%3E");
   --flor-blanca: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23fff'%3E%3Ccircle cx='50' cy='22' r='20'/%3E%3Ccircle cx='77' cy='42' r='20'/%3E%3Ccircle cx='67' cy='74' r='20'/%3E%3Ccircle cx='33' cy='74' r='20'/%3E%3Ccircle cx='23' cy='42' r='20'/%3E%3C/g%3E%3Ccircle cx='50' cy='50' r='13' fill='%23FFD45C'/%3E%3C/svg%3E");
@@ -229,6 +222,26 @@ ul {
 .menu-navegacion a:hover {
   background-color: var(--rosa-pastel);
   color: var(--rosa);
+}
+
+/* Botón hamburguesa oculto por defecto en PC */
+.menu-hamburguesa {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 5px;
+  padding: 5px;
+}
+
+.menu-hamburguesa span {
+  display: block;
+  width: 26px;
+  height: 3px;
+  background-color: var(--rosa);
+  border-radius: 2px;
+  transition: all 0.3s ease;
 }
 
 .seccion-hero {
@@ -1099,19 +1112,51 @@ textarea:focus {
   max-width: 240px;
 }
 
+/* Estilos responsivos para dispositivos móviles */
 @media (max-width: 800px) {
+  .menu-hamburguesa {
+    display: flex;
+  }
+
+  .menu-navegacion {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: var(--crema);
+    flex-direction: column;
+    align-items: center;
+    padding: 1.2rem 0;
+    box-shadow: 0 10px 20px rgba(116, 64, 79, 0.08);
+    border-top: 1.5px dashed var(--rosa-claro);
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+
+  .menu-navegacion.activo {
+    max-height: 350px;
+    opacity: 1;
+  }
+
+  .menu-navegacion li {
+    width: 100%;
+    text-align: center;
+  }
+
+  .menu-navegacion a {
+    display: block;
+    padding: 0.5rem 0;
+  }
+
   .contenedor-sobre-mi,
   .contenedor-pie {
     grid-template-columns: 1fr;
   }
 
   .contenedor-nav {
-    justify-content: center;
-  }
-
-  .menu-navegacion {
-    justify-content: center;
-    gap: 0.3rem;
+    justify-content: space-between;
   }
 
   .seccion-hero::before {
