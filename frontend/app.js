@@ -411,6 +411,31 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // Control del Modal para Agregar Nueva Pieza
+    const modalNuevoProducto = document.getElementById('modal-nuevo-producto');
+    const btnAbrirModalProducto = document.getElementById('boton-abrir-modal-producto');
+    const btnCerrarModalProducto = document.getElementById('cerrar-modal-nuevo-producto');
+
+    if (btnAbrirModalProducto && modalNuevoProducto) {
+        btnAbrirModalProducto.onclick = () => {
+            modalNuevoProducto.style.display = 'flex';
+        };
+    }
+
+    if (btnCerrarModalProducto && modalNuevoProducto) {
+        btnCerrarModalProducto.onclick = () => {
+            modalNuevoProducto.style.display = 'none';
+        };
+    }
+
+    if (modalNuevoProducto) {
+        modalNuevoProducto.onclick = (e) => {
+            if (e.target === modalNuevoProducto) {
+                modalNuevoProducto.style.display = 'none';
+            }
+        };
+    }
+
     if (formPedidoManual) {
         formPedidoManual.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -522,7 +547,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .join(':');
     }
 
-    // Intervalo global para hacer avanzar el cronómetro en tiempo real segundo a segundo
     if (window.intervaloCronometrosUI) {
         clearInterval(window.intervaloCronometrosUI);
     }
@@ -757,7 +781,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elCompletados) elCompletados.textContent = completados;
         if (elIngresos) elIngresos.textContent = `$${totalCobrado.toFixed(2)}`;
 
-        // Eventos para iniciar / pausar cronómetro
         document.querySelectorAll('.btn-toggle-timer').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.target.dataset.id;
@@ -793,7 +816,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Evento para reiniciar cronómetro a 00:00:00
         document.querySelectorAll('.btn-reset-timer').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.target.dataset.id;
@@ -1060,6 +1082,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             textoFotoPieza.style.opacity = '0.75';
                         }
                         
+                        modalNuevoProducto.style.display = 'none';
                         renderizarCatalogoAdmin();
                         renderizarCatalogoPublico();
                     } else {
