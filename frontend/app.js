@@ -411,7 +411,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Control del Modal para Agregar Nueva Pieza
     const modalNuevoProducto = document.getElementById('modal-nuevo-producto');
     const btnAbrirModalProducto = document.getElementById('boton-abrir-modal-producto');
     const btnCerrarModalProducto = document.getElementById('cerrar-modal-nuevo-producto');
@@ -931,16 +930,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     <img src="${prod.imagen}" alt="${prod.nombre}" onerror="this.src='images/amigurumi.jpg'">
                     <span class="etiqueta-categoria">${prod.categoria}</span>
                 </div>
-                <div class="info-producto" style="display: flex; flex-direction: column; gap: 0.4rem;">
-                    <h3 class="nombre-producto editable-item" contenteditable="true" data-id="${idProd}" data-campo="nombre" title="Haz clic para editar el nombre" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px;">
+                <div class="info-producto" style="display: flex; flex-direction: column; gap: 0.3rem; padding: 1rem;">
+                    <h3 class="nombre-producto editable-item" contenteditable="true" data-id="${idProd}" data-campo="nombre" title="Haz clic para editar el nombre" style="font-size: 1rem; border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px; margin: 0;">
                         ${prod.nombre}
                     </h3>
-                    <p class="descripcion-producto editable-item" contenteditable="true" data-id="${idProd}" data-campo="descripcion" title="Haz clic para editar la descripción" style="border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px; min-height: 40px;">
+                    <p class="descripcion-producto editable-item" contenteditable="true" data-id="${idProd}" data-campo="descripcion" title="Haz clic para editar la descripción" style="font-size: 0.82rem; border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px; min-height: 35px; margin: 0; color: var(--tinta);">
                         ${prod.descripcion}
                     </p>
-                    <div class="pie-tarjeta" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
-                        <span style="font-size: 0.85rem; font-weight: 600;">Precio (USD):</span>
-                        <input type="number" step="0.50" min="0" class="input-precio-producto" data-id="${idProd}" value="${parseFloat(prod.precio || 0).toFixed(2)}" style="width: 85px; padding: 4px 6px; border: 1.5px solid var(--rosa-claro); border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.9rem; background: #fff;">
+                    <div class="pie-tarjeta" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid #f0f0f0;">
+                        <span style="font-size: 0.78rem; font-weight: 600;">Precio ($):</span>
+                        <input type="number" step="0.50" min="0" class="input-precio-producto" data-id="${idProd}" value="${parseFloat(prod.precio || 0).toFixed(2)}" style="width: 75px; padding: 3px 6px; border: 1.5px solid var(--rosa-claro); border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.85rem; background: #fff;">
                     </div>
                 </div>
             `;
