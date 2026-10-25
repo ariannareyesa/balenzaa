@@ -242,13 +242,13 @@ ul {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   color: var(--rosa);
 }
 
 .imagen-logo-nav {
-  width: 40px;
-  height: 40px;
+  width: 35px;
+  height: 35px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
