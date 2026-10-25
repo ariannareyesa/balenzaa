@@ -130,7 +130,21 @@ ul {
   margin-top: 0.8rem;
 }
 
-.boton-nav-cta,
+/* Botón "Hacer pedido" en la barra de navegación */
+.boton-nav-cta {
+  display: inline-block;
+  font-family: var(--f-cuerpo);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--tinta);
+  background-color: var(--rosa-claro);
+  border: none;
+  border-radius: var(--radio-pill);
+  padding: 0.45rem 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
 .boton-primario,
 .boton-secundario,
 .boton-consultar,
