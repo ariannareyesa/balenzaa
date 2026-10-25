@@ -98,9 +98,13 @@
             <section class="seccion-gestion-pedidos">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
                     <h2 style="margin: 0; color: var(--rosa); font-size: 2rem;">Gestión de Encargos</h2>
-                    <button id="boton-abrir-modal-pedido" class="boton-primario" style="font-size: 0.85rem; padding: 0.5rem 1.2rem; background-color: var(--rosa); color: #fff;">+ Nuevo Encargo Manual</button>
+                    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                        <button id="btn-exportar-todos-pedidos-csv" class="boton-secundario" style="font-size: 0.85rem; padding: 0.5rem 1.2rem; background-color: var(--verde); color: #fff; cursor: pointer;">Exportar Pedidos CSV</button>
+                        <button id="boton-abrir-modal-pedido" class="boton-primario" style="font-size: 0.85rem; padding: 0.5rem 1.2rem; background-color: var(--rosa); color: #fff;">+ Nuevo Encargo Manual</button>
+                    </div>
                 </div>
-                <div class="contenedor-tabla">
+                <!-- Contenedor con altura fija y scroll para mostrar aprox 5 pedidos -->
+                <div class="contenedor-tabla" style="max-height: 380px; overflow-y: auto;">
                     <table class="tabla-pedidos">
                         <thead>
                             <tr>
@@ -136,13 +140,23 @@
         </div>
     </main>
 
-    <!-- Modal para ver foto de referencia -->
+    <!-- MODAL UNIFICADO: DETALLES, OBSERVACIONES Y FOTO CENTRADA -->
     <div id="modal-foto-referencia" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1.5rem; box-sizing: border-box;">
-        <div style="background: white; border-radius: 28px; padding: 1.8rem; max-width: 440px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; position: relative; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); box-sizing: border-box;"> 
-            <button id="cerrar-modal-foto" style="position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 1.2rem; font-weight: bold; color: #C93A5B; cursor: pointer; padding: 4px 8px; line-height: 1;">✕</button>
-            <h3 style="font-family: var(--f-titulo); color: var(--rosa); margin: 0 0 1.2rem 0; font-size: 1.4rem;">Foto de Referencia</h3>
-            <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; background: #FFF7FA; border: 1.5px solid var(--rosa-claro); border-radius: 18px; padding: 0.8rem; overflow: hidden;">
-                <img id="img-modal-referencia" src="" alt="Referencia" style="max-width: 100%; max-height: 55vh; width: auto; height: auto; object-fit: contain; border-radius: 12px; display: block;">
+        <div style="background: white; border-radius: 28px; padding: 2rem; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); box-sizing: border-box;"> 
+            <button id="cerrar-modal-foto" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; font-weight: bold; color: #C93A5B; cursor: pointer; padding: 4px 8px; line-height: 1;">✕</button>
+            <h3 style="font-family: var(--f-titulo); color: var(--rosa); margin: 0 0 1rem 0; font-size: 1.5rem; text-align: center;">Detalles del Encargo</h3>
+            
+            <!-- Caja de Observaciones / Detalles -->
+            <div id="texto-observaciones-pedido" style="background: #FFF7FA; border: 1.5px solid var(--rosa-claro); border-radius: 16px; padding: 1rem; font-size: 0.92rem; color: var(--tinta); line-height: 1.5; margin-bottom: 1.2rem; text-align: left;">
+                <!-- Dinámico -->
+            </div>
+
+            <!-- Foto de Referencia Centrada -->
+            <div id="contenedor-foto-ref-interno" style="display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                <p style="font-weight: 700; font-size: 0.85rem; color: var(--rosa); margin-bottom: 0.6rem;">Foto de referencia adjunta:</p>
+                <div style="width: 100%; display: flex; align-items: center; justify-content: center; background: #FFF7FA; border: 1.5px solid var(--rosa-claro); border-radius: 18px; padding: 0.8rem; overflow: hidden;">
+                    <img id="img-modal-referencia" src="" alt="Referencia" style="max-width: 100%; max-height: 260px; width: auto; height: auto; object-fit: contain; border-radius: 12px; display: block; margin: 0 auto;">
+                </div>
             </div>
         </div>
     </div>

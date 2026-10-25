@@ -410,6 +410,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const contenedorCatalogoAdmin = document.getElementById('contenedor-catalogo-admin');
 
     const modalFoto = document.getElementById('modal-foto-referencia');
+    const textoObsModal = document.getElementById('texto-observaciones-pedido');
+    const contenedorFotoModal = document.getElementById('contenedor-foto-ref-interno');
     const imgModal = document.getElementById('img-modal-referencia');
     const btnCerrarModal = document.getElementById('cerrar-modal-foto');
 
@@ -417,6 +419,49 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCerrarModal.onclick = () => { modalFoto.style.display = 'none'; };
         modalFoto.onclick = (e) => {
             if (e.target === modalFoto) modalFoto.style.display = 'none';
+        };
+    }
+
+    // Botón exportar todos los pedidos a CSV
+    const btnExportarTodosPedidos = document.getElementById('btn-exportar-todos-pedidos-csv');
+    if (btnExportarTodosPedidos) {
+        btnExportarTodosPedidos.onclick = async () => {
+            let pedidos = [];
+            try {
+                const respuesta = await fetch('/api/pedidos');
+                if (respuesta.ok) {
+                    pedidos = await respuesta.json();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+            if (pedidos.length === 0) {
+                mostrarToast('No hay pedidos para exportar.', 'error');
+                return;
+            }
+
+            let csvContent = '\uFEFFFechaCreacion,Cliente,Correo,Celular,Pieza,FechaEntrega,PrecioTotal,Estado\n';
+            pedidos.forEach(p => {
+                const fechaC = `"${(p.fechaCreacion ? formatearFechaTexto(p.fechaCreacion) : '').replace(/"/g, '""')}"`;
+                const nombre = `"${(p.nombre || '').replace(/"/g, '""')}"`;
+                const correo = `"${(p.correo || '').replace(/"/g, '""')}"`;
+                const celular = `"${(p.celular || '').replace(/"/g, '""')}"`;
+                const producto = `"${(p.producto || '').replace(/"/g, '""')}"`;
+                const fechaE = `"${(p.fechaEntrega ? formatearFechaTexto(p.fechaEntrega) : '').replace(/"/g, '""')}"`;
+                const precio = `"${(p.precioTotal || 0)}"`;
+                const estado = `"${(p.estado || 'Pendiente').replace(/"/g, '""')}"`;
+                csvContent += `${fechaC},${nombre},${correo},${celular},${producto},${fechaE},${precio},${estado}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'todos_los_pedidos_balenzaa.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            mostrarToast('Archivo CSV de pedidos descargado con éxito.', 'exito');
         };
     }
 
@@ -897,7 +942,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fechaCreacionTexto = p.fechaCreacion ? formatearFechaTexto(p.fechaCreacion) : 'Hoy';
                 const fechaEntregaTexto = p.fechaEntrega ? formatearFechaTexto(p.fechaEntrega) : 'Por definir';
 
-                // Enlace directo a WhatsApp en el número
                 const enlaceWs = p.celular ? `https://wa.me/593${p.celular.replace(/^0/, '')}` : '#';
 
                 const fila = document.createElement('tr');
@@ -914,8 +958,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         ` : '<span style="color:#999;">-</span>'}
                     </td>
                     <td>
-                        ${p.producto || 'Diseño especial'}
-                        ${p.imagenReferencia ? `<br><button class="boton-ver-foto-ref" data-id="${idPedido}" style="background:none; border:none; padding:0; font-size:0.75rem; color:var(--rosa); font-weight:700; text-decoration:underline; cursor:pointer;">Ver foto</button>` : ''}
+                        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px;">
+                            <span style="font-weight: 600; color: var(--tinta); white-space: nowrap;">${p.producto || 'Diseño especial'}</span>
+                            ${(p.imagenReferencia || p.detalles) ? `<button class="boton-ver-foto-ref" data-id="${idPedido}" style="background:none; border:none; padding:0; font-size:0.78rem; color:var(--rosa); font-weight:700; text-decoration:underline; cursor:pointer;">Ver detalles</button>` : ''}
+                        </div>
                     </td>
                     <td style="white-space: nowrap;">${fechaEntregaTexto}</td>
                     <td>
@@ -1017,9 +1063,31 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
                 const p = pedidos.find(item => item._id === id || item.indexOriginal == id);
-                if (p && p.imagenReferencia && modalFoto && imgModal) {
-                    imgModal.src = p.imagenReferencia;
-                    modalFoto.style.display = 'flex';
+                if (p) {
+                    if (textoObsModal) {
+                        textoObsModal.innerHTML = `
+                            <strong style="color: var(--rosa); display: block; margin-bottom: 0.3rem; font-size: 1.05rem;">Cliente: ${p.nombre || 'Sin nombre'}</strong>
+                            <p style="margin: 0.2rem 0;"><strong>Correo:</strong> ${p.correo || 'N/A'}</p>
+                            <p style="margin: 0.2rem 0;"><strong>Celular:</strong> ${p.celular || 'N/A'}</p>
+                            <p style="margin: 0.2rem 0;"><strong>Tipo:</strong> ${p.producto || 'N/A'}</p>
+                            <p style="margin: 0.2rem 0;"><strong>Fecha de Entrega:</strong> ${p.fechaEntrega ? formatearFechaTexto(p.fechaEntrega) : 'N/A'}</p>
+                            <hr style="border: none; border-top: 1px dashed var(--rosa-claro); margin: 0.6rem 0;">
+                            <p style="margin: 0;"><strong>Observaciones:</strong><br>${p.detalles || 'Sin observaciones'}</p>
+                        `;
+                    }
+
+                    if (contenedorFotoModal && imgModal) {
+                        if (p.imagenReferencia) {
+                            imgModal.src = p.imagenReferencia;
+                            contenedorFotoModal.style.display = 'flex';
+                        } else {
+                            contenedorFotoModal.style.display = 'none';
+                        }
+                    }
+
+                    if (modalFoto) {
+                        modalFoto.style.display = 'flex';
+                    }
                 }
             });
         });
