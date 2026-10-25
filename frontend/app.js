@@ -187,11 +187,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return partes.length === 3 ? parseInt(partes[1], 10) : new Date(fechaIso).getMonth() + 1;
     }
 
-    // Bloquear fechas pasadas en el input de fecha de entrega del formulario de pedidos
     const inputFechaEntrega = document.getElementById('fecha-entrega');
     const hoyStr = new Date().toISOString().split('T')[0];
     if (inputFechaEntrega) {
         inputFechaEntrega.min = hoyStr;
+    }
+
+    const inputManualFecha = document.getElementById('manual-fecha-entrega');
+    if (inputManualFecha) {
+        inputManualFecha.min = hoyStr;
     }
 
     const inputArchivoRef = document.getElementById('imagen-referencia-pedido');
@@ -242,6 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const celularRegex = /^09\d{8}$/;
+
     const formPedido = document.getElementById('formulario-pedido');
     if (formPedido) {
         formPedido.addEventListener('submit', (e) => {
@@ -291,8 +297,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (!celular || celular.length < 8) {
-                mostrarErrorCampo(inputCelular, 'Por favor, ingresa un número de teléfono o WhatsApp válido.');
+            if (!celularRegex.test(celular)) {
+                mostrarErrorCampo(inputCelular, 'Ingresa un número de celular válido (10 dígitos empezando con 09).');
                 return;
             }
 
@@ -380,12 +386,104 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    const modalPedidoManual = document.getElementById('modal-pedido-manual');
+    const btnAbrirModalPedido = document.getElementById('boton-abrir-modal-pedido');
+    const btnCerrarModalPedido = document.getElementById('cerrar-modal-pedido-manual');
+    const formPedidoManual = document.getElementById('formulario-pedido-manual');
+
+    if (btnAbrirModalPedido && modalPedidoManual) {
+        btnAbrirModalPedido.onclick = () => {
+            modalPedidoManual.style.display = 'flex';
+        };
+    }
+
+    if (btnCerrarModalPedido && modalPedidoManual) {
+        btnCerrarModalPedido.onclick = () => {
+            modalPedidoManual.style.display = 'none';
+        };
+    }
+
+    if (modalPedidoManual) {
+        modalPedidoManual.onclick = (e) => {
+            if (e.target === modalPedidoManual) {
+                modalPedidoManual.style.display = 'none';
+            }
+        };
+    }
+
+    if (formPedidoManual) {
+        formPedidoManual.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById('manual-nombre').value.trim();
+            const correo = document.getElementById('manual-correo').value.trim();
+            const celular = document.getElementById('manual-celular').value.trim();
+            const producto = document.getElementById('manual-producto').value;
+            const detalles = document.getElementById('manual-detalles').value.trim();
+            const fechaEntrega = document.getElementById('manual-fecha-entrega').value;
+            const precioTotal = parseFloat(document.getElementById('manual-precio').value) || 0;
+            const estado = document.getElementById('manual-estado').value;
+
+            const horasTrabajadas = parseInt(document.getElementById('manual-horas').value) || 0;
+            const minutosTrabajados = parseInt(document.getElementById('manual-minutos').value) || 0;
+            const segundosTejidos = (horasTrabajadas * 3600) + (minutosTrabajados * 60);
+
+            if (!nombre || !correo || !celular || !producto || !detalles || !fechaEntrega) {
+                mostrarToast('Por favor completa los campos obligatorios.', 'error');
+                return;
+            }
+
+            if (!celularRegex.test(celular)) {
+                mostrarToast('Ingresa un celular válido de Ecuador (10 dígitos empezando por 09).', 'error');
+                return;
+            }
+
+            if (fechaEntrega < hoyStr) {
+                mostrarToast('La fecha de entrega no puede ser en el pasado.', 'error');
+                return;
+            }
+
+            const nuevoPedidoManual = {
+                nombre,
+                correo,
+                celular,
+                producto,
+                detalles,
+                fechaEntrega,
+                precioTotal,
+                estado,
+                segundosTejidos,
+                cronometroActivo: false,
+                suscritoClub: false
+            };
+
+            try {
+                const respuesta = await fetch('/api/pedidos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevoPedidoManual)
+                });
+
+                if (respuesta.ok) {
+                    mostrarToast('Encargo manual registrado con éxito.', 'exito');
+                    formPedidoManual.reset();
+                    modalPedidoManual.style.display = 'none';
+                    renderizarPedidos();
+                } else {
+                    const resJson = await respuesta.json();
+                    mostrarToast(resJson.error || 'Error al registrar el pedido.', 'error');
+                }
+            } catch (err) {
+                console.error('Error al registrar encargo manual:', err);
+                mostrarToast('Error de conexión con el servidor.', 'error');
+            }
+        });
+    }
+
     const elPendientes = document.getElementById('total-pendientes');
     const elElaboracion = document.getElementById('total-elaboracion');
     const elCompletados = document.getElementById('total-completados');
     const elIngresos = document.getElementById('total-ingresos');
 
-    // Estado y control robusto para la agenda
     let agendaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
 
     function actualizarVisualAgenda(cerrada) {
@@ -423,6 +521,26 @@ document.addEventListener('DOMContentLoaded', () => {
             .map(v => v < 10 ? '0' + v : v)
             .join(':');
     }
+
+    // Intervalo global para hacer avanzar el cronómetro en tiempo real segundo a segundo
+    if (window.intervaloCronometrosUI) {
+        clearInterval(window.intervaloCronometrosUI);
+    }
+    window.intervaloCronometrosUI = setInterval(() => {
+        document.querySelectorAll('.btn-toggle-timer').forEach(btn => {
+            if (btn.title === 'Pausar') {
+                const id = btn.dataset.id;
+                const display = document.querySelector(`.timer-display[data-id="${id}"]`);
+                if (display) {
+                    const partes = display.textContent.split(':');
+                    if (partes.length === 3) {
+                        const totalSegs = parseInt(partes[0]) * 3600 + parseInt(partes[1]) * 60 + parseInt(partes[2]) + 1;
+                        display.textContent = formatearTiempo(totalSegs);
+                    }
+                }
+            }
+        });
+    }, 1000);
 
     let filtroMesSeleccionado = 'todos';
     let filtroTipoSeleccionado = 'todos';
@@ -638,6 +756,67 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elElaboracion) elElaboracion.textContent = elaboracion;
         if (elCompletados) elCompletados.textContent = completados;
         if (elIngresos) elIngresos.textContent = `$${totalCobrado.toFixed(2)}`;
+
+        // Eventos para iniciar / pausar cronómetro
+        document.querySelectorAll('.btn-toggle-timer').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = e.target.dataset.id;
+                const p = pedidos.find(item => (item._id === id || item.indexOriginal == id));
+                if (!p) return;
+
+                const activoActual = p.cronometroActivo || false;
+                const nuevoEstadoActivo = !activoActual;
+
+                let segundosActuales = p.segundosTejidos || 0;
+                const display = document.querySelector(`.timer-display[data-id="${id}"]`);
+                if (display) {
+                    const partes = display.textContent.split(':');
+                    if (partes.length === 3) {
+                        segundosActuales = parseInt(partes[0]) * 3600 + parseInt(partes[1]) * 60 + parseInt(partes[2]);
+                    }
+                }
+
+                try {
+                    await fetch(`/api/pedidos/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            cronometroActivo: nuevoEstadoActivo,
+                            segundosTejidos: segundosActuales
+                        })
+                    });
+                    renderizarPedidos();
+                } catch (err) {
+                    console.error('Error al actualizar cronómetro:', err);
+                    mostrarToast('Error al actualizar cronómetro.', 'error');
+                }
+            });
+        });
+
+        // Evento para reiniciar cronómetro a 00:00:00
+        document.querySelectorAll('.btn-reset-timer').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = e.target.dataset.id;
+                const confirma = confirm('¿Reiniciar el cronómetro de este encargo a 00:00:00?');
+                if (!confirma) return;
+
+                try {
+                    await fetch(`/api/pedidos/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            segundosTejidos: 0, 
+                            cronometroActivo: false 
+                        })
+                    });
+                    mostrarToast('Cronómetro reiniciado.', 'exito');
+                    renderizarPedidos();
+                } catch (err) {
+                    console.error('Error al reiniciar cronómetro:', err);
+                    mostrarToast('Error al reiniciar cronómetro.', 'error');
+                }
+            });
+        });
 
         document.querySelectorAll('.boton-ver-foto-ref').forEach(btn => {
             btn.addEventListener('click', (e) => {

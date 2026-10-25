@@ -78,7 +78,10 @@
 
             <!-- Tabla de Encargos con Control Financiero -->
             <section class="seccion-gestion-pedidos">
-                <h2>Gestión de Encargos</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2 style="margin: 0; color: var(--rosa); font-size: 2rem;">Gestión de Encargos</h2>
+                    <button id="boton-abrir-modal-pedido" class="boton-primario" style="font-size: 0.85rem; padding: 0.5rem 1.2rem; background-color: var(--rosa); color: #fff;">+ Nuevo Encargo Manual</button>
+                </div>
                 <div class="contenedor-tabla">
                     <table class="tabla-pedidos">
                         <thead>
@@ -171,6 +174,74 @@
             <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; background: #FFF7FA; border: 1.5px solid var(--rosa-claro); border-radius: 18px; padding: 0.8rem; overflow: hidden;">
                 <img id="img-modal-referencia" src="" alt="Referencia" style="max-width: 100%; max-height: 55vh; width: auto; height: auto; object-fit: contain; border-radius: 12px; display: block;">
             </div>
+        </div>
+    </div>
+
+    <!-- Modal para Nuevo Encargo Manual -->
+    <div id="modal-pedido-manual" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1.5rem; box-sizing: border-box;">
+        <div style="background: white; border-radius: 28px; padding: 2rem; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); box-sizing: border-box;">
+            <button id="cerrar-modal-pedido-manual" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; font-weight: bold; color: #C93A5B; cursor: pointer; padding: 4px 8px; line-height: 1;">✕</button>
+            <h3 style="font-family: var(--f-titulo); color: var(--rosa); margin: 0 0 1.2rem 0; font-size: 1.5rem;">Registrar Encargo Manual</h3>
+            <form id="formulario-pedido-manual" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="manual-nombre">Nombre del cliente *</label>
+                    <input type="text" id="manual-nombre" required placeholder="Nombre completo">
+                </div>
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="manual-correo">Correo electrónico *</label>
+                    <input type="email" id="manual-correo" required placeholder="correo@ejemplo.com">
+                </div>
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="manual-celular">Celular / WhatsApp (Ecuador) *</label>
+                    <input type="text" id="manual-celular" required placeholder="0999999999" maxlength="10">
+                </div>
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="manual-producto">Tipo de pieza *</label>
+                    <select id="manual-producto" required style="width: 100%; padding: 0.7rem 1.1rem; border: 1.5px solid var(--rosa-claro); border-radius: var(--radio-input); background-color: var(--blanco); font-family: var(--f-cuerpo);">
+                        <option value="" disabled selected>Selecciona una pieza</option>
+                        <option value="Amigurumis">Amigurumis</option>
+                        <option value="Llaveros">Llaveros</option>
+                        <option value="Ramos de Flores">Ramos de Flores</option>
+                        <option value="Diseño especial">Diseño personalizado / Otro</option>
+                    </select>
+                </div>
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="manual-detalles">Detalles del pedido *</label>
+                    <textarea id="manual-detalles" rows="2" required placeholder="Colores, observaciones..."></textarea>
+                </div>
+                <div class="fila-campos" style="display: flex; gap: 1rem;">
+                    <div class="grupo-campo" style="margin-bottom: 0; flex: 1;">
+                        <label for="manual-fecha-entrega">Fecha de entrega *</label>
+                        <input type="date" id="manual-fecha-entrega" required>
+                    </div>
+                    <div class="grupo-campo" style="margin-bottom: 0; flex: 1;">
+                        <label for="manual-precio">Precio total (USD)</label>
+                        <input type="number" step="0.50" min="0" id="manual-precio" placeholder="$0.00">
+                    </div>
+                </div>
+                
+                <!-- Campos para el tiempo inicial de tejido -->
+                <div class="fila-campos" style="display: flex; gap: 1rem;">
+                    <div class="grupo-campo" style="margin-bottom: 0; flex: 1;">
+                        <label for="manual-horas">Horas ya tejidas (opcional)</label>
+                        <input type="number" min="0" id="manual-horas" value="0" placeholder="0">
+                    </div>
+                    <div class="grupo-campo" style="margin-bottom: 0; flex: 1;">
+                        <label for="manual-minutos">Minutos ya tejidos (opcional)</label>
+                        <input type="number" min="0" max="59" id="manual-minutos" value="0" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="manual-estado">Estado inicial</label>
+                    <select id="manual-estado" style="width: 100%; padding: 0.7rem 1.1rem; border: 1.5px solid var(--rosa-claro); border-radius: var(--radio-input); background-color: var(--blanco); font-family: var(--f-cuerpo);">
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En elaboración">En elaboración</option>
+                        <option value="Completado">Completado</option>
+                    </select>
+                </div>
+                <button type="submit" class="boton-primario" style="margin-top: 0.5rem; width: 100%; text-align: center; background-color: var(--rosa); color: #fff;">Guardar Encargo</button>
+            </form>
         </div>
     </div>
 

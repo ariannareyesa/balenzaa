@@ -28,6 +28,23 @@
   --flor-clara: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23FBC5D6'%3E%3Ccircle cx='50' cy='22' r='20'/%3E%3Ccircle cx='77' cy='42' r='20'/%3E%3Ccircle cx='67' cy='74' r='20'/%3E%3Ccircle cx='33' cy='74' r='20'/%3E%3Ccircle cx='23' cy='42' r='20'/%3E%3C/g%3E%3Ccircle cx='50' cy='50' r='13' fill='%23FFD45C'/%3E%3C/svg%3E");
 }
 
+/* Scrollbars personalizados elegantes estilo pastel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--crema);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--rosa-claro);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--rosa);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -242,13 +259,13 @@ ul {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   color: var(--rosa);
 }
 
 .imagen-logo-nav {
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
