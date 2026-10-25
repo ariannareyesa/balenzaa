@@ -130,21 +130,6 @@ ul {
   margin-top: 0.8rem;
 }
 
-/* Botón "Hacer pedido" en la barra de navegación */
-.boton-nav-cta {
-  display: inline-block;
-  font-family: var(--f-cuerpo);
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--tinta);
-  background-color: var(--rosa-claro);
-  border: none;
-  border-radius: var(--radio-pill);
-  padding: 0.45rem 1.1rem;
-  cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
 .boton-primario,
 .boton-secundario,
 .boton-consultar,
@@ -169,7 +154,6 @@ ul {
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-.boton-nav-cta:hover,
 .boton-primario:hover,
 .boton-secundario:hover,
 .boton-consultar:hover,
@@ -196,6 +180,46 @@ ul {
   background-color: var(--crema);
 }
 
+.boton-nav-cta {
+  display: inline-block;
+  font-family: var(--f-cuerpo);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--tinta);
+  background-color: var(--rosa-claro);
+  border: none;
+  border-radius: var(--radio-pill);
+  padding: 0.45rem 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.boton-nav-cta:hover {
+  transform: translateY(-2px);
+}
+
+.boton-encargar-tarjeta {
+  display: inline-block;
+  font-family: var(--f-cuerpo);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--tinta);
+  background-color: var(--rosa-pastel);
+  border: 1.5px solid var(--rosa-claro);
+  border-radius: var(--radio-pill);
+  padding: 0.45rem 1.1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.boton-encargar-tarjeta:hover {
+  background-color: var(--rosa);
+  color: var(--blanco);
+  border-color: var(--rosa);
+  transform: translateY(-2px);
+}
+
 .barra-navegacion {
   position: sticky;
   top: 0;
@@ -214,7 +238,6 @@ ul {
   flex-wrap: wrap;
 }
 
-/* Estilos para el logotipo con imagen circular y texto de la marca */
 .logotipo-marca {
   display: flex;
   align-items: center;
@@ -224,8 +247,8 @@ ul {
 }
 
 .imagen-logo-nav {
-  width: 37px;
-  height: 37px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
@@ -251,7 +274,6 @@ ul {
   color: var(--rosa);
 }
 
-/* Botón hamburguesa oculto por defecto en PC */
 .menu-hamburguesa {
   display: none;
   background: none;
@@ -480,12 +502,14 @@ img.doodle-flecha-romina {
   position: relative;
   aspect-ratio: 1;
   background-color: var(--rosa-pastel);
+  overflow: hidden;
 }
 
 .imagen-producto img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .etiqueta-categoria {
@@ -500,6 +524,7 @@ img.doodle-flecha-romina {
   font-style: italic;
   font-weight: 400;
   font-size: 1rem;
+  z-index: 2;
 }
 
 .info-producto {
@@ -1139,7 +1164,50 @@ textarea:focus {
   max-width: 240px;
 }
 
-/* Estilos responsivos para dispositivos móviles */
+/* --- ESTILOS TOAST NOTIFICACIONES MINIMALISTAS --- */
+#contenedor-toasts {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast-notificacion {
+  background-color: var(--blanco);
+  color: var(--tinta);
+  padding: 0.9rem 1.4rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(116, 64, 79, 0.1);
+  border: 1.5px solid var(--rosa-claro);
+  font-family: var(--f-cuerpo);
+  font-size: 0.92rem;
+  font-weight: 600;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: 320px;
+}
+
+.toast-notificacion.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-notificacion.exito {
+  border-color: var(--verde);
+  background-color: #F7FBDF;
+}
+
+.toast-notificacion.error {
+  border-color: var(--rosa);
+  background-color: var(--rosa-pastel);
+}
+
 @media (max-width: 800px) {
   .menu-hamburguesa {
     display: flex;

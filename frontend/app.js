@@ -1,8 +1,32 @@
-// BALENZAA
-
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Control del menú hamburguesa para dispositivos móviles
+    // Sistema de Notificaciones Toast Minimalistas
+    function mostrarToast(mensaje, tipo = 'exito') {
+        let contenedor = document.getElementById('contenedor-toasts');
+        if (!contenedor) {
+            contenedor = document.createElement('div');
+            contenedor.id = 'contenedor-toasts';
+            document.body.appendChild(contenedor);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast-notificacion ${tipo}`;
+        toast.textContent = mensaje;
+
+        contenedor.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('visible');
+        }, 10);
+
+        setTimeout(() => {
+            toast.classList.remove('visible');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3500);
+    }
+
     const menuHamburguesa = document.getElementById('menuHamburguesa');
     const menuNavegacion = document.getElementById('menuNavegacion');
 
@@ -18,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Banner de Estado de la Agenda (Tienda pública)
     const bannerAgenda = document.getElementById('banner-estado-agenda');
     if (bannerAgenda) {
         const estaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
@@ -31,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 1. Catálogo Compartido: Obtención y Sincronización
     const catalogoInicial = [];
 
     async function obtenerCatalogo() {
@@ -48,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return guardado ? JSON.parse(guardado) : catalogoInicial;
     }
 
-    // Renderizar catálogo dinámico en la tienda pública (index.html)
     const contenedorCatalogoTienda = document.getElementById('contenedor-catalogo-tienda');
 
     async function renderizarCatalogoPublico() {
@@ -76,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 $${parseFloat(prod.precio || 0).toFixed(2)}
                             </span>
                         </div>
-                        <a href="#pedidos" class="boton-encargar" style="font-size: 0.9rem; font-weight: 600; text-decoration: underline; cursor: pointer; color: var(--tinta);">
+                        <a href="#pedidos" class="boton-encargar-tarjeta">
                             Encargar
                         </a>
                     </div>
@@ -166,7 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return partes.length === 3 ? parseInt(partes[1], 10) : new Date(fechaIso).getMonth() + 1;
     }
 
-    // Indicador visual de archivo en formulario de pedidos
     const inputArchivoRef = document.getElementById('imagen-referencia-pedido');
     const textoNombreArchivo = document.getElementById('nombre-archivo-pedido');
 
@@ -184,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Indicador visual de archivo en formulario de nueva pieza (Admin)
     const inputFotoPieza = document.getElementById('imagen-producto-admin');
     const textoFotoPieza = document.getElementById('nombre-foto-admin');
 
@@ -202,7 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Mostrar/ocultar input para nueva categoría en admin
     const selectCatAdmin = document.getElementById('nueva-categoria-producto');
     const inputOtraCatAdmin = document.getElementById('input-otra-categoria');
 
@@ -217,7 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. Envío del Formulario de Pedidos
     const formPedido = document.getElementById('formulario-pedido');
     if (formPedido) {
         formPedido.addEventListener('submit', (e) => {
@@ -309,18 +326,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const resultado = await respuesta.json();
 
                     if (respuesta.ok) {
-                        alert(`¡Gracias, ${nombre}! Tu encargo ha sido registrado con éxito.`);
+                        mostrarToast(`Gracias ${nombre}, tu encargo ha sido registrado con éxito.`, 'exito');
                         formPedido.reset();
                         if (textoNombreArchivo) {
                             textoNombreArchivo.textContent = 'Ningún archivo seleccionado';
                             textoNombreArchivo.style.opacity = '0.75';
                         }
                     } else {
-                        alert(`Atención: ${resultado.error || 'Error al registrar pedido'}`);
+                        mostrarToast(resultado.error || 'Error al registrar pedido', 'error');
                     }
                 } catch (error) {
                     console.error('Error al conectar con el servidor:', error);
-                    alert('Hubo un error de conexión al enviar el pedido. Intenta nuevamente.');
+                    mostrarToast('Error de conexión al enviar el pedido.', 'error');
                 }
             }
 
@@ -336,7 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. Panel de Administración (admin.html)
     const formLoginAdmin = document.getElementById('formulario-login-admin');
     const seccionLoginAdmin = document.getElementById('seccion-login-admin');
     const panelContenido = document.getElementById('panel-contenido');
@@ -392,6 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let filtroMesSeleccionado = 'todos';
     let filtroTipoSeleccionado = 'todos';
+    let estadoFiltroAdmin = 'todos'; // Nuevo filtro por pestaña de estado
 
     function inyectarControlesFiltro() {
         const seccionGestion = document.querySelector('.seccion-gestion-pedidos');
@@ -399,32 +416,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const contenedorFiltros = document.createElement('div');
         contenedorFiltros.id = 'barra-filtros-pedidos';
-        contenedorFiltros.style.cssText = 'display: flex; gap: 1rem; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; background: #FFF7FA; padding: 0.9rem 1.2rem; border-radius: 18px; border: 1.5px solid var(--rosa-claro);';
+        contenedorFiltros.style.cssText = 'display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.2rem; background: #FFF7FA; padding: 1rem 1.2rem; border-radius: 18px; border: 1.5px solid var(--rosa-claro);';
 
         contenedorFiltros.innerHTML = `
-            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-                <span style="font-weight: 700; color: var(--rosa); font-size: 0.92rem;">Filtrar encargos y métricas:</span>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <label for="filtro-mes-pedidos" style="font-size: 0.85rem; font-weight: 600; margin: 0;">Mes:</label>
-                    <select id="filtro-mes-pedidos" style="padding: 5px 10px; border-radius: 10px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; background: #fff; width: auto;">
-                        <option value="todos">Todos los meses</option>
-                        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-                        <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-                        <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-                        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-                    </select>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <label for="filtro-tipo-pedidos" style="font-size: 0.85rem; font-weight: 600; margin: 0;">Tipo de pieza:</label>
-                    <select id="filtro-tipo-pedidos" style="padding: 5px 10px; border-radius: 10px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; background: #fff; width: auto;">
-                        <option value="todos">Todas las piezas</option>
-                    </select>
+            <!-- Pestañas de Filtro Rápido por Estado -->
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; border-bottom: 1.5px solid var(--rosa-claro); padding-bottom: 0.8rem;">
+                <span style="font-weight: 700; color: var(--rosa); font-size: 0.92rem; margin-right: 0.5rem;">Estado:</span>
+                <button class="btn-filtro-estado activo" data-estado="todos" style="padding: 0.4rem 1rem; border-radius: 999px; border: 1.5px solid var(--rosa-claro); background: var(--rosa); color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer;">Todos</button>
+                <button class="btn-filtro-estado" data-estado="Pendiente" style="padding: 0.4rem 1rem; border-radius: 999px; border: 1.5px solid var(--rosa-claro); background: #fff; color: var(--tinta); font-weight: 700; font-size: 0.85rem; cursor: pointer;">Pendientes</button>
+                <button class="btn-filtro-estado" data-estado="En elaboración" style="padding: 0.4rem 1rem; border-radius: 999px; border: 1.5px solid var(--rosa-claro); background: #fff; color: var(--tinta); font-weight: 700; font-size: 0.85rem; cursor: pointer;">En elaboración</button>
+                <button class="btn-filtro-estado" data-estado="Completado" style="padding: 0.4rem 1rem; border-radius: 999px; border: 1.5px solid var(--rosa-claro); background: #fff; color: var(--tinta); font-weight: 700; font-size: 0.85rem; cursor: pointer;">Completados</button>
+            </div>
+
+            <!-- Filtros por Mes y Tipo de Pieza -->
+            <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <label for="filtro-mes-pedidos" style="font-size: 0.85rem; font-weight: 600; margin: 0;">Mes:</label>
+                        <select id="filtro-mes-pedidos" style="padding: 5px 10px; border-radius: 10px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; background: #fff; width: auto;">
+                            <option value="todos">Todos los meses</option>
+                            <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                            <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                            <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <label for="filtro-tipo-pedidos" style="font-size: 0.85rem; font-weight: 600; margin: 0;">Tipo de pieza:</label>
+                        <select id="filtro-tipo-pedidos" style="padding: 5px 10px; border-radius: 10px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; background: #fff; width: auto;">
+                            <option value="todos">Todas las piezas</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         `;
 
         const tabla = seccionGestion.querySelector('.contenedor-tabla');
         if (tabla) seccionGestion.insertBefore(contenedorFiltros, tabla);
+
+        // Eventos para los botones de estado
+        contenedorFiltros.querySelectorAll('.btn-filtro-estado').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                contenedorFiltros.querySelectorAll('.btn-filtro-estado').forEach(b => {
+                    b.style.background = '#fff';
+                    b.style.color = 'var(--tinta)';
+                    b.classList.remove('activo');
+                });
+                e.target.style.background = 'var(--rosa)';
+                e.target.style.color = '#fff';
+                e.target.classList.add('activo');
+
+                estadoFiltroAdmin = e.target.dataset.estado;
+                renderizarPedidos();
+            });
+        });
 
         const selMes = document.getElementById('filtro-mes-pedidos');
         const selTipo = document.getElementById('filtro-tipo-pedidos');
@@ -463,7 +508,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Renderizar Pedidos con Cronómetro
     async function renderizarPedidos() {
         if (!cuerpoTablaPedidos) return;
         inyectarControlesFiltro();
@@ -487,6 +531,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let totalCobrado = 0;
 
         const pedidosFiltrados = pedidos.map((p, indexOriginal) => ({ ...p, indexOriginal })).filter(p => {
+            const estadoActual = p.estado || 'Pendiente';
+            const cumpleEstado = (estadoFiltroAdmin === 'todos') || (estadoActual === estadoFiltroAdmin);
             const cumpleTipo = (filtroTipoSeleccionado === 'todos') || (p.producto && p.producto.trim().toLowerCase() === filtroTipoSeleccionado.trim().toLowerCase());
 
             let cumpleMes = true;
@@ -496,27 +542,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 cumpleMes = (mesCreacion === parseInt(filtroMesSeleccionado, 10)) || (mesEntrega === parseInt(filtroMesSeleccionado, 10));
             }
 
-            return cumpleTipo && cumpleMes;
+            return cumpleEstado && cumpleTipo && cumpleMes;
+        });
+
+        // Contadores globales para métricas superiores
+        pedidos.forEach(p => {
+            const estado = p.estado || 'Pendiente';
+            if (estado === 'Pendiente') pendientes++;
+            else if (estado === 'En elaboración') elaboracion++;
+            else if (estado === 'Completado') completados++;
+
+            const precioNum = parseFloat(p.precioTotal) || 0;
+            if (estado === 'En elaboración') {
+                totalCobrado += (precioNum * 0.50);
+            } else if (estado === 'Completado') {
+                totalCobrado += precioNum;
+            }
         });
 
         if (pedidosFiltrados.length === 0) {
-            cuerpoTablaPedidos.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 1.5rem; color: var(--tinta);">No se encontraron encargos.</td></tr>';
+            cuerpoTablaPedidos.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 1.5rem; color: var(--tinta);">No se encontraron encargos con este filtro.</td></tr>';
         } else {
             pedidosFiltrados.forEach((p) => {
                 const idPedido = p._id || p.indexOriginal;
                 const estado = p.estado || 'Pendiente';
-                if (estado === 'Pendiente') pendientes++;
-                else if (estado === 'En elaboración') elaboracion++;
-                else if (estado === 'Completado') completados++;
-
                 const precioNum = parseFloat(p.precioTotal) || 0;
-
-                if (estado === 'En elaboración') {
-                    totalCobrado += (precioNum * 0.50);
-                } else if (estado === 'Completado') {
-                    totalCobrado += precioNum;
-                }
-
                 const tiempoFormateado = formatearTiempo(p.segundosTejidos || 0);
                 const activo = p.cronometroActivo || false;
                 const fechaCreacionTexto = p.fechaCreacion ? formatearFechaTexto(p.fechaCreacion) : 'Hoy';
@@ -544,7 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="white-space: nowrap;">
                         <select class="select-cambio-estado" data-id="${idPedido}" style="padding: 5px 8px; border-radius: 8px; border: 1.5px solid var(--rosa-claro); font-size: 0.85rem; cursor: pointer; background-color: #fff; width: auto; min-width: 130px;">
                             <option value="Pendiente" ${estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
-                            <option value="En elaboración" ${estado === 'En elaboration' || estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
+                            <option value="En elaboración" ${estado === 'En elaboración' ? 'selected' : ''}>En elaboración</option>
                             <option value="Completado" ${estado === 'Completado' ? 'selected' : ''}>Completado</option>
                         </select>
                     </td>
@@ -596,8 +646,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ estado: nuevoEstado })
                     });
+                    mostrarToast('Estado del pedido actualizado.', 'exito');
                 } catch (err) {
                     console.error('Error al actualizar estado:', err);
+                    mostrarToast('Error al actualizar el estado.', 'error');
                 }
                 renderizarPedidos();
             });
@@ -613,8 +665,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ precioTotal: nuevoPrecio })
                     });
+                    mostrarToast('Precio actualizado con éxito.', 'exito');
                 } catch (err) {
                     console.error('Error al actualizar precio:', err);
+                    mostrarToast('Error al actualizar el precio.', 'error');
                 }
                 renderizarPedidos();
             });
@@ -627,8 +681,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (confirma) {
                     try {
                         await fetch(`/api/pedidos/${id}`, { method: 'DELETE' });
+                        mostrarToast('Encargo eliminado.', 'exito');
                     } catch (err) {
                         console.error('Error al eliminar pedido:', err);
+                        mostrarToast('Error al eliminar el encargo.', 'error');
                     }
                     renderizarPedidos();
                 }
@@ -636,7 +692,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Renderizar Productos Editables en el Panel Admin (Conectado a MongoDB)
     async function renderizarCatalogoAdmin() {
         if (!contenedorCatalogoAdmin) return;
         const productos = await obtenerCatalogo();
@@ -677,7 +732,6 @@ document.addEventListener('DOMContentLoaded', () => {
             contenedorCatalogoAdmin.appendChild(card);
         });
 
-        // Eventos para edición de nombre y descripción
         document.querySelectorAll('.editable-item').forEach(el => {
             el.addEventListener('focus', (e) => {
                 e.target.style.backgroundColor = '#FFF7FA';
@@ -699,13 +753,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         body: JSON.stringify({ [campo]: valor })
                     });
                     renderizarCatalogoPublico();
+                    mostrarToast('Cambio guardado.', 'exito');
                 } catch (err) {
                     console.error('Error al actualizar producto:', err);
+                    mostrarToast('Error al actualizar.', 'error');
                 }
             });
         });
 
-        // Evento para edición de precio
         document.querySelectorAll('.input-precio-producto').forEach(inp => {
             inp.addEventListener('change', async (e) => {
                 const id = e.target.dataset.id;
@@ -720,13 +775,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         body: JSON.stringify({ precio: nuevoPrecio })
                     });
                     renderizarCatalogoPublico();
+                    mostrarToast('Precio de pieza actualizado.', 'exito');
                 } catch (err) {
                     console.error('Error al actualizar precio:', err);
+                    mostrarToast('Error al actualizar precio.', 'error');
                 }
             });
         });
 
-        // Evento para eliminar producto de MongoDB
         document.querySelectorAll('.boton-eliminar-producto').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.target.dataset.id;
@@ -738,15 +794,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         await fetch(`/api/productos/${id}`, { method: 'DELETE' });
                         renderizarCatalogoAdmin();
                         renderizarCatalogoPublico();
+                        mostrarToast('Pieza eliminada del catálogo.', 'exito');
                     } catch (err) {
                         console.error('Error al eliminar producto:', err);
+                        mostrarToast('Error al eliminar pieza.', 'error');
                     }
                 }
             });
         });
     }
 
-    // Formulario para agregar una nueva pieza al catálogo en MongoDB
     const formNuevaPieza = document.getElementById('formulario-nuevo-producto');
     if (formNuevaPieza) {
         formNuevaPieza.addEventListener('submit', async (e) => {
@@ -760,7 +817,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const elFoto = document.getElementById('imagen-producto-admin');
 
             const nombre = elNombre ? elNombre.value.trim() : '';
-
             let rawPrecio = elPrecio ? elPrecio.value.replace(/[^0-9.]/g, '') : '0';
             const precio = parseFloat(rawPrecio) || 0;
 
@@ -772,11 +828,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const descripcion = elDesc ? elDesc.value.trim() : '';
 
             if (!nombre || !categoria || precio <= 0) {
-                alert('Por favor completa el nombre, selecciona una categoría y un precio válido.');
+                mostrarToast('Completa el nombre, categoría y precio válido.', 'error');
                 return;
             }
 
-            async function enviarAProductos(imagenBase64 = 'images/amigurumi.jpg') {
+            const archivo = elFoto?.files ? elFoto.files[0] : null;
+            if (!archivo) {
+                mostrarToast('Selecciona una foto para la pieza.', 'error');
+                return;
+            }
+
+            const lector = new FileReader();
+            lector.onload = async function (evento) {
+                const imagenBase64 = evento.target.result;
+
                 const nuevoProducto = {
                     nombre,
                     categoria,
@@ -793,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     if (respuesta.ok) {
-                        alert('¡Pieza agregada con éxito al catálogo!');
+                        mostrarToast('¡Pieza agregada con éxito al catálogo!', 'exito');
                         formNuevaPieza.reset();
                         
                         if (elOtraCat) elOtraCat.style.display = 'none';
@@ -805,28 +870,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         renderizarCatalogoAdmin();
                         renderizarCatalogoPublico();
                     } else {
-                        alert('Error al guardar el producto en la base de datos.');
+                        mostrarToast('Error al guardar el producto en la base de datos.', 'error');
                     }
                 } catch (err) {
                     console.error('Error al enviar producto:', err);
-                    alert('Ocurrió un error al conectar con el servidor.');
+                    mostrarToast('Ocurrió un error al conectar con el servidor.', 'error');
                 }
-            }
-
-            const archivoFoto = elFoto?.files ? elFoto.files[0] : null;
-            if (archivoFoto) {
-                const lector = new FileReader();
-                lector.onload = function (evento) {
-                    enviarAProductos(evento.target.result);
-                };
-                lector.readAsDataURL(archivoFoto);
-            } else {
-                enviarAProductos('images/amigurumi.jpg');
-            }
+            };
+            lector.readAsDataURL(archivo);
         });
     }
 
-    // 3. Autenticación Admin con JWT Real (MongoDB Atlas)
     const tokenGuardado = localStorage.getItem('balenzaa_token');
     if (tokenGuardado && seccionLoginAdmin && panelContenido) {
         seccionLoginAdmin.style.display = 'none';
@@ -865,6 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (errorLogin) errorLogin.style.display = 'none';
                     renderizarPedidos();
                     renderizarCatalogoAdmin();
+                    mostrarToast('Sesión iniciada correctamente.', 'exito');
                 } else {
                     if (errorLogin) {
                         errorLogin.textContent = datos.error || 'Credenciales incorrectas.';
@@ -887,15 +942,17 @@ document.addEventListener('DOMContentLoaded', () => {
             panelContenido.style.display = 'none';
             seccionLoginAdmin.style.display = 'block';
             if (formLoginAdmin) formLoginAdmin.reset();
+            mostrarToast('Sesión cerrada.', 'exito');
         });
     }
 
     if (botonToggleAgenda) {
         botonToggleAgenda.addEventListener('click', () => {
             const actualmenteCerrada = botonToggleAgenda.classList.contains('cerrada');
-            const nuevoEstadoCerrada = !actualmenteCerrada;
+            const nuevoEstadoCerrada = !actualualmenteCerrada;
             localStorage.setItem('balenzaa_agenda_cerrada', nuevoEstadoCerrada);
             actualizarVisualAgenda(nuevoEstadoCerrada);
+            mostrarToast(nuevoEstadoCerrada ? 'Agenda cerrada para nuevos pedidos.' : 'Agenda abierta para nuevos pedidos.', 'exito');
         });
     }
 });
