@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Sistema de Notificaciones Toast Minimalistas
     function mostrarToast(mensaje, tipo = 'exito') {
         let contenedor = document.getElementById('contenedor-toasts');
         if (!contenedor) {
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3500);
     }
 
-    // Modal de Confirmación Personalizado Estilo Balenzaa
     function mostrarConfirmacion(mensaje, callbackAceptar) {
         const modal = document.getElementById('modal-confirmacion');
         const textoMsg = document.getElementById('texto-mensaje-confirmacion');
@@ -422,6 +420,142 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // Modal Suscriptores Club Balenzaa
+    const modalSuscriptores = document.getElementById('modal-suscriptores-club');
+    const btnAbrirSuscriptores = document.getElementById('boton-abrir-suscriptores');
+    const btnCerrarSuscriptores = document.getElementById('cerrar-modal-suscriptores');
+    const contenedorListaSuscriptores = document.getElementById('lista-suscriptores-contenedor');
+    const btnCopiarTodosCorreos = document.getElementById('btn-copiar-todos-correos');
+    const btnDescargarCsv = document.getElementById('btn-descargar-csv');
+
+    if (btnAbrirSuscriptores && modalSuscriptores) {
+        btnAbrirSuscriptores.onclick = async () => {
+            modalSuscriptores.style.display = 'flex';
+            await cargarSuscriptoresClub();
+        };
+    }
+
+    if (btnCerrarSuscriptores && modalSuscriptores) {
+        btnCerrarSuscriptores.onclick = () => {
+            modalSuscriptores.style.display = 'none';
+        };
+    }
+
+    if (modalSuscriptores) {
+        modalSuscriptores.onclick = (e) => {
+            if (e.target === modalSuscriptores) {
+                modalSuscriptores.style.display = 'none';
+            }
+        };
+    }
+
+    async function cargarSuscriptoresClub() {
+        if (!contenedorListaSuscriptores) return;
+        contenedorListaSuscriptores.innerHTML = '<p style="text-align: center; color: var(--tinta);">Cargando suscriptores...</p>';
+        
+        let pedidos = [];
+        try {
+            const respuesta = await fetch('/api/pedidos');
+            if (respuesta.ok) {
+                pedidos = await respuesta.json();
+            }
+        } catch (error) {
+            console.error('Error al obtener suscriptores:', error);
+        }
+
+        const suscriptores = pedidos.filter(p => p.suscritoClub && p.correo);
+
+        if (suscriptores.length === 0) {
+            contenedorListaSuscriptores.innerHTML = '<p style="text-align: center; color: var(--tinta);">No hay suscriptores en el Club Balenzaa todavía.</p>';
+            return;
+        }
+
+        contenedorListaSuscriptores.innerHTML = '';
+        suscriptores.forEach(s => {
+            const item = document.createElement('div');
+            item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 0.6rem 1rem; border-radius: 12px; border: 1.5px solid var(--rosa-claro); gap: 0.5rem;';
+            item.innerHTML = `
+                <div style="overflow: hidden; text-overflow: ellipsis;">
+                    <strong style="display: block; font-size: 0.9rem; color: var(--tinta);">${s.nombre || 'Sin nombre'}</strong>
+                    <span style="font-size: 0.82rem; color: #666;">${s.correo}</span>
+                </div>
+                <button class="btn-copiar-correo" data-correo="${s.correo}" style="background: var(--rosa-pastel); border: 1.5px solid var(--rosa-claro); color: var(--tinta); padding: 4px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap;">Copiar</button>
+            `;
+            contenedorListaSuscriptores.appendChild(item);
+        });
+
+        document.querySelectorAll('.btn-copiar-correo').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const correo = e.target.dataset.correo;
+                navigator.clipboard.writeText(correo).then(() => {
+                    mostrarToast(`Correo copiado: ${correo}`, 'exito');
+                }).catch(() => {
+                    mostrarToast('No se pudo copiar el correo.', 'error');
+                });
+            });
+        });
+    }
+
+    if (btnCopiarTodosCorreos) {
+        btnCopiarTodosCorreos.onclick = async () => {
+            let pedidos = [];
+            try {
+                const respuesta = await fetch('/api/pedidos');
+                if (respuesta.ok) {
+                    pedidos = await respuesta.json();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+            const correos = pedidos.filter(p => p.suscritoClub && p.correo).map(p => p.correo).join(', ');
+            if (!correos) {
+                mostrarToast('No hay correos para copiar.', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(correos).then(() => {
+                mostrarToast('¡Todos los correos copiados al portapapeles!', 'exito');
+            }).catch(() => {
+                mostrarToast('Error al copiar los correos.', 'error');
+            });
+        };
+    }
+
+    if (btnDescargarCsv) {
+        btnDescargarCsv.onclick = async () => {
+            let pedidos = [];
+            try {
+                const respuesta = await fetch('/api/pedidos');
+                if (respuesta.ok) {
+                    pedidos = await respuesta.json();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+            const suscriptores = pedidos.filter(p => p.suscritoClub && p.correo);
+            if (suscriptores.length === 0) {
+                mostrarToast('No hay suscriptores para exportar.', 'error');
+                return;
+            }
+
+            let csvContent = '\uFEFFNombre,Correo\n';
+            suscriptores.forEach(s => {
+                const nombre = `"${(s.nombre || '').replace(/"/g, '""')}"`;
+                const correo = `"${(s.correo || '').replace(/"/g, '""')}"`;
+                csvContent += `${nombre},${correo}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'suscriptores_club_balenzaa.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            mostrarToast('Archivo CSV descargado con éxito.', 'exito');
+        };
+    }
+
     const modalPedidoManual = document.getElementById('modal-pedido-manual');
     const btnAbrirModalPedido = document.getElementById('boton-abrir-modal-pedido');
     const btnCerrarModalPedido = document.getElementById('cerrar-modal-pedido-manual');
@@ -763,6 +897,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fechaCreacionTexto = p.fechaCreacion ? formatearFechaTexto(p.fechaCreacion) : 'Hoy';
                 const fechaEntregaTexto = p.fechaEntrega ? formatearFechaTexto(p.fechaEntrega) : 'Por definir';
 
+                // Enlace directo a WhatsApp en el número
+                const enlaceWs = p.celular ? `https://wa.me/593${p.celular.replace(/^0/, '')}` : '#';
+
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
                     <td style="white-space: nowrap;">${fechaCreacionTexto}</td>
@@ -772,7 +909,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${p.suscritoClub ? '<br><span style="font-size:0.75rem; background:var(--rosa-pastel); color:var(--tinta); padding:2px 8px; border-radius:999px;">Club</span>' : ''}
                     </td>
                     <td style="white-space: nowrap;">
-                        ${p.celular ? `<a href="https://wa.me/593${p.celular.replace(/^0/, '')}" target="_blank" rel="noopener noreferrer" style="color: #2F6224; font-weight: 700; text-decoration: underline;">${p.celular}</a>` : '<span style="color:#999;">-</span>'}
+                        ${p.celular ? `
+                            <a href="${enlaceWs}" target="_blank" rel="noopener noreferrer" style="color: #2F6224; font-weight: 700; text-decoration: underline;" title="Abrir en WhatsApp">${p.celular}</a>
+                        ` : '<span style="color:#999;">-</span>'}
                     </td>
                     <td>
                         ${p.producto || 'Diseño especial'}
@@ -851,7 +990,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Evento para reiniciar cronómetro con modal de confirmación elegante
         document.querySelectorAll('.btn-reset-timer').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
@@ -924,7 +1062,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Evento para eliminar pedido con modal de confirmación elegante
         document.querySelectorAll('.boton-eliminar-pedido').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
@@ -1033,7 +1170,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Evento para eliminar producto con modal de confirmación elegante
         document.querySelectorAll('.boton-eliminar-producto').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;

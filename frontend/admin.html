@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Forzar 4 columnas en el catálogo del panel de administración */
         #contenedor-catalogo-admin {
             display: grid;
             grid-template-columns: repeat(4, 1fr) !important;
@@ -67,9 +66,10 @@
                 <div class="info-sesion">
                     <p>Bienvenida, <strong>Romina</strong></p>
                 </div>
-                <div class="control-agenda">
+                <div class="control-agenda" style="gap: 0.8rem; flex-wrap: wrap;">
                     <span>Estado de la agenda:</span>
                     <button id="boton-toggle-agenda" class="boton-agenda activa">Agenda Abierta</button>
+                    <button id="boton-abrir-suscriptores" class="boton-primario" style="font-size: 0.85rem; padding: 0.4rem 1.1rem; background-color: var(--azul); color: var(--azul-texto); border-radius: var(--radio-pill); border: none; cursor: pointer; font-weight: 700;">Club Balenzaa (Suscriptores)</button>
                 </div>
                 <button id="boton-cerrar-sesion" class="boton-salir">Cerrar Sesión</button>
             </div>
@@ -143,6 +143,22 @@
             <h3 style="font-family: var(--f-titulo); color: var(--rosa); margin: 0 0 1.2rem 0; font-size: 1.4rem;">Foto de Referencia</h3>
             <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; background: #FFF7FA; border: 1.5px solid var(--rosa-claro); border-radius: 18px; padding: 0.8rem; overflow: hidden;">
                 <img id="img-modal-referencia" src="" alt="Referencia" style="max-width: 100%; max-height: 55vh; width: auto; height: auto; object-fit: contain; border-radius: 12px; display: block;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Suscriptores del Club Balenzaa -->
+    <div id="modal-suscriptores-club" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1.5rem; box-sizing: border-box;">
+        <div style="background: white; border-radius: 28px; padding: 2rem; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); box-sizing: border-box;">
+            <button id="cerrar-modal-suscriptores" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; font-weight: bold; color: #C93A5B; cursor: pointer; padding: 4px 8px; line-height: 1;">✕</button>
+            <h3 style="font-family: var(--f-titulo); color: var(--rosa); margin: 0 0 0.5rem 0; font-size: 1.5rem;">Suscriptores Club Balenzaa</h3>
+            <p style="font-size: 0.88rem; color: var(--tinta); margin-bottom: 1.2rem;">Lista de correos de clientes suscritos para copiar y enviar novedades.</p>
+            <div id="lista-suscriptores-contenedor" style="display: flex; flex-direction: column; gap: 0.8rem; max-height: 50vh; overflow-y: auto; margin-bottom: 1.2rem; border: 1.5px solid var(--rosa-claro); border-radius: 16px; padding: 1rem; background: #FFF7FA;">
+                <!-- Dinámico -->
+            </div>
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                <button id="btn-copiar-todos-correos" class="boton-primario" style="background-color: var(--rosa); color: #fff; flex: 1; text-align: center; font-size: 0.85rem; padding: 0.7rem 1rem; border-radius: var(--radio-pill); border: none; font-weight: 700; cursor: pointer;">Copiar todos</button>
+                <button id="btn-descargar-csv" class="boton-primario" style="background-color: var(--azul); color: var(--azul-texto); flex: 1; text-align: center; font-size: 0.85rem; padding: 0.7rem 1rem; border-radius: var(--radio-pill); border: none; font-weight: 700; cursor: pointer;">Descargar CSV</button>
             </div>
         </div>
     </div>
