@@ -14,10 +14,10 @@ const Usuario = require('./models/Usuario');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
+// Middlewares (Límites ampliados a 25mb para las imágenes en base64)
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
 // Definir la ruta absoluta hacia el frontend
 const frontendPath = path.resolve(__dirname, '..', 'frontend');
