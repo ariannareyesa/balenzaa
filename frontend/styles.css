@@ -200,9 +200,22 @@ ul {
   flex-wrap: wrap;
 }
 
+/* Estilos para el logotipo con imagen circular y texto de la marca */
 .logotipo-marca {
-  font-size: 2.3rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.5rem;
   color: var(--rosa);
+}
+
+.imagen-logo-nav {
+  width: 37px;
+  height: 37px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 1.5px solid var(--rosa-claro);
 }
 
 .menu-navegacion {
