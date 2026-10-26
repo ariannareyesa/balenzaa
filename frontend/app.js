@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <div class="imagen-producto">
                     <img src="${prod.imagen}" alt="${prod.nombre}" onerror="this.src='images/amigurumi.jpg'">
-                    <span class="etiqueta-categoria">${prod.categoria}</span>
+                    ${prod.categoria && prod.categoria.trim().toLowerCase() !== 'general' ? `<span class="etiqueta-categoria">${prod.categoria}</span>` : ''}
                 </div>
                 <div class="info-producto">
                     <h3 class="nombre-producto">${prod.nombre}</h3>
@@ -148,11 +148,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const categoriasSet = new Set();
         ['Amigurumis', 'Llaveros', 'Ramos de Flores'].forEach(c => categoriasSet.add(c));
+        
+        const categoriasIgnoradas = ['general', 'sin categoria', 'estandar'];
+
         productos.forEach(p => {
             if (p.categoria) {
                 const nombreCat = p.categoria.trim();
-                const capitalizada = nombreCat.charAt(0).toUpperCase() + nombreCat.slice(1);
-                categoriasSet.add(capitalizada);
+                if (!categoriasIgnoradas.includes(nombreCat.toLowerCase())) {
+                    const capitalizada = nombreCat.charAt(0).toUpperCase() + nombreCat.slice(1);
+                    categoriasSet.add(capitalizada);
+                }
             }
         });
 
@@ -465,7 +470,21 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Modal Suscriptores Club Balenzaa
+    function obtenerSuscriptoresUnicos(pedidos) {
+        const suscriptoresRaw = pedidos.filter(p => p.suscritoClub && p.correo);
+        const unicosMap = new Map();
+        suscriptoresRaw.forEach(s => {
+            const correoKey = (s.correo || '').trim().toLowerCase();
+            const nombreKey = (s.nombre || '').trim().toLowerCase();
+            const claveUnica = `${correoKey}_${nombreKey}`;
+            if (!unicosMap.has(claveUnica)) {
+                unicosMap.set(claveUnica, s);
+            }
+        });
+        return Array.from(unicosMap.values());
+    }
+
+    // Modal Club Balenzaa (Miembros)
     const modalSuscriptores = document.getElementById('modal-suscriptores-club');
     const btnAbrirSuscriptores = document.getElementById('boton-abrir-suscriptores');
     const btnCerrarSuscriptores = document.getElementById('cerrar-modal-suscriptores');
@@ -496,7 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function cargarSuscriptoresClub() {
         if (!contenedorListaSuscriptores) return;
-        contenedorListaSuscriptores.innerHTML = '<p style="text-align: center; color: var(--tinta);">Cargando suscriptores...</p>';
+        contenedorListaSuscriptores.innerHTML = '<p style="text-align: center; color: var(--tinta);">Cargando miembros...</p>';
         
         let pedidos = [];
         try {
@@ -505,13 +524,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 pedidos = await respuesta.json();
             }
         } catch (error) {
-            console.error('Error al obtener suscriptores:', error);
+            console.error('Error al obtener miembros:', error);
         }
 
-        const suscriptores = pedidos.filter(p => p.suscritoClub && p.correo);
+        const suscriptores = obtenerSuscriptoresUnicos(pedidos);
 
         if (suscriptores.length === 0) {
-            contenedorListaSuscriptores.innerHTML = '<p style="text-align: center; color: var(--tinta);">No hay suscriptores en el Club Balenzaa todavía.</p>';
+            contenedorListaSuscriptores.innerHTML = '<p style="text-align: center; color: var(--tinta);">No hay miembros en el Club Balenzaa todavía.</p>';
             return;
         }
 
@@ -552,7 +571,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error(err);
             }
-            const correos = pedidos.filter(p => p.suscritoClub && p.correo).map(p => p.correo).join(', ');
+            const suscriptores = obtenerSuscriptoresUnicos(pedidos);
+            const correos = suscriptores.map(p => p.correo).join(', ');
             if (!correos) {
                 mostrarToast('No hay correos para copiar.', 'error');
                 return;
@@ -576,9 +596,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error(err);
             }
-            const suscriptores = pedidos.filter(p => p.suscritoClub && p.correo);
+            const suscriptores = obtenerSuscriptoresUnicos(pedidos);
             if (suscriptores.length === 0) {
-                mostrarToast('No hay suscriptores para exportar.', 'error');
+                mostrarToast('No hay miembros para exportar.', 'error');
                 return;
             }
 
@@ -593,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.setAttribute('href', url);
-            link.setAttribute('download', 'suscriptores_club_balenzaa.csv');
+            link.setAttribute('download', 'miembros_club_balenzaa.csv');
             document.body.appendChild(link);
             link.click();
             link.remove();
