@@ -28,7 +28,7 @@ function Navbar({ onOpenCart, onOpenModal }) {
           >
             🛒 <span id="contador-carrito" style={{ background: 'var(--rosa)', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>0</span>
           </button>
-          <button onClick={onOpenModal} className="boton-nav-cta">Encargo</button>
+          <button onClick={onOpenModal} className="boton-nav-cta">Encargo personalizado</button>
         </div>
       </div>
     </header>

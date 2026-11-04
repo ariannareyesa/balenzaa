@@ -5,6 +5,8 @@ import About from './components/About';
 import Catalog from './components/Catalog';
 import CareGuide from './components/CareGuide';
 import FAQ from './components/FAQ';
+import Footer from './components/Footer';
+import WhatsAppButton from './components/WhatsAppButton';
 import CartDrawer from './components/CartDrawer';
 
 function App() {
@@ -64,8 +66,6 @@ function App() {
       return;
     }
     setIsCartOpen(false);
-    
-    // Desplazarse al catálogo o abrir formulario de pedido
     const catalogSection = document.getElementById('catalogo');
     if (catalogSection) catalogSection.scrollIntoView({ behavior: 'smooth' });
     alert('¡Productos listos! Puedes proceder con tu encargo en la tienda.');
@@ -85,6 +85,9 @@ function App() {
         <FAQ />
       </main>
       
+      <Footer />
+      <WhatsAppButton />
+
       <CartDrawer 
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
