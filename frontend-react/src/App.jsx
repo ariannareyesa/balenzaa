@@ -8,10 +8,13 @@ import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import CartDrawer from './components/CartDrawer';
+import OrderModal from './components/OrderModal';
 
 function App() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [orderModalDetails, setOrderModalDetails] = useState('');
 
   // Cargar carrito desde localStorage al iniciar
   useEffect(() => {
@@ -66,19 +69,32 @@ function App() {
       return;
     }
     setIsCartOpen(false);
-    const catalogSection = document.getElementById('catalogo');
-    if (catalogSection) catalogSection.scrollIntoView({ behavior: 'smooth' });
-    alert('¡Productos listos! Puedes proceder con tu encargo en la tienda.');
+
+    // Preparar resumen del carrito para el modal de encargo
+    let resumen = 'Pedido desde el catálogo:\n';
+    cart.forEach(i => {
+      resumen += `- ${i.cantidad}x ${i.nombre} ($${((parseFloat(i.precio) || 0) * i.cantidad).toFixed(2)})`;
+      if (i.observacion) resumen += ` [Nota: ${i.observacion}]`;
+      resumen += '\n';
+    });
+
+    setOrderModalDetails(resumen);
+    setIsOrderModalOpen(true);
+  };
+
+  const handleOpenCustomOrder = () => {
+    setOrderModalDetails('');
+    setIsOrderModalOpen(true);
   };
 
   return (
     <div className="cuerpo-tienda">
       <Navbar 
         onOpenCart={() => setIsCartOpen(true)} 
-        onOpenModal={() => alert('Modal de encargo personalizado pronto en React')} 
+        onOpenModal={handleOpenCustomOrder} 
       />
       <main>
-        <Hero onOpenModal={() => alert('Modal de encargo personalizado pronto en React')} />
+        <Hero onOpenModal={handleOpenCustomOrder} />
         <About />
         <Catalog onAddToCart={handleAddToCart} />
         <CareGuide />
@@ -96,6 +112,18 @@ function App() {
         onRemoveItem={handleRemoveItem}
         onUpdateObservation={handleUpdateObservation}
         onCheckout={handleCheckout}
+      />
+
+      <OrderModal 
+        isOpen={isOrderModalOpen}
+        onClose={() => {
+          setIsOrderModalOpen(false);
+          
+          // Actualizar carrito local por si se vació al confirmar pedido
+          const savedCart = localStorage.getItem('balenzaa_carrito');
+          setCart(savedCart ? JSON.parse(savedCart) : []);
+        }}
+        initialDetails={orderModalDetails}
       />
     </div>
   );
