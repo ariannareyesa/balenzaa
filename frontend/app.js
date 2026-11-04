@@ -528,6 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const inputProducto = document.getElementById('tipo-producto-encargo');
             const inputDetalles = document.getElementById('detalles-pedido-encargo');
             const inputFecha = document.getElementById('fecha-entrega-encargo');
+            const inputSuscrito = document.getElementById('suscrito-club-encargo');
 
             const nombre = inputNombre?.value.trim();
             const correo = inputCorreo?.value.trim();
@@ -535,6 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const producto = inputProducto?.value;
             const detalles = inputDetalles?.value.trim();
             const fechaEntrega = inputFecha?.value;
+            const suscritoClub = inputSuscrito ? inputSuscrito.checked : false;
             const archivoReferencia = inputArchivoRef?.files[0];
 
             function mostrarErrorCampo(inputEl, mensaje) {
@@ -564,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     detalles,
                     fechaEntrega,
                     imagenReferencia: imagenRefBase64,
-                    suscritoClub: false
+                    suscritoClub
                 };
 
                 try {
@@ -620,6 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const inputProducto = document.getElementById('tipo-producto-cat');
             const inputDetalles = document.getElementById('detalles-pedido-cat');
             const inputFecha = document.getElementById('fecha-entrega-cat');
+            const inputSuscrito = document.getElementById('suscrito-club-cat');
 
             const nombre = inputNombre?.value.trim();
             const correo = inputCorreo?.value.trim();
@@ -627,6 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const producto = inputProducto?.value;
             const detalles = inputDetalles?.value.trim();
             const fechaEntrega = inputFecha?.value;
+            const suscritoClub = inputSuscrito ? inputSuscrito.checked : false;
 
             function mostrarErrorCampoCat(inputEl, mensaje) {
                 if (!inputEl) return;
@@ -654,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 detalles,
                 fechaEntrega,
                 imagenReferencia: null,
-                suscritoClub: false
+                suscritoClub
             };
 
             try {
@@ -723,10 +727,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error al obtener pedidos para Club Balenzaa:', err);
         }
 
-        // Obtener correos únicos (sin duplicados, ignorando mayúsculas/minúsculas y espacios)
+        // Obtener correos únicos de clientes que marcaron suscritoClub
         const mapaCorreosUnicos = new Map();
         pedidos.forEach(p => {
-            if (p.correo && p.correo.trim() !== '') {
+            if (p.suscritoClub && p.correo && p.correo.trim() !== '') {
                 const correoLimpio = p.correo.trim().toLowerCase();
                 if (!mapaCorreosUnicos.has(correoLimpio)) {
                     mapaCorreosUnicos.set(correoLimpio, {
@@ -741,11 +745,11 @@ document.addEventListener('DOMContentLoaded', () => {
         contenedorListaSuscriptores.innerHTML = '';
 
         if (listaClientesUnicos.length === 0) {
-            contenedorListaSuscriptores.innerHTML = '<p style="text-align: center; color: var(--tinta); padding: 1rem; font-size: 0.9rem;">No hay correos registrados aún.</p>';
+            contenedorListaSuscriptores.innerHTML = '<p style="text-align: center; color: var(--tinta); padding: 1rem; font-size: 0.9rem;">No hay suscriptores registrados aún.</p>';
         } else {
             listaClientesUnicos.forEach(cliente => {
                 const itemDiv = document.createElement('div');
-                itemDiv.style.cssText = 'background: white; padding: 0.6rem 0.9rem; border-radius: 10px; border: 1px solid var(--rosa-claro); display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem;';
+                itemDiv.style.cssText = 'background: white; padding: 0.6rem 0.9rem; border-radius: 10px; border: 1.5px solid var(--rosa-claro); display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem;';
                 itemDiv.innerHTML = `
                     <span><strong>${cliente.nombre}</strong>: <a href="mailto:${cliente.correo}" style="color: var(--rosa); text-decoration: underline;">${cliente.correo}</a></span>
                 `;
@@ -792,7 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const mapaCorreosUnicos = new Map();
             pedidos.forEach(p => {
-                if (p.correo && p.correo.trim() !== '') {
+                if (p.suscritoClub && p.correo && p.correo.trim() !== '') {
                     const correoLimpio = p.correo.trim().toLowerCase();
                     if (!mapaCorreosUnicos.has(correoLimpio)) {
                         mapaCorreosUnicos.set(correoLimpio, {
@@ -877,7 +881,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 segundosTejidos,
                 cronometroActivo: false,
                 estado,
-                imagenReferencia: null
+                imagenReferencia: null,
+                suscritoClub: true
             };
 
             try {
