@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div>
-                    <input type="text" class="input-obs-item" data-index="${index}" value="${item.observacion || ''}" placeholder="Ej: Quiero este con cabello rubio..." style="width: 100%; padding: 5px 8px; font-size: 0.8rem; border-radius: 8px; border: 1px solid var(--rosa-claro); background: white;">
+                    <input type="text" class="input-obs-item" data-index="${index}" value="${item.observacion || ''}" placeholder="Nota opcional: (Ej: En vez de color rosa...)" style="width: 100%; padding: 5px 8px; font-size: 0.8rem; border-radius: 8px; border: 1px solid var(--rosa-claro); background: white;">
                 </div>
             `;
             listaItemsCarrito.appendChild(div);
