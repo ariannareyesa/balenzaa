@@ -1280,4 +1280,19 @@ textarea:focus {
   .barra-estado-agenda {
     border-radius: 28px;
   }
+
+  body {
+    font-size: 15px;
+  }
+  .titulo-hero {
+    font-size: 2.8rem !important;
+  }
+  .titulo-seccion {
+    font-size: 2.2rem !important;
+  }
+  .grilla-productos {
+    grid-template-columns: 1fr !important;
+    padding: 0 1rem;
+  }
+  
 }
