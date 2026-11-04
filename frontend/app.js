@@ -76,15 +76,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- INDICADOR DE AGENDA EN EL CATÁLOGO ---
     const bannerAgenda = document.getElementById('banner-estado-agenda');
     if (bannerAgenda) {
         const estaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
         if (estaCerrada) {
             bannerAgenda.textContent = 'Agenda cerrada por el momento';
             bannerAgenda.className = 'agenda-cerrada';
+            bannerAgenda.style.color = '#721C24';
         } else {
             bannerAgenda.textContent = 'Agenda abierta';
             bannerAgenda.className = 'agenda-abierta';
+            bannerAgenda.style.color = '#155724';
         }
     }
 
@@ -102,6 +105,214 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const guardado = localStorage.getItem('balenzaa_catalogo');
         return guardado ? JSON.parse(guardado) : catalogoInicial;
+    }
+
+    // --- LÓGICA DEL CARRITO ---
+    let carrito = JSON.parse(localStorage.getItem('balenzaa_carrito')) || [];
+
+    function guardarCarritoEnStorage() {
+        localStorage.setItem('balenzaa_carrito', JSON.stringify(carrito));
+    }
+
+    function actualizarContadorCarrito() {
+        const contador = document.getElementById('contador-carrito');
+        if (contador) {
+            const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+            contador.textContent = totalItems;
+        }
+    }
+    actualizarContadorCarrito();
+
+    function agregarAlCarrito(producto) {
+        const existente = carrito.find(item => item.nombre === producto.nombre);
+        if (existente) {
+            existente.cantidad += 1;
+        } else {
+            carrito.push({ ...producto, cantidad: 1, observacion: '' });
+        }
+        guardarCarritoEnStorage();
+        actualizarContadorCarrito();
+        mostrarToast(`¡"${producto.nombre}" agregado al carrito!`, 'exito');
+    }
+
+    const panelCarritoLateral = document.getElementById('panel-carrito-lateral');
+    const overlayCarritoLateral = document.getElementById('overlay-carrito-lateral');
+    const btnAbrirCarrito = document.getElementById('boton-abrir-carrito');
+    const btnCerrarPanelCarrito = document.getElementById('cerrar-panel-carrito');
+    const listaItemsCarrito = document.getElementById('lista-items-carrito');
+    const totalPrecioCarrito = document.getElementById('total-precio-carrito');
+    const btnProcederPedidoCarrito = document.getElementById('btn-proceder-pedido-carrito');
+
+    function abrirCarritoLateral() {
+        if (panelCarritoLateral && overlayCarritoLateral) {
+            renderizarItemsCarritoLateral();
+            panelCarritoLateral.style.right = '0';
+            overlayCarritoLateral.style.display = 'block';
+        }
+    }
+
+    function cerrarCarritoLateral() {
+        if (panelCarritoLateral && overlayCarritoLateral) {
+            panelCarritoLateral.style.right = '-420px';
+            overlayCarritoLateral.style.display = 'none';
+        }
+    }
+
+    if (btnAbrirCarrito) btnAbrirCarrito.onclick = abrirCarritoLateral;
+    if (btnCerrarPanelCarrito) btnCerrarPanelCarrito.onclick = cerrarCarritoLateral;
+    if (overlayCarritoLateral) overlayCarritoLateral.onclick = cerrarCarritoLateral;
+
+    function renderizarItemsCarritoLateral() {
+        if (!listaItemsCarrito) return;
+        if (carrito.length === 0) {
+            listaItemsCarrito.innerHTML = '<p style="text-align: center; color: var(--tinta); padding: 2rem;">Tu carrito está vacío.</p>';
+            if (totalPrecioCarrito) totalPrecioCarrito.textContent = '$0.00';
+            return;
+        }
+
+        listaItemsCarrito.innerHTML = '';
+        let total = 0;
+
+        carrito.forEach((item, index) => {
+            const subtotal = (parseFloat(item.precio) || 0) * item.cantidad;
+            total += subtotal;
+
+            const div = document.createElement('div');
+            div.style.cssText = 'background: #FFF7FA; padding: 0.9rem; border-radius: 14px; border: 1.5px solid var(--rosa-claro); display: flex; flex-direction: column; gap: 0.6rem;';
+            div.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="font-size: 0.9rem; color: var(--tinta); display: block;">${item.nombre}</strong>
+                        <span style="font-size: 0.82rem; color: var(--rosa); font-weight: 700;">$${parseFloat(item.precio).toFixed(2)} x ${item.cantidad}</span>
+                    </div>
+                    <div style="display: flex; gap: 0.3rem; align-items: center;">
+                        <button class="btn-menos" data-index="${index}" style="background: var(--rosa-pastel); border: none; width: 22px; height: 22px; border-radius: 50%; font-weight: bold; cursor: pointer;">-</button>
+                        <button class="btn-mas" data-index="${index}" style="background: var(--rosa-pastel); border: none; width: 22px; height: 22px; border-radius: 50%; font-weight: bold; cursor: pointer;">+</button>
+                        <button class="btn-eliminar" data-index="${index}" style="background: none; border: none; color: #C93A5B; font-weight: bold; cursor: pointer; font-size: 0.95rem; margin-left: 2px;">✕</button>
+                    </div>
+                </div>
+                <div>
+                    <input type="text" class="input-obs-item" data-index="${index}" value="${item.observacion || ''}" placeholder="Ej: Quiero este con cabello rubio..." style="width: 100%; padding: 5px 8px; font-size: 0.8rem; border-radius: 8px; border: 1px solid var(--rosa-claro); background: white;">
+                </div>
+            `;
+            listaItemsCarrito.appendChild(div);
+        });
+
+        if (totalPrecioCarrito) totalPrecioCarrito.textContent = `$${total.toFixed(2)}`;
+
+        listaItemsCarrito.querySelectorAll('.btn-mas').forEach(btn => {
+            btn.onclick = (e) => {
+                carrito[e.target.dataset.index].cantidad += 1;
+                guardarCarritoEnStorage();
+                renderizarItemsCarritoLateral();
+                actualizarContadorCarrito();
+            };
+        });
+
+        listaItemsCarrito.querySelectorAll('.btn-menos').forEach(btn => {
+            btn.onclick = (e) => {
+                const idx = e.target.dataset.index;
+                if (carrito[idx].cantidad > 1) {
+                    carrito[idx].cantidad -= 1;
+                } else {
+                    carrito.splice(idx, 1);
+                }
+                guardarCarritoEnStorage();
+                renderizarItemsCarritoLateral();
+                actualizarContadorCarrito();
+            };
+        });
+
+        listaItemsCarrito.querySelectorAll('.btn-eliminar').forEach(btn => {
+            btn.onclick = (e) => {
+                carrito.splice(e.target.dataset.index, 1);
+                guardarCarritoEnStorage();
+                renderizarItemsCarritoLateral();
+                actualizarContadorCarrito();
+            };
+        });
+
+        listaItemsCarrito.querySelectorAll('.input-obs-item').forEach(input => {
+            input.oninput = (e) => {
+                carrito[e.target.dataset.index].observacion = e.target.value;
+                guardarCarritoEnStorage();
+            };
+        });
+    }
+
+    // --- GESTIÓN DE MODALES SEPARADOS ---
+    const modalEncargoPersonalizado = document.getElementById('modal-encargo-personalizado');
+    const modalPedidoCatalogo = document.getElementById('modal-pedido-catalogo');
+
+    const btnAbrirModalPedido = document.getElementById('boton-abrir-modal-pedido');
+    const btnHeroPedido = document.getElementById('boton-hero-pedido');
+    const btnCerrarModalEncargo = document.getElementById('cerrar-modal-encargo');
+    const btnCerrarModalCatalogo = document.getElementById('cerrar-modal-catalogo');
+
+    function abrirEncargoPersonalizado() {
+        if (modalEncargoPersonalizado) {
+            modalEncargoPersonalizado.style.display = 'flex';
+        }
+    }
+
+    function cerrarEncargoPersonalizado() {
+        if (modalEncargoPersonalizado) {
+            modalEncargoPersonalizado.style.display = 'none';
+        }
+    }
+
+    function cerrarPedidoCatalogo() {
+        if (modalPedidoCatalogo) {
+            modalPedidoCatalogo.style.display = 'none';
+        }
+    }
+
+    if (btnAbrirModalPedido) btnAbrirModalPedido.onclick = abrirEncargoPersonalizado;
+    if (btnHeroPedido) btnHeroPedido.onclick = abrirEncargoPersonalizado;
+    if (btnCerrarModalEncargo) btnCerrarModalEncargo.onclick = cerrarEncargoPersonalizado;
+    if (btnCerrarModalCatalogo) btnCerrarModalCatalogo.onclick = cerrarPedidoCatalogo;
+
+    if (modalEncargoPersonalizado) {
+        modalEncargoPersonalizado.onclick = (e) => {
+            if (e.target === modalEncargoPersonalizado) cerrarEncargoPersonalizado();
+        };
+    }
+
+    if (modalPedidoCatalogo) {
+        modalPedidoCatalogo.onclick = (e) => {
+            if (e.target === modalPedidoCatalogo) cerrarPedidoCatalogo();
+        };
+    }
+
+    if (btnProcederPedidoCarrito) {
+        btnProcederPedidoCarrito.onclick = () => {
+            if (carrito.length === 0) {
+                mostrarToast('Agrega al menos una pieza a tu carrito.', 'error');
+                return;
+            }
+            cerrarCarritoLateral();
+
+            if (modalPedidoCatalogo) {
+                modalPedidoCatalogo.style.display = 'flex';
+            }
+
+            const selectTipoCat = document.getElementById('tipo-producto-cat');
+            if (selectTipoCat) {
+                selectTipoCat.value = 'Diseño personalizado / Varios / Otro';
+            }
+
+            const detallesTextareaCat = document.getElementById('detalles-pedido-cat');
+            if (detallesTextareaCat) {
+                let resumen = 'Pedido desde el catálogo:\n';
+                carrito.forEach(i => {
+                    resumen += `- ${i.cantidad}x ${i.nombre} ($${((parseFloat(i.precio) || 0) * i.cantidad).toFixed(2)})`;
+                    if (i.observacion) resumen += ` [Nota: ${i.observacion}]`;
+                    resumen += '\n';
+                });
+                detallesTextareaCat.value = resumen;
+            }
+            mostrarToast('¡Productos cargados en el formulario de encargo!', 'exito');
+        };
     }
 
     const contenedorCatalogoTienda = document.getElementById('contenedor-catalogo-tienda');
@@ -131,13 +342,24 @@ document.addEventListener('DOMContentLoaded', () => {
                                 $${parseFloat(prod.precio || 0).toFixed(2)}
                             </span>
                         </div>
-                        <a href="#pedidos" class="boton-encargar-tarjeta">
-                            Encargar
-                        </a>
+                        <button class="boton-agregar-carrito boton-encargar-tarjeta" data-nombre="${prod.nombre}" data-precio="${prod.precio}" data-categoria="${prod.categoria}">
+                            Agregar
+                        </button>
                     </div>
                 </div>
             `;
             contenedorCatalogoTienda.appendChild(card);
+        });
+
+        document.querySelectorAll('.boton-agregar-carrito').forEach(btn => {
+            btn.onclick = (e) => {
+                const dataset = e.target.dataset;
+                agregarAlCarrito({
+                    nombre: dataset.nombre,
+                    precio: parseFloat(dataset.precio) || 0,
+                    categoria: dataset.categoria
+                });
+            };
         });
 
         aplicarFiltrosCatalogo(productos);
@@ -194,19 +416,22 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const selectProductoPedido = document.getElementById('tipo-producto');
-        if (selectProductoPedido) {
-            const valorActual = selectProductoPedido.value;
-            selectProductoPedido.innerHTML = '<option value="" disabled selected>Selecciona qué deseas encargar</option>';
-            categoriasSet.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat;
-                opt.textContent = cat;
-                selectProductoPedido.appendChild(opt);
-            });
-            selectProductoPedido.innerHTML += '<option value="Diseño especial">Diseño personalizado / Otro</option>';
-            if (valorActual) selectProductoPedido.value = valorActual;
-        }
+        // Actualizar selects de ambos formularios
+        ['tipo-producto-encargo', 'tipo-producto-cat'].forEach(selectId => {
+            const selectProductoPedido = document.getElementById(selectId);
+            if (selectProductoPedido) {
+                const valorActual = selectProductoPedido.value;
+                selectProductoPedido.innerHTML = '<option value="" disabled selected>Selecciona qué deseas encargar</option>';
+                categoriasSet.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat;
+                    opt.textContent = cat;
+                    selectProductoPedido.appendChild(opt);
+                });
+                selectProductoPedido.innerHTML += '<option value="Diseño personalizado / Varios / Otro">Diseño personalizado / Varios / Otro</option>';
+                if (valorActual) selectProductoPedido.value = valorActual;
+            }
+        });
     }
 
     renderizarCatalogoPublico();
@@ -226,16 +451,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return partes.length === 3 ? parseInt(partes[1], 10) : new Date(fechaIso).getMonth() + 1;
     }
 
-    const inputFechaEntrega = document.getElementById('fecha-entrega');
     const hoyStr = new Date().toISOString().split('T')[0];
-    if (inputFechaEntrega) {
-        inputFechaEntrega.min = hoyStr;
-    }
+    const inputFechaEncargo = document.getElementById('fecha-entrega-encargo');
+    if (inputFechaEncargo) inputFechaEncargo.min = hoyStr;
+
+    const inputFechaCat = document.getElementById('fecha-entrega-cat');
+    if (inputFechaCat) inputFechaCat.min = hoyStr;
 
     const inputManualFecha = document.getElementById('manual-fecha-entrega');
-    if (inputManualFecha) {
-        inputManualFecha.min = hoyStr;
-    }
+    if (inputManualFecha) inputManualFecha.min = hoyStr;
 
     const inputArchivoRef = document.getElementById('imagen-referencia-pedido');
     const textoNombreArchivo = document.getElementById('nombre-archivo-pedido');
@@ -287,22 +511,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const celularRegex = /^09\d{8}$/;
 
-    const formPedido = document.getElementById('formulario-pedido');
-    if (formPedido) {
-        formPedido.addEventListener('submit', (e) => {
+    // --- SUBMIT FORMULARIO ENCARGO PERSONALIZADO ---
+    const formEncargoPersonalizado = document.getElementById('formulario-encargo-personalizado');
+    if (formEncargoPersonalizado) {
+        formEncargoPersonalizado.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            formPedido.querySelectorAll('.mensaje-error-campo').forEach(el => el.remove());
-            formPedido.querySelectorAll('input, select, textarea').forEach(input => {
+            formEncargoPersonalizado.querySelectorAll('.mensaje-error-campo').forEach(el => el.remove());
+            formEncargoPersonalizado.querySelectorAll('input, select, textarea').forEach(input => {
                 input.style.borderColor = '';
             });
 
-            const inputNombre = document.getElementById('nombre-cliente');
-            const inputCorreo = document.getElementById('correo-cliente');
-            const inputCelular = document.getElementById('celular-cliente');
-            const inputProducto = document.getElementById('tipo-producto');
-            const inputDetalles = document.getElementById('detalles-pedido');
-            const inputFecha = document.getElementById('fecha-entrega');
+            const inputNombre = document.getElementById('nombre-cliente-encargo');
+            const inputCorreo = document.getElementById('correo-cliente-encargo');
+            const inputCelular = document.getElementById('celular-cliente-encargo');
+            const inputProducto = document.getElementById('tipo-producto-encargo');
+            const inputDetalles = document.getElementById('detalles-pedido-encargo');
+            const inputFecha = document.getElementById('fecha-entrega-encargo');
 
             const nombre = inputNombre?.value.trim();
             const correo = inputCorreo?.value.trim();
@@ -310,51 +535,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const producto = inputProducto?.value;
             const detalles = inputDetalles?.value.trim();
             const fechaEntrega = inputFecha?.value;
-            const suscribir = document.getElementById('suscribir-newsletter')?.checked || false;
             const archivoReferencia = inputArchivoRef?.files[0];
 
             function mostrarErrorCampo(inputEl, mensaje) {
                 if (!inputEl) return;
                 inputEl.style.borderColor = '#C93A5B';
-                
                 const errorTexto = document.createElement('span');
                 errorTexto.className = 'mensaje-error-campo';
                 errorTexto.style.cssText = 'color: #C93A5B; font-size: 0.8rem; font-weight: 600; margin-top: 4px; display: block;';
                 errorTexto.textContent = mensaje;
-                
                 inputEl.parentNode.appendChild(errorTexto);
                 inputEl.focus();
             }
 
-            if (!nombre) {
-                mostrarErrorCampo(inputNombre, 'Por favor, ingresa tu nombre completo.');
-                return;
-            }
-
-            if (!correo || !correo.includes('@') || !correo.includes('.')) {
-                mostrarErrorCampo(inputCorreo, 'Por favor, ingresa un correo válido con @ y dominio.');
-                return;
-            }
-
-            if (!celularRegex.test(celular)) {
-                mostrarErrorCampo(inputCelular, 'Ingresa un número de celular válido (10 dígitos empezando con 09).');
-                return;
-            }
-
-            if (!producto) {
-                mostrarErrorCampo(inputProducto, 'Selecciona una categoría o tipo de pieza.');
-                return;
-            }
-
-            if (!detalles) {
-                mostrarErrorCampo(inputDetalles, 'Por favor, cuéntanos detalles sobre tu encargo.');
-                return;
-            }
-
-            if (!fechaEntrega || fechaEntrega < hoyStr) {
-                mostrarErrorCampo(inputFecha, 'Selecciona una fecha válida a partir de hoy.');
-                return;
-            }
+            if (!nombre) { mostrarErrorCampo(inputNombre, 'Por favor, ingresa tu nombre completo.'); return; }
+            if (!correo || !correo.includes('@') || !correo.includes('.')) { mostrarErrorCampo(inputCorreo, 'Por favor, ingresa un correo válido.'); return; }
+            if (!celularRegex.test(celular)) { mostrarErrorCampo(inputCelular, 'Ingresa un celular válido (10 dígitos empezando con 09).'); return; }
+            if (!producto) { mostrarErrorCampo(inputProducto, 'Selecciona una categoría o tipo de pieza.'); return; }
+            if (!detalles) { mostrarErrorCampo(inputDetalles, 'Por favor, cuéntanos detalles sobre tu encargo.'); return; }
+            if (!fechaEntrega || fechaEntrega < hoyStr) { mostrarErrorCampo(inputFecha, 'Selecciona una fecha válida a partir de hoy.'); return; }
 
             async function registrarPedido(imagenRefBase64 = null) {
                 const nuevoPedido = {
@@ -365,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     detalles,
                     fechaEntrega,
                     imagenReferencia: imagenRefBase64,
-                    suscritoClub: suscribir
+                    suscritoClub: false
                 };
 
                 try {
@@ -379,7 +578,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (respuesta.ok) {
                         mostrarToast(`Gracias ${nombre}, tu encargo ha sido registrado con éxito.`, 'exito');
-                        formPedido.reset();
+                        formEncargoPersonalizado.reset();
+                        cerrarEncargoPersonalizado();
                         if (textoNombreArchivo) {
                             textoNombreArchivo.textContent = 'Ningún archivo seleccionado';
                             textoNombreArchivo.style.opacity = '0.75';
@@ -395,9 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (archivoReferencia) {
                 const lector = new FileReader();
-                lector.onload = function (evento) {
-                    registrarPedido(evento.target.result);
-                };
+                lector.onload = function (evento) { registrarPedido(evento.target.result); };
                 lector.readAsDataURL(archivoReferencia);
             } else {
                 registrarPedido(null);
@@ -405,6 +603,87 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- SUBMIT FORMULARIO PEDIDO CATÁLOGO ---
+    const formPedidoCatalogo = document.getElementById('formulario-pedido-catalogo');
+    if (formPedidoCatalogo) {
+        formPedidoCatalogo.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            formPedidoCatalogo.querySelectorAll('.mensaje-error-campo').forEach(el => el.remove());
+            formPedidoCatalogo.querySelectorAll('input, select, textarea').forEach(input => {
+                input.style.borderColor = '';
+            });
+
+            const inputNombre = document.getElementById('nombre-cliente-cat');
+            const inputCorreo = document.getElementById('correo-cliente-cat');
+            const inputCelular = document.getElementById('celular-cliente-cat');
+            const inputProducto = document.getElementById('tipo-producto-cat');
+            const inputDetalles = document.getElementById('detalles-pedido-cat');
+            const inputFecha = document.getElementById('fecha-entrega-cat');
+
+            const nombre = inputNombre?.value.trim();
+            const correo = inputCorreo?.value.trim();
+            const celular = inputCelular?.value.trim();
+            const producto = inputProducto?.value;
+            const detalles = inputDetalles?.value.trim();
+            const fechaEntrega = inputFecha?.value;
+
+            function mostrarErrorCampoCat(inputEl, mensaje) {
+                if (!inputEl) return;
+                inputEl.style.borderColor = '#C93A5B';
+                const errorTexto = document.createElement('span');
+                errorTexto.className = 'mensaje-error-campo';
+                errorTexto.style.cssText = 'color: #C93A5B; font-size: 0.8rem; font-weight: 600; margin-top: 4px; display: block;';
+                errorTexto.textContent = mensaje;
+                inputEl.parentNode.appendChild(errorTexto);
+                inputEl.focus();
+            }
+
+            if (!nombre) { mostrarErrorCampoCat(inputNombre, 'Por favor, ingresa tu nombre completo.'); return; }
+            if (!correo || !correo.includes('@') || !correo.includes('.')) { mostrarErrorCampoCat(inputCorreo, 'Por favor, ingresa un correo válido.'); return; }
+            if (!celularRegex.test(celular)) { mostrarErrorCampoCat(inputCelular, 'Ingresa un celular válido (10 dígitos empezando con 09).'); return; }
+            if (!producto) { mostrarErrorCampoCat(inputProducto, 'Selecciona una categoría o tipo de pieza.'); return; }
+            if (!detalles) { mostrarErrorCampoCat(inputDetalles, 'Por favor, ingresa los detalles del pedido.'); return; }
+            if (!fechaEntrega || fechaEntrega < hoyStr) { mostrarErrorCampoCat(inputFecha, 'Selecciona una fecha válida a partir de hoy.'); return; }
+
+            const nuevoPedido = {
+                nombre,
+                correo,
+                celular,
+                producto,
+                detalles,
+                fechaEntrega,
+                imagenReferencia: null,
+                suscritoClub: false
+            };
+
+            try {
+                const respuesta = await fetch('/api/pedidos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevoPedido)
+                });
+
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    mostrarToast(`Gracias ${nombre}, tu encargo ha sido registrado con éxito.`, 'exito');
+                    formPedidoCatalogo.reset();
+                    carrito = [];
+                    localStorage.removeItem('balenzaa_carrito');
+                    actualizarContadorCarrito();
+                    cerrarPedidoCatalogo();
+                } else {
+                    mostrarToast(resultado.error || 'Error al registrar pedido', 'error');
+                }
+            } catch (error) {
+                console.error('Error al conectar con el servidor:', error);
+                mostrarToast('Error de conexión al enviar el pedido.', 'error');
+            }
+        });
+    }
+
+    // --- PANEL DE ADMINISTRACIÓN ---
     const formLoginAdmin = document.getElementById('formulario-login-admin');
     const seccionLoginAdmin = document.getElementById('seccion-login-admin');
     const panelContenido = document.getElementById('panel-contenido');
@@ -422,24 +701,231 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnCerrarModal && modalFoto) {
         btnCerrarModal.onclick = () => { modalFoto.style.display = 'none'; };
-        modalFoto.onclick = (e) => {
-            if (e.target === modalFoto) modalFoto.style.display = 'none';
+        modalFoto.onclick = (e) => { if (e.target === modalFoto) modalFoto.style.display = 'none'; };
+    }
+
+    // --- FUNCIONALIDAD CLUB BALENZAA (SUSCRIPTORES / CORREOS ÚNICOS) ---
+    const btnAbrirSuscriptores = document.getElementById('boton-abrir-suscriptores');
+    const modalSuscriptores = document.getElementById('modal-suscriptores-club');
+    const btnCerrarSuscriptores = document.getElementById('cerrar-modal-suscriptores');
+    const contenedorListaSuscriptores = document.getElementById('lista-suscriptores-contenedor');
+    const btnCopiarCorreos = document.getElementById('btn-copiar-todos-correos');
+    const btnDescargarCsvSuscriptores = document.getElementById('btn-descargar-csv');
+
+    async function abrirModalClubBalenzaa() {
+        if (!modalSuscriptores || !contenedorListaSuscriptores) return;
+        
+        let pedidos = [];
+        try {
+            const respuesta = await fetch('/api/pedidos');
+            if (respuesta.ok) pedidos = await respuesta.json();
+        } catch (err) {
+            console.error('Error al obtener pedidos para Club Balenzaa:', err);
+        }
+
+        // Obtener correos únicos (sin duplicados, ignorando mayúsculas/minúsculas y espacios)
+        const mapaCorreosUnicos = new Map();
+        pedidos.forEach(p => {
+            if (p.correo && p.correo.trim() !== '') {
+                const correoLimpio = p.correo.trim().toLowerCase();
+                if (!mapaCorreosUnicos.has(correoLimpio)) {
+                    mapaCorreosUnicos.set(correoLimpio, {
+                        correo: p.correo.trim(),
+                        nombre: p.nombre ? p.nombre.trim() : 'Cliente'
+                    });
+                }
+            }
+        });
+
+        const listaClientesUnicos = Array.from(mapaCorreosUnicos.values());
+        contenedorListaSuscriptores.innerHTML = '';
+
+        if (listaClientesUnicos.length === 0) {
+            contenedorListaSuscriptores.innerHTML = '<p style="text-align: center; color: var(--tinta); padding: 1rem; font-size: 0.9rem;">No hay correos registrados aún.</p>';
+        } else {
+            listaClientesUnicos.forEach(cliente => {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.cssText = 'background: white; padding: 0.6rem 0.9rem; border-radius: 10px; border: 1px solid var(--rosa-claro); display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem;';
+                itemDiv.innerHTML = `
+                    <span><strong>${cliente.nombre}</strong>: <a href="mailto:${cliente.correo}" style="color: var(--rosa); text-decoration: underline;">${cliente.correo}</a></span>
+                `;
+                contenedorListaSuscriptores.appendChild(itemDiv);
+            });
+        }
+
+        modalSuscriptores.style.display = 'flex';
+    }
+
+    if (btnAbrirSuscriptores) {
+        btnAbrirSuscriptores.addEventListener('click', abrirModalClubBalenzaa);
+    }
+
+    if (btnCerrarSuscriptores && modalSuscriptores) {
+        btnCerrarSuscriptores.onclick = () => { modalSuscriptores.style.display = 'none'; };
+        modalSuscriptores.onclick = (e) => { if (e.target === modalSuscriptores) modalSuscriptores.style.display = 'none'; };
+    }
+
+    if (btnCopiarCorreos) {
+        btnCopiarCorreos.onclick = async () => {
+            const divs = contenedorListaSuscriptores.querySelectorAll('a');
+            if (divs.length === 0) {
+                mostrarToast('No hay correos para copiar.', 'error');
+                return;
+            }
+            const correos = Array.from(divs).map(a => a.textContent).join(', ');
+            try {
+                await navigator.clipboard.writeText(correos);
+                mostrarToast('¡Correos copiados al portapapeles!', 'exito');
+            } catch (err) {
+                mostrarToast('Error al copiar correos.', 'error');
+            }
         };
     }
 
-    // Botón exportar todos los pedidos a CSV
+    if (btnDescargarCsvSuscriptores) {
+        btnDescargarCsvSuscriptores.onclick = async () => {
+            let pedidos = [];
+            try {
+                const respuesta = await fetch('/api/pedidos');
+                if (respuesta.ok) pedidos = await respuesta.json();
+            } catch (err) { console.error(err); }
+
+            const mapaCorreosUnicos = new Map();
+            pedidos.forEach(p => {
+                if (p.correo && p.correo.trim() !== '') {
+                    const correoLimpio = p.correo.trim().toLowerCase();
+                    if (!mapaCorreosUnicos.has(correoLimpio)) {
+                        mapaCorreosUnicos.set(correoLimpio, {
+                            correo: p.correo.trim(),
+                            nombre: p.nombre ? p.nombre.trim() : 'Cliente'
+                        });
+                    }
+                }
+            });
+
+            const listaClientesUnicos = Array.from(mapaCorreosUnicos.values());
+            if (listaClientesUnicos.length === 0) {
+                mostrarToast('No hay suscriptores para exportar.', 'error');
+                return;
+            }
+
+            let csvContent = '\uFEFFNombre,Correo\n';
+            listaClientesUnicos.forEach(c => {
+                const nombre = `"${c.nombre.replace(/"/g, '""')}"`;
+                const correo = `"${c.correo.replace(/"/g, '""')}"`;
+                csvContent += `${nombre},${correo}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'club_balenzaa_suscriptores.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            mostrarToast('CSV de Club Balenzaa descargado con éxito.', 'exito');
+        };
+    }
+
+    // --- MODAL NUEVO ENCARGO MANUAL ---
+    const btnAbrirModalPedidoManual = document.getElementById('boton-abrir-modal-pedido');
+    const modalPedidoManual = document.getElementById('modal-pedido-manual');
+    const btnCerrarModalPedidoManual = document.getElementById('cerrar-modal-pedido-manual');
+    const formPedidoManual = document.getElementById('formulario-pedido-manual');
+
+    if (btnAbrirModalPedidoManual && modalPedidoManual) {
+        btnAbrirModalPedidoManual.onclick = () => {
+            modalPedidoManual.style.display = 'flex';
+        };
+    }
+
+    if (btnCerrarModalPedidoManual && modalPedidoManual) {
+        btnCerrarModalPedidoManual.onclick = () => { modalPedidoManual.style.display = 'none'; };
+        modalPedidoManual.onclick = (e) => { if (e.target === modalPedidoManual) modalPedidoManual.style.display = 'none'; };
+    }
+
+    if (formPedidoManual) {
+        formPedidoManual.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById('manual-nombre').value.trim();
+            const correo = document.getElementById('manual-correo').value.trim();
+            const celular = document.getElementById('manual-celular').value.trim();
+            const producto = document.getElementById('manual-producto').value;
+            const detalles = document.getElementById('manual-detalles').value.trim();
+            const fechaEntrega = document.getElementById('manual-fecha-entrega').value;
+            const precioTotal = parseFloat(document.getElementById('manual-precio').value) || 0;
+            const horas = parseInt(document.getElementById('manual-horas').value) || 0;
+            const minutos = parseInt(document.getElementById('manual-minutos').value) || 0;
+            const estado = document.getElementById('manual-estado').value;
+
+            if (!nombre || !correo || !celular || !producto || !detalles || !fechaEntrega) {
+                mostrarToast('Por favor completa los campos obligatorios.', 'error');
+                return;
+            }
+
+            const segundosTejidos = (horas * 3600) + (minutos * 60);
+
+            const nuevoPedidoManual = {
+                nombre,
+                correo,
+                celular,
+                producto,
+                detalles,
+                fechaEntrega,
+                precioTotal,
+                segundosTejidos,
+                cronometroActivo: false,
+                estado,
+                imagenReferencia: null
+            };
+
+            try {
+                const respuesta = await fetch('/api/pedidos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevoPedidoManual)
+                });
+
+                if (respuesta.ok) {
+                    mostrarToast('Encargo manual registrado con éxito.', 'exito');
+                    formPedidoManual.reset();
+                    modalPedidoManual.style.display = 'none';
+                    renderizarPedidos();
+                } else {
+                    mostrarToast('Error al registrar encargo manual.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                mostrarToast('Error de conexión.', 'error');
+            }
+        });
+    }
+
+    // --- MODAL AGREGAR NUEVA PIEZA AL CATÁLOGO ---
+    const btnAbrirModalProductoAdmin = document.getElementById('boton-abrir-modal-producto');
+    const modalNuevoProducto = document.getElementById('modal-nuevo-producto');
+    const btnCerrarModalNuevoProducto = document.getElementById('cerrar-modal-nuevo-producto');
+
+    if (btnAbrirModalProductoAdmin && modalNuevoProducto) {
+        btnAbrirModalProductoAdmin.onclick = () => {
+            modalNuevoProducto.style.display = 'flex';
+        };
+    }
+
+    if (btnCerrarModalNuevoProducto && modalNuevoProducto) {
+        btnCerrarModalNuevoProducto.onclick = () => { modalNuevoProducto.style.display = 'none'; };
+        modalNuevoProducto.onclick = (e) => { if (e.target === modalNuevoProducto) modalNuevoProducto.style.display = 'none'; };
+    }
+
     const btnExportarTodosPedidos = document.getElementById('btn-exportar-todos-pedidos-csv');
     if (btnExportarTodosPedidos) {
         btnExportarTodosPedidos.onclick = async () => {
             let pedidos = [];
             try {
                 const respuesta = await fetch('/api/pedidos');
-                if (respuesta.ok) {
-                    pedidos = await respuesta.json();
-                }
-            } catch (err) {
-                console.error(err);
-            }
+                if (respuesta.ok) pedidos = await respuesta.json();
+            } catch (err) { console.error(err); }
             if (pedidos.length === 0) {
                 mostrarToast('No hay pedidos para exportar.', 'error');
                 return;
@@ -466,282 +952,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(link);
             link.click();
             link.remove();
-            mostrarToast('Archivo CSV de pedidos descargado con éxito.', 'exito');
-        };
-    }
-
-    function obtenerSuscriptoresUnicos(pedidos) {
-        const suscriptoresRaw = pedidos.filter(p => p.suscritoClub && p.correo);
-        const unicosMap = new Map();
-        suscriptoresRaw.forEach(s => {
-            const correoKey = (s.correo || '').trim().toLowerCase();
-            const nombreKey = (s.nombre || '').trim().toLowerCase();
-            const claveUnica = `${correoKey}_${nombreKey}`;
-            if (!unicosMap.has(claveUnica)) {
-                unicosMap.set(claveUnica, s);
-            }
-        });
-        return Array.from(unicosMap.values());
-    }
-
-    // Modal Club Balenzaa (Miembros)
-    const modalSuscriptores = document.getElementById('modal-suscriptores-club');
-    const btnAbrirSuscriptores = document.getElementById('boton-abrir-suscriptores');
-    const btnCerrarSuscriptores = document.getElementById('cerrar-modal-suscriptores');
-    const contenedorListaSuscriptores = document.getElementById('lista-suscriptores-contenedor');
-    const btnCopiarTodosCorreos = document.getElementById('btn-copiar-todos-correos');
-    const btnDescargarCsv = document.getElementById('btn-descargar-csv');
-
-    if (btnAbrirSuscriptores && modalSuscriptores) {
-        btnAbrirSuscriptores.onclick = async () => {
-            modalSuscriptores.style.display = 'flex';
-            await cargarSuscriptoresClub();
-        };
-    }
-
-    if (btnCerrarSuscriptores && modalSuscriptores) {
-        btnCerrarSuscriptores.onclick = () => {
-            modalSuscriptores.style.display = 'none';
-        };
-    }
-
-    if (modalSuscriptores) {
-        modalSuscriptores.onclick = (e) => {
-            if (e.target === modalSuscriptores) {
-                modalSuscriptores.style.display = 'none';
-            }
-        };
-    }
-
-    async function cargarSuscriptoresClub() {
-        if (!contenedorListaSuscriptores) return;
-        contenedorListaSuscriptores.innerHTML = '<p style="text-align: center; color: var(--tinta);">Cargando miembros...</p>';
-        
-        let pedidos = [];
-        try {
-            const respuesta = await fetch('/api/pedidos');
-            if (respuesta.ok) {
-                pedidos = await respuesta.json();
-            }
-        } catch (error) {
-            console.error('Error al obtener miembros:', error);
-        }
-
-        const suscriptores = obtenerSuscriptoresUnicos(pedidos);
-
-        if (suscriptores.length === 0) {
-            contenedorListaSuscriptores.innerHTML = '<p style="text-align: center; color: var(--tinta);">No hay miembros en el Club Balenzaa todavía.</p>';
-            return;
-        }
-
-        contenedorListaSuscriptores.innerHTML = '';
-        suscriptores.forEach(s => {
-            const item = document.createElement('div');
-            item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 0.6rem 1rem; border-radius: 12px; border: 1.5px solid var(--rosa-claro); gap: 0.5rem;';
-            item.innerHTML = `
-                <div style="overflow: hidden; text-overflow: ellipsis;">
-                    <strong style="display: block; font-size: 0.9rem; color: var(--tinta);">${s.nombre || 'Sin nombre'}</strong>
-                    <span style="font-size: 0.82rem; color: #666;">${s.correo}</span>
-                </div>
-                <button class="btn-copiar-correo" data-correo="${s.correo}" style="background: var(--rosa-pastel); border: 1.5px solid var(--rosa-claro); color: var(--tinta); padding: 4px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap;">Copiar</button>
-            `;
-            contenedorListaSuscriptores.appendChild(item);
-        });
-
-        document.querySelectorAll('.btn-copiar-correo').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const correo = e.target.dataset.correo;
-                navigator.clipboard.writeText(correo).then(() => {
-                    mostrarToast(`Correo copiado: ${correo}`, 'exito');
-                }).catch(() => {
-                    mostrarToast('No se pudo copiar el correo.', 'error');
-                });
-            });
-        });
-    }
-
-    if (btnCopiarTodosCorreos) {
-        btnCopiarTodosCorreos.onclick = async () => {
-            let pedidos = [];
-            try {
-                const respuesta = await fetch('/api/pedidos');
-                if (respuesta.ok) {
-                    pedidos = await respuesta.json();
-                }
-            } catch (err) {
-                console.error(err);
-            }
-            const suscriptores = obtenerSuscriptoresUnicos(pedidos);
-            const correos = suscriptores.map(p => p.correo).join(', ');
-            if (!correos) {
-                mostrarToast('No hay correos para copiar.', 'error');
-                return;
-            }
-            navigator.clipboard.writeText(correos).then(() => {
-                mostrarToast('¡Todos los correos copiados al portapapeles!', 'exito');
-            }).catch(() => {
-                mostrarToast('Error al copiar los correos.', 'error');
-            });
-        };
-    }
-
-    if (btnDescargarCsv) {
-        btnDescargarCsv.onclick = async () => {
-            let pedidos = [];
-            try {
-                const respuesta = await fetch('/api/pedidos');
-                if (respuesta.ok) {
-                    pedidos = await respuesta.json();
-                }
-            } catch (err) {
-                console.error(err);
-            }
-            const suscriptores = obtenerSuscriptoresUnicos(pedidos);
-            if (suscriptores.length === 0) {
-                mostrarToast('No hay miembros para exportar.', 'error');
-                return;
-            }
-
-            let csvContent = '\uFEFFNombre,Correo\n';
-            suscriptores.forEach(s => {
-                const nombre = `"${(s.nombre || '').replace(/"/g, '""')}"`;
-                const correo = `"${(s.correo || '').replace(/"/g, '""')}"`;
-                csvContent += `${nombre},${correo}\n`;
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'miembros_club_balenzaa.csv');
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
             mostrarToast('Archivo CSV descargado con éxito.', 'exito');
         };
     }
-
-    const modalPedidoManual = document.getElementById('modal-pedido-manual');
-    const btnAbrirModalPedido = document.getElementById('boton-abrir-modal-pedido');
-    const btnCerrarModalPedido = document.getElementById('cerrar-modal-pedido-manual');
-    const formPedidoManual = document.getElementById('formulario-pedido-manual');
-
-    if (btnAbrirModalPedido && modalPedidoManual) {
-        btnAbrirModalPedido.onclick = () => {
-            modalPedidoManual.style.display = 'flex';
-        };
-    }
-
-    if (btnCerrarModalPedido && modalPedidoManual) {
-        btnCerrarModalPedido.onclick = () => {
-            modalPedidoManual.style.display = 'none';
-        };
-    }
-
-    if (modalPedidoManual) {
-        modalPedidoManual.onclick = (e) => {
-            if (e.target === modalPedidoManual) {
-                modalPedidoManual.style.display = 'none';
-            }
-        };
-    }
-
-    const modalNuevoProducto = document.getElementById('modal-nuevo-producto');
-    const btnAbrirModalProducto = document.getElementById('boton-abrir-modal-producto');
-    const btnCerrarModalProducto = document.getElementById('cerrar-modal-nuevo-producto');
-
-    if (btnAbrirModalProducto && modalNuevoProducto) {
-        btnAbrirModalProducto.onclick = () => {
-            modalNuevoProducto.style.display = 'flex';
-        };
-    }
-
-    if (btnCerrarModalProducto && modalNuevoProducto) {
-        btnCerrarModalProducto.onclick = () => {
-            modalNuevoProducto.style.display = 'none';
-        };
-    }
-
-    if (modalNuevoProducto) {
-        modalNuevoProducto.onclick = (e) => {
-            if (e.target === modalNuevoProducto) {
-                modalNuevoProducto.style.display = 'none';
-            }
-        };
-    }
-
-    if (formPedidoManual) {
-        formPedidoManual.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const nombre = document.getElementById('manual-nombre').value.trim();
-            const correo = document.getElementById('manual-correo').value.trim();
-            const celular = document.getElementById('manual-celular').value.trim();
-            const producto = document.getElementById('manual-producto').value;
-            const detalles = document.getElementById('manual-detalles').value.trim();
-            const fechaEntrega = document.getElementById('manual-fecha-entrega').value;
-            const precioTotal = parseFloat(document.getElementById('manual-precio').value) || 0;
-            const estado = document.getElementById('manual-estado').value;
-
-            const horasTrabajadas = parseInt(document.getElementById('manual-horas').value) || 0;
-            const minutosTrabajados = parseInt(document.getElementById('manual-minutos').value) || 0;
-            const segundosTejidos = (horasTrabajadas * 3600) + (minutosTrabajados * 60);
-
-            if (!nombre || !correo || !celular || !producto || !detalles || !fechaEntrega) {
-                mostrarToast('Por favor completa los campos obligatorios.', 'error');
-                return;
-            }
-
-            if (!celularRegex.test(celular)) {
-                mostrarToast('Ingresa un celular válido de Ecuador (10 dígitos empezando por 09).', 'error');
-                return;
-            }
-
-            if (fechaEntrega < hoyStr) {
-                mostrarToast('La fecha de entrega no puede ser en el pasado.', 'error');
-                return;
-            }
-
-            const nuevoPedidoManual = {
-                nombre,
-                correo,
-                celular,
-                producto,
-                detalles,
-                fechaEntrega,
-                precioTotal,
-                estado,
-                segundosTejidos,
-                cronometroActivo: false,
-                suscritoClub: false
-            };
-
-            try {
-                const respuesta = await fetch('/api/pedidos', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(nuevoPedidoManual)
-                });
-
-                if (respuesta.ok) {
-                    mostrarToast('Encargo manual registrado con éxito.', 'exito');
-                    formPedidoManual.reset();
-                    modalPedidoManual.style.display = 'none';
-                    renderizarPedidos();
-                } else {
-                    const resJson = await respuesta.json();
-                    mostrarToast(resJson.error || 'Error al registrar el pedido.', 'error');
-                }
-            } catch (err) {
-                console.error('Error al registrar encargo manual:', err);
-                mostrarToast('Error de conexión con el servidor.', 'error');
-            }
-        });
-    }
-
-    const elPendientes = document.getElementById('total-pendientes');
-    const elElaboracion = document.getElementById('total-elaboracion');
-    const elCompletados = document.getElementById('total-completados');
-    const elIngresos = document.getElementById('total-ingresos');
 
     let agendaCerrada = localStorage.getItem('balenzaa_agenda_cerrada') === 'true';
 
@@ -767,6 +980,17 @@ document.addEventListener('DOMContentLoaded', () => {
             agendaCerrada = !agendaCerrada;
             localStorage.setItem('balenzaa_agenda_cerrada', agendaCerrada);
             actualizarVisualAgenda(agendaCerrada);
+            if (bannerAgenda) {
+                if (agendaCerrada) {
+                    bannerAgenda.textContent = 'Agenda cerrada por el momento';
+                    bannerAgenda.className = 'agenda-cerrada';
+                    bannerAgenda.style.color = '#721C24';
+                } else {
+                    bannerAgenda.textContent = 'Agenda abierta';
+                    bannerAgenda.className = 'agenda-abierta';
+                    bannerAgenda.style.color = '#155724';
+                }
+            }
             mostrarToast(agendaCerrada ? 'Agenda cerrada para nuevos pedidos.' : 'Agenda abierta para nuevos pedidos.', 'exito');
         });
     }
@@ -776,14 +1000,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const horas = Math.floor(seg / 3600);
         const minutos = Math.floor((seg % 3600) / 60);
         const segundos = seg % 60;
-        return [horas, minutos, segundos]
-            .map(v => v < 10 ? '0' + v : v)
-            .join(':');
+        return [horas, minutos, segundos].map(v => v < 10 ? '0' + v : v).join(':');
     }
 
-    if (window.intervaloCronometrosUI) {
-        clearInterval(window.intervaloCronometrosUI);
-    }
+    if (window.intervaloCronometrosUI) clearInterval(window.intervaloCronometrosUI);
     window.intervaloCronometrosUI = setInterval(() => {
         document.querySelectorAll('.btn-toggle-timer').forEach(btn => {
             if (btn.title === 'Pausar') {
@@ -865,15 +1085,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const selMes = document.getElementById('filtro-mes-pedidos');
         const selTipo = document.getElementById('filtro-tipo-pedidos');
 
-        if (selMes) selMes.addEventListener('change', (e) => {
-            filtroMesSeleccionado = e.target.value;
-            renderizarPedidos();
-        });
-
-        if (selTipo) selTipo.addEventListener('change', (e) => {
-            filtroTipoSeleccionado = e.target.value;
-            renderizarPedidos();
-        });
+        if (selMes) selMes.addEventListener('change', (e) => { filtroMesSeleccionado = e.target.value; renderizarPedidos(); });
+        if (selTipo) selTipo.addEventListener('change', (e) => { filtroTipoSeleccionado = e.target.value; renderizarPedidos(); });
     }
 
     function actualizarOpcionesTipoPieza(pedidos) {
@@ -882,9 +1095,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const valorPrevio = selTipo.value;
         const tipos = new Set();
-        pedidos.forEach(p => {
-            if (p.producto) tipos.add(p.producto.trim());
-        });
+        pedidos.forEach(p => { if (p.producto) tipos.add(p.producto.trim()); });
 
         selTipo.innerHTML = '<option value="todos">Todas las piezas</option>';
         tipos.forEach(t => {
@@ -894,9 +1105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             selTipo.appendChild(opt);
         });
 
-        if (Array.from(tipos).includes(valorPrevio)) {
-            selTipo.value = valorPrevio;
-        }
+        if (Array.from(tipos).includes(valorPrevio)) selTipo.value = valorPrevio;
     }
 
     async function renderizarPedidos() {
@@ -906,20 +1115,13 @@ document.addEventListener('DOMContentLoaded', () => {
         let pedidos = [];
         try {
             const respuesta = await fetch('/api/pedidos');
-            if (respuesta.ok) {
-                pedidos = await respuesta.json();
-            }
-        } catch (error) {
-            console.error('Error al obtener pedidos:', error);
-        }
+            if (respuesta.ok) pedidos = await respuesta.json();
+        } catch (error) { console.error('Error al obtener pedidos:', error); }
 
         actualizarOpcionesTipoPieza(pedidos);
         cuerpoTablaPedidos.innerHTML = '';
 
-        let pendientes = 0;
-        let elaboracion = 0;
-        let completados = 0;
-        let totalCobrado = 0;
+        let pendientes = 0, elaboracion = 0, completados = 0, totalCobrado = 0;
 
         const pedidosFiltrados = pedidos.map((p, indexOriginal) => ({ ...p, indexOriginal })).filter(p => {
             const estadoActual = p.estado || 'Pendiente';
@@ -932,7 +1134,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mesEntrega = obtenerMesDeFecha(p.fechaEntrega);
                 cumpleMes = (mesCreacion === parseInt(filtroMesSeleccionado, 10)) || (mesEntrega === parseInt(filtroMesSeleccionado, 10));
             }
-
             return cumpleEstado && cumpleTipo && cumpleMes;
         });
 
@@ -943,11 +1144,8 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (estado === 'Completado') completados++;
 
             const precioNum = parseFloat(p.precioTotal) || 0;
-            if (estado === 'En elaboración') {
-                totalCobrado += (precioNum * 0.50);
-            } else if (estado === 'Completado') {
-                totalCobrado += precioNum;
-            }
+            if (estado === 'En elaboración') totalCobrado += (precioNum * 0.50);
+            else if (estado === 'Completado') totalCobrado += precioNum;
         });
 
         if (pedidosFiltrados.length === 0) {
@@ -961,21 +1159,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const activo = p.cronometroActivo || false;
                 const fechaCreacionTexto = p.fechaCreacion ? formatearFechaTexto(p.fechaCreacion) : 'Hoy';
                 const fechaEntregaTexto = p.fechaEntrega ? formatearFechaTexto(p.fechaEntrega) : 'Por definir';
-
                 const enlaceWs = p.celular ? `https://wa.me/593${p.celular.replace(/^0/, '')}` : '#';
 
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
                     <td style="white-space: nowrap;">${fechaCreacionTexto}</td>
                     <td><strong>${p.nombre || 'Sin nombre'}</strong></td>
-                    <td>
-                        ${p.correo || 'Sin correo'}
-                        ${p.suscritoClub ? '<br><span style="font-size:0.75rem; background:var(--rosa-pastel); color:var(--tinta); padding:2px 8px; border-radius:999px;">Club</span>' : ''}
-                    </td>
+                    <td>${p.correo || 'Sin correo'}</td>
                     <td style="white-space: nowrap;">
-                        ${p.celular ? `
-                            <a href="${enlaceWs}" target="_blank" rel="noopener noreferrer" style="color: #2F6224; font-weight: 700; text-decoration: underline;" title="Abrir en WhatsApp">${p.celular}</a>
-                        ` : '<span style="color:#999;">-</span>'}
+                        ${p.celular ? `<a href="${enlaceWs}" target="_blank" rel="noopener noreferrer" style="color: #2F6224; font-weight: 700; text-decoration: underline;" title="Abrir en WhatsApp">${p.celular}</a>` : '<span style="color:#999;">-</span>'}
                     </td>
                     <td>
                         <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px;">
@@ -998,23 +1190,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div style="display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
                             <div style="display: inline-flex; align-items: center; gap: 0.35rem; background: #fff; padding: 4px 10px; border-radius: 999px; border: 1.5px solid var(--rosa-claro);">
                                 <span class="timer-display" data-id="${idPedido}" style="font-family: monospace; font-size: 0.84rem; font-weight: 700; color: var(--tinta); min-width: 62px; text-align: center;">${tiempoFormateado}</span>
-                                <button class="btn-toggle-timer" data-id="${idPedido}" title="${activo ? 'Pausar' : 'Iniciar'}" style="background: ${activo ? '#FFD45C' : 'var(--rosa)'}; color: ${activo ? 'var(--tinta)' : '#fff'}; border: none; border-radius: 50%; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; cursor: pointer; line-height: 1; transition: transform 0.15s ease;">
+                                <button class="btn-toggle-timer" data-id="${idPedido}" title="${activo ? 'Pausar' : 'Iniciar'}" style="background: ${activo ? '#FFD45C' : 'var(--rosa)'}; color: ${activo ? 'var(--tinta)' : '#fff'}; border: none; border-radius: 50%; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; cursor: pointer; line-height: 1;">
                                     ${activo ? '❚❚' : '▶'}
                                 </button>
-                                <button class="btn-reset-timer" data-id="${idPedido}" title="Reiniciar a 00:00:00" style="background: none; border: none; color: #999; font-size: 0.9rem; cursor: pointer; padding: 0 3px; line-height: 1;">
-                                    ↺
-                                </button>
+                                <button class="btn-reset-timer" data-id="${idPedido}" title="Reiniciar" style="background: none; border: none; color: #999; font-size: 0.9rem; cursor: pointer; padding: 0 3px; line-height: 1;">↺</button>
                             </div>
-
-                            <button class="boton-eliminar-pedido" data-id="${idPedido}" title="Eliminar encargo" style="background: none; border: none; color: #C93A5B; font-size: 1.15rem; font-weight: 700; cursor: pointer; padding: 4px; line-height: 1;">
-                                ✕
-                            </button>
+                            <button class="boton-eliminar-pedido" data-id="${idPedido}" title="Eliminar" style="background: none; border: none; color: #C93A5B; font-size: 1.15rem; font-weight: 700; cursor: pointer; padding: 4px; line-height: 1;">✕</button>
                         </div>
                     </td>
                 `;
                 cuerpoTablaPedidos.appendChild(fila);
             });
         }
+
+        const elPendientes = document.getElementById('total-pendientes');
+        const elElaboracion = document.getElementById('total-elaboracion');
+        const elCompletados = document.getElementById('total-completados');
+        const elIngresos = document.getElementById('total-ingresos');
 
         if (elPendientes) elPendientes.textContent = pendientes;
         if (elElaboracion) elElaboracion.textContent = elaboracion;
@@ -1026,7 +1218,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const id = e.target.dataset.id;
                 const p = pedidos.find(item => (item._id === id || item.indexOriginal == id));
                 if (!p) return;
-
                 const activoActual = p.cronometroActivo || false;
                 const nuevoEstadoActivo = !activoActual;
 
@@ -1034,25 +1225,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const display = document.querySelector(`.timer-display[data-id="${id}"]`);
                 if (display) {
                     const partes = display.textContent.split(':');
-                    if (partes.length === 3) {
-                        segundosActuales = parseInt(partes[0]) * 3600 + parseInt(partes[1]) * 60 + parseInt(partes[2]);
-                    }
+                    if (partes.length === 3) segundosActuales = parseInt(partes[0]) * 3600 + parseInt(partes[1]) * 60 + parseInt(partes[2]);
                 }
 
                 try {
                     await fetch(`/api/pedidos/${id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            cronometroActivo: nuevoEstadoActivo,
-                            segundosTejidos: segundosActuales
-                        })
+                        body: JSON.stringify({ cronometroActivo: nuevoEstadoActivo, segundosTejidos: segundosActuales })
                     });
                     renderizarPedidos();
-                } catch (err) {
-                    console.error('Error al actualizar cronómetro:', err);
-                    mostrarToast('Error al actualizar cronómetro.', 'error');
-                }
+                } catch (err) { console.error(err); }
             });
         });
 
@@ -1064,17 +1247,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         await fetch(`/api/pedidos/${id}`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                segundosTejidos: 0, 
-                                cronometroActivo: false 
-                            })
+                            body: JSON.stringify({ segundosTejidos: 0, cronometroActivo: false })
                         });
                         mostrarToast('Cronómetro reiniciado.', 'exito');
                         renderizarPedidos();
-                    } catch (err) {
-                        console.error('Error al reiniciar cronómetro:', err);
-                        mostrarToast('Error al reiniciar cronómetro.', 'error');
-                    }
+                    } catch (err) { console.error(err); }
                 });
             });
         });
@@ -1095,7 +1272,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p style="margin: 0;"><strong>Observaciones:</strong><br>${p.detalles || 'Sin observaciones'}</p>
                         `;
                     }
-
                     if (contenedorFotoModal && imgModal) {
                         if (p.imagenReferencia) {
                             imgModal.src = p.imagenReferencia;
@@ -1104,10 +1280,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             contenedorFotoModal.style.display = 'none';
                         }
                     }
-
-                    if (modalFoto) {
-                        modalFoto.style.display = 'flex';
-                    }
+                    if (modalFoto) modalFoto.style.display = 'flex';
                 }
             });
         });
@@ -1122,11 +1295,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ estado: nuevoEstado })
                     });
-                    mostrarToast('Estado del pedido actualizado.', 'exito');
-                } catch (err) {
-                    console.error('Error al actualizar estado:', err);
-                    mostrarToast('Error al actualizar el estado.', 'error');
-                }
+                    mostrarToast('Estado actualizado.', 'exito');
+                } catch (err) { console.error(err); }
                 renderizarPedidos();
             });
         });
@@ -1141,11 +1311,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ precioTotal: nuevoPrecio })
                     });
-                    mostrarToast('Precio actualizado con éxito.', 'exito');
-                } catch (err) {
-                    console.error('Error al actualizar precio:', err);
-                    mostrarToast('Error al actualizar el precio.', 'error');
-                }
+                    mostrarToast('Precio actualizado.', 'exito');
+                } catch (err) { console.error(err); }
                 renderizarPedidos();
             });
         });
@@ -1157,10 +1324,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     try {
                         await fetch(`/api/pedidos/${id}`, { method: 'DELETE' });
                         mostrarToast('Encargo eliminado.', 'exito');
-                    } catch (err) {
-                        console.error('Error al eliminar pedido:', err);
-                        mostrarToast('Error al eliminar el encargo.', 'error');
-                    }
+                    } catch (err) { console.error(err); }
                     renderizarPedidos();
                 });
             });
@@ -1184,20 +1348,14 @@ document.addEventListener('DOMContentLoaded', () => {
             card.style.position = 'relative';
 
             card.innerHTML = `
-                <button class="boton-eliminar-producto" data-id="${idProd}" title="Eliminar pieza" style="position: absolute; top: 10px; right: 10px; z-index: 10; background: white; border: none; border-radius: 50%; width: 28px; height: 28px; color: #C93A5B; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">
-                    ✕
-                </button>
+                <button class="boton-eliminar-producto" data-id="${idProd}" title="Eliminar pieza" style="position: absolute; top: 10px; right: 10px; z-index: 10; background: white; border: none; border-radius: 50%; width: 28px; height: 28px; color: #C93A5B; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">✕</button>
                 <div class="imagen-producto">
                     <img src="${prod.imagen}" alt="${prod.nombre}" onerror="this.src='images/amigurumi.jpg'">
                     <span class="etiqueta-categoria">${prod.categoria}</span>
                 </div>
                 <div class="info-producto" style="display: flex; flex-direction: column; gap: 0.3rem; padding: 1rem;">
-                    <h3 class="nombre-producto editable-item" contenteditable="true" data-id="${idProd}" data-campo="nombre" title="Haz clic para editar el nombre" style="font-size: 1rem; border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px; margin: 0;">
-                        ${prod.nombre}
-                    </h3>
-                    <p class="descripcion-producto editable-item" contenteditable="true" data-id="${idProd}" data-campo="descripcion" title="Haz clic para editar la descripción" style="font-size: 0.82rem; border-bottom: 1px dashed transparent; outline: none; border-radius: 4px; padding: 2px; min-height: 35px; margin: 0; color: var(--tinta);">
-                        ${prod.descripcion}
-                    </p>
+                    <h3 class="nombre-producto editable-item" contenteditable="true" data-id="${idProd}" data-campo="nombre" style="font-size: 1rem; outline: none; margin: 0;">${prod.nombre}</h3>
+                    <p class="descripcion-producto editable-item" contenteditable="true" data-id="${idProd}" data-campo="descripcion" style="font-size: 0.82rem; outline: none; margin: 0; color: var(--tinta);">${prod.descripcion}</p>
                     <div class="pie-tarjeta" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid #f0f0f0;">
                         <span style="font-size: 0.78rem; font-weight: 600;">Precio ($):</span>
                         <input type="number" step="0.50" min="0" class="input-precio-producto" data-id="${idProd}" value="${parseFloat(prod.precio || 0).toFixed(2)}" style="width: 75px; padding: 3px 6px; border: 1.5px solid var(--rosa-claro); border-radius: 8px; font-weight: 700; text-align: center; font-size: 0.85rem; background: #fff;">
@@ -1208,19 +1366,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         document.querySelectorAll('.editable-item').forEach(el => {
-            el.addEventListener('focus', (e) => {
-                e.target.style.backgroundColor = '#FFF7FA';
-                e.target.style.borderColor = 'var(--rosa)';
-            });
+            el.addEventListener('focus', (e) => { e.target.style.backgroundColor = '#FFF7FA'; e.target.style.borderColor = 'var(--rosa)'; });
             el.addEventListener('blur', async (e) => {
                 e.target.style.backgroundColor = 'transparent';
-                e.target.style.borderColor = 'transparent';
                 const id = e.target.dataset.id;
                 const campo = e.target.dataset.campo;
                 const valor = e.target.innerText.trim();
-
                 if (!id) return;
-
                 try {
                     await fetch(`/api/productos/${id}`, {
                         method: 'PUT',
@@ -1229,10 +1381,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     renderizarCatalogoPublico();
                     mostrarToast('Cambio guardado.', 'exito');
-                } catch (err) {
-                    console.error('Error al actualizar producto:', err);
-                    mostrarToast('Error al actualizar.', 'error');
-                }
+                } catch (err) { console.error(err); }
             });
         });
 
@@ -1240,9 +1389,7 @@ document.addEventListener('DOMContentLoaded', () => {
             inp.addEventListener('change', async (e) => {
                 const id = e.target.dataset.id;
                 const nuevoPrecio = parseFloat(e.target.value) || 0;
-
                 if (!id) return;
-
                 try {
                     await fetch(`/api/productos/${id}`, {
                         method: 'PUT',
@@ -1250,11 +1397,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         body: JSON.stringify({ precio: nuevoPrecio })
                     });
                     renderizarCatalogoPublico();
-                    mostrarToast('Precio de pieza actualizado.', 'exito');
-                } catch (err) {
-                    console.error('Error al actualizar precio:', err);
-                    mostrarToast('Error al actualizar precio.', 'error');
-                }
+                    mostrarToast('Precio actualizado.', 'exito');
+                } catch (err) { console.error(err); }
             });
         });
 
@@ -1262,17 +1406,13 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', (e) => {
                 const id = e.target.dataset.id;
                 if (!id) return;
-
-                mostrarConfirmacion('¿Estás segura de eliminar esta pieza del catálogo?', async () => {
+                mostrarConfirmacion('¿Estás segura de eliminar esta pieza?', async () => {
                     try {
                         await fetch(`/api/productos/${id}`, { method: 'DELETE' });
                         renderizarCatalogoAdmin();
                         renderizarCatalogoPublico();
-                        mostrarToast('Pieza eliminada del catálogo.', 'exito');
-                    } catch (err) {
-                        console.error('Error al eliminar producto:', err);
-                        mostrarToast('Error al eliminar pieza.', 'error');
-                    }
+                        mostrarToast('Pieza eliminada.', 'exito');
+                    } catch (err) { console.error(err); }
                 });
             });
         });
@@ -1282,7 +1422,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formNuevaPieza) {
         formNuevaPieza.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const elNombre = document.getElementById('nuevo-nombre-producto');
             const elSelectCat = document.getElementById('nueva-categoria-producto');
             const elOtraCat = document.getElementById('input-otra-categoria');
@@ -1291,66 +1430,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const elFoto = document.getElementById('imagen-producto-admin');
 
             const nombre = elNombre ? elNombre.value.trim() : '';
-            let rawPrecio = elPrecio ? elPrecio.value.replace(/[^0-9.]/g, '') : '0';
-            const precio = parseFloat(rawPrecio) || 0;
-
+            const precio = parseFloat(elPrecio ? elPrecio.value : 0) || 0;
             let categoria = elSelectCat ? elSelectCat.value : '';
-            if (categoria === '__nueva__' && elOtraCat && elOtraCat.value.trim()) {
-                categoria = elOtraCat.value.trim();
-            }
-
+            if (categoria === '__nueva__' && elOtraCat && elOtraCat.value.trim()) categoria = elOtraCat.value.trim();
             const descripcion = elDesc ? elDesc.value.trim() : '';
-
-            if (!nombre || !categoria || precio <= 0) {
-                mostrarToast('Completa el nombre, categoría y precio válido.', 'error');
-                return;
-            }
-
             const archivo = elFoto?.files ? elFoto.files[0] : null;
-            if (!archivo) {
-                mostrarToast('Selecciona una foto para la pieza.', 'error');
+
+            if (!nombre || !categoria || precio <= 0 || !archivo) {
+                mostrarToast('Completa los campos obligatorios y selecciona una foto.', 'error');
                 return;
             }
 
             const lector = new FileReader();
             lector.onload = async function (evento) {
-                const imagenBase64 = evento.target.result;
-
-                const nuevoProducto = {
-                    nombre,
-                    categoria,
-                    precio,
-                    descripcion,
-                    imagen: imagenBase64
-                };
-
+                const nuevoProducto = { nombre, categoria, precio, descripcion, imagen: evento.target.result };
                 try {
                     const respuesta = await fetch('/api/productos', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(nuevoProducto)
                     });
-
                     if (respuesta.ok) {
-                        mostrarToast('¡Pieza agregada con éxito al catálogo!', 'exito');
+                        mostrarToast('¡Pieza agregada con éxito!', 'exito');
                         formNuevaPieza.reset();
-                        
-                        if (elOtraCat) elOtraCat.style.display = 'none';
-                        if (textoFotoPieza) {
-                            textoFotoPieza.textContent = 'Ningún archivo seleccionado';
-                            textoFotoPieza.style.opacity = '0.75';
-                        }
-                        
-                        modalNuevoProducto.style.display = 'none';
+                        document.getElementById('modal-nuevo-producto').style.display = 'none';
                         renderizarCatalogoAdmin();
                         renderizarCatalogoPublico();
                     } else {
-                        mostrarToast('Error al guardar el producto en la base de datos.', 'error');
+                        mostrarToast('Error al guardar.', 'error');
                     }
-                } catch (err) {
-                    console.error('Error al enviar producto:', err);
-                    mostrarToast('Ocurrió un error al conectar con el servidor.', 'error');
-                }
+                } catch (err) { console.error(err); }
             };
             lector.readAsDataURL(archivo);
         });
@@ -1369,45 +1478,24 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const usuario = document.getElementById('usuario-admin').value.trim();
             const clave = document.getElementById('clave-admin').value.trim();
-
-            if (!usuario || !clave) {
-                if (errorLogin) {
-                    errorLogin.textContent = 'Por favor completa todos los campos.';
-                    errorLogin.style.display = 'block';
-                }
-                return;
-            }
-
             try {
                 const respuesta = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ usuario, clave })
                 });
-
                 const datos = await respuesta.json();
-
                 if (respuesta.ok) {
                     localStorage.setItem('balenzaa_token', datos.token);
                     seccionLoginAdmin.style.display = 'none';
                     panelContenido.style.display = 'block';
-                    if (errorLogin) errorLogin.style.display = 'none';
                     renderizarPedidos();
                     renderizarCatalogoAdmin();
-                    mostrarToast('Sesión iniciada correctamente.', 'exito');
+                    mostrarToast('Sesión iniciada.', 'exito');
                 } else {
-                    if (errorLogin) {
-                        errorLogin.textContent = datos.error || 'Credenciales incorrectas.';
-                        errorLogin.style.display = 'block';
-                    }
+                    if (errorLogin) { errorLogin.textContent = datos.error || 'Credenciales incorrectas.'; errorLogin.style.display = 'block'; }
                 }
-            } catch (error) {
-                console.error('Error al iniciar sesión:', error);
-                if (errorLogin) {
-                    errorLogin.textContent = 'Error al conectar con el servidor.';
-                    errorLogin.style.display = 'block';
-                }
-            }
+            } catch (err) { console.error(err); }
         });
     }
 
@@ -1416,7 +1504,6 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('balenzaa_token');
             panelContenido.style.display = 'none';
             seccionLoginAdmin.style.display = 'block';
-            if (formLoginAdmin) formLoginAdmin.reset();
             mostrarToast('Sesión cerrada.', 'exito');
         });
     }

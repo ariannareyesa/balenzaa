@@ -30,12 +30,16 @@
                     <li><a href="#inicio">Inicio</a></li>
                     <li><a href="#sobre-mi">Sobre mí</a></li>
                     <li><a href="#catalogo">Catálogo</a></li>
-                    <li><a href="#pedidos">Pedidos</a></li>
                     <li><a href="#cuidados">Cuidados</a></li>
                     <li><a href="#preguntas">Preguntas</a></li>
                 </ul>
             </nav>
-            <a href="#pedidos" class="boton-nav-cta">Hacer pedido</a>
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                <button id="boton-abrir-carrito" class="boton-carrito-nav" aria-label="Ver carrito" style="position: relative; background: var(--rosa-pastel); border: 1.5px solid var(--rosa-claro); border-radius: var(--radio-pill); padding: 0.45rem 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.88rem; color: var(--tinta);">
+                    🛒 Carrito <span id="contador-carrito" style="background: var(--rosa); color: #fff; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">0</span>
+                </button>
+                <button id="boton-abrir-modal-pedido" class="boton-nav-cta">Encargo personalizado</button>
+            </div>
         </div>
     </header>
 
@@ -48,7 +52,7 @@
                 <p class="descripcion-hero">Piezas en crochet diseñadas puntada a puntada. Amigurumis, flores eternas y detalles personalizados para regalar con sentido.</p>
                 <div class="botones-hero">
                     <a href="#catalogo" class="boton-primario">Ver catálogo</a>
-                    <a href="#pedidos" class="boton-secundario">Personalizar pedido</a>
+                    <button id="boton-hero-pedido" class="boton-secundario" style="cursor: pointer;">Encargo personalizado</button>
                 </div>
             </div>
         </section>
@@ -93,80 +97,11 @@
                     <p class="bajada-seccion">Piezas tejidas a mano bajo pedido. Precios y detalles referenciales según especificaciones del cliente.</p>
                 </div>
 
+                <!-- Indicador de Agenda en el Catálogo -->
+                <div id="banner-estado-agenda" style="text-align: center; margin-bottom: 1.5rem; font-weight: 700; font-size: 0.95rem;"></div>
+
                 <div class="contenedor-filtros" id="contenedor-filtros-catalogo"></div>
                 <div class="grilla-productos" id="contenedor-catalogo-tienda"></div>
-            </div>
-        </section>
-
-        <!-- Sección Pedidos -->
-        <section id="pedidos" class="seccion-pedidos">
-            <div class="contenedor-pedidos">
-                <div class="encabezado-seccion">
-                    <span class="subtitulo-seccion">Hecho a tu medida</span>
-                    <h2 class="titulo-seccion">Encargo Personalizado</h2>
-                    <p class="bajada-seccion">Cuéntanos tu idea. Diseñamos y tejemos piezas únicas según tus preferencias.<br>Me contactaré contigo para coordinar los detalles.</p>
-                </div>
-                
-                <div id="banner-estado-agenda"></div>
-                
-                <div class="tarjeta-aviso">
-                    <p><strong>Aviso importante:</strong> Cada pieza se elabora a mano bajo pedido. Planifica tu encargo con anticipación o consulta a través de nuestro WhatsApp.</p>
-                </div>
-
-                <form class="formulario-encargo" id="formulario-pedido" novalidate>
-                    <div class="grupo-campo">
-                        <label for="nombre-cliente">Tu nombre completo</label>
-                        <input type="text" id="nombre-cliente" required placeholder="Ej: Romina Reyes">
-                    </div>
-
-                    <div class="grupo-campo">
-                        <label for="correo-cliente">Correo electrónico</label>
-                        <input type="email" id="correo-cliente" required placeholder="tu-correo@email.com">
-                    </div>
-
-                    <div class="grupo-campo">
-                        <label for="celular-cliente">Número de WhatsApp / Celular</label>
-                        <input type="tel" id="celular-cliente" required placeholder="Ej: 0912345678">
-                    </div>
-
-                    <div class="grupo-campo">
-                        <label for="tipo-producto">¿Qué te gustaría encargar?</label>
-                        <select id="tipo-producto" required>
-                            <option value="" disabled selected>Selecciona qué deseas encargar</option>
-                        </select>
-                    </div>
-
-                    <div class="grupo-campo">
-                        <label for="detalles-pedido">Detalles, colores o medidas</label>
-                        <textarea id="detalles-pedido" rows="3" placeholder="Cuéntame colores de preferencia o referencias..." required></textarea>
-                    </div>
-
-                    <div class="grupo-campo">
-                        <label for="imagen-referencia-pedido">Foto o diseño de referencia (opcional)</label>
-                        <div class="contenedor-input-archivo">
-                            <input type="file" id="imagen-referencia-pedido" accept="image/*" class="input-archivo-oculto">
-                            <label for="imagen-referencia-pedido" class="boton-subir-archivo">Subir imagen</label>
-                            <span id="nombre-archivo-pedido" class="texto-nombre-archivo">Ningún archivo seleccionado</span>
-                        </div>
-                    </div>
-
-                    <div class="grupo-campo">
-                        <label for="fecha-entrega">¿Para qué fecha lo necesitas?</label>
-                        <input type="date" id="fecha-entrega" required>
-                    </div>
-
-                    <div class="grupo-checkbox">
-                        <input type="checkbox" id="suscribir-newsletter">
-                        <label for="suscribir-newsletter">Quiero suscribirme al Club Balenzaa para recibir sorpresas y novedades.</label>
-                    </div>
-
-                    <button type="submit" class="boton-confirmar-pedido">Confirmar pedido</button>
-
-                    <p class="texto-dudas-pedido">
-                        ¿Tienes dudas antes de ordenar o prefieres consultar directamente?<br>
-                        <a href="https://wa.me/593983462196" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
-                    </p>
-                </form>
             </div>
         </section>
 
@@ -229,6 +164,149 @@
         </section>
     </main>
 
+    <!-- MODAL 1: ENCARGO PERSONALIZADO (LIBRE CON IMAGEN) -->
+    <div id="modal-encargo-personalizado" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1.5rem; box-sizing: border-box;">
+        <div style="background: white; border-radius: 28px; padding: 2.2rem; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); box-sizing: border-box;">
+            <button id="cerrar-modal-encargo" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; font-weight: bold; color: #C93A5B; cursor: pointer; padding: 4px 8px; line-height: 1;">✕</button>
+            
+            <div style="text-align: center; margin-bottom: 1.2rem;">
+                <h3 style="font-family: var(--f-titulo); color: var(--rosa); font-size: 1.8rem; margin: 0;">Encargo Personalizado</h3>
+                <p style="font-size: 0.88rem; color: var(--tinta); margin-top: 0.4rem;">Cuéntanos tu idea y Romina se contactará contigo.</p>
+            </div>
+
+            <form id="formulario-encargo-personalizado" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;" novalidate>
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="nombre-cliente-encargo">Tu nombre completo *</label>
+                    <input type="text" id="nombre-cliente-encargo" required placeholder="Ej: Romina Reyes">
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="correo-cliente-encargo">Correo electrónico *</label>
+                    <input type="email" id="correo-cliente-encargo" required placeholder="tu-correo@email.com">
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="celular-cliente-encargo">Número de WhatsApp / Celular *</label>
+                    <input type="tel" id="celular-cliente-encargo" required placeholder="Ej: 0912345678">
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="tipo-producto-encargo">¿Qué te gustaría encargar? *</label>
+                    <select id="tipo-producto-encargo" required>
+                        <option value="" disabled selected>Selecciona qué deseas encargar</option>
+                        <option value="Diseño personalizado / Varios / Otro">Diseño personalizado / Varios / Otro</option>
+                    </select>
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="detalles-pedido-encargo">Detalles, observaciones o colores *</label>
+                    <textarea id="detalles-pedido-encargo" rows="3" placeholder="Cuéntame colores de preferencia o referencias..." required></textarea>
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="imagen-referencia-pedido">Foto o diseño de referencia (opcional)</label>
+                    <div class="contenedor-input-archivo">
+                        <input type="file" id="imagen-referencia-pedido" accept="image/*" class="input-archivo-oculto">
+                        <label for="imagen-referencia-pedido" class="boton-subir-archivo">Subir imagen</label>
+                        <span id="nombre-archivo-pedido" class="texto-nombre-archivo">Ningún archivo seleccionado</span>
+                    </div>
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="fecha-entrega-encargo">¿Para qué fecha lo necesitas? *</label>
+                    <input type="date" id="fecha-entrega-encargo" required>
+                </div>
+
+                <button type="submit" class="boton-confirmar-pedido" style="width: 100%; margin-top: 0.5rem; text-align: center;">Confirmar encargo</button>
+
+                <p class="texto-dudas-pedido" style="margin-top: 0.5rem;">
+                    ¿Tienes dudas antes de ordenar?<br>
+                    <a href="https://wa.me/593983462196" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: PEDIDO DESDE EL CATÁLOGO (SIN IMAGEN, TEXTO ESPECÍFICO) -->
+    <div id="modal-pedido-catalogo" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1.5rem; box-sizing: border-box;">
+        <div style="background: white; border-radius: 28px; padding: 2.2rem; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); box-sizing: border-box;">
+            <button id="cerrar-modal-catalogo" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; font-weight: bold; color: #C93A5B; cursor: pointer; padding: 4px 8px; line-height: 1;">✕</button>
+            
+            <div style="text-align: center; margin-bottom: 1.2rem;">
+                <h3 style="font-family: var(--f-titulo); color: var(--rosa); font-size: 1.8rem; margin: 0;">Encargo</h3>
+                <p style="font-size: 0.88rem; color: var(--tinta); margin-top: 0.4rem;">Romina se contactará contigo para coordinar método de pago y envío.</p>
+            </div>
+
+            <form id="formulario-pedido-catalogo" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;" novalidate>
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="nombre-cliente-cat">Tu nombre completo *</label>
+                    <input type="text" id="nombre-cliente-cat" required placeholder="Ej: Romina Reyes">
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="correo-cliente-cat">Correo electrónico *</label>
+                    <input type="email" id="correo-cliente-cat" required placeholder="tu-correo@email.com">
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="celular-cliente-cat">Número de WhatsApp / Celular *</label>
+                    <input type="tel" id="celular-cliente-cat" required placeholder="Ej: 0912345678">
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="tipo-producto-cat">¿Qué te gustaría encargar? *</label>
+                    <select id="tipo-producto-cat" required>
+                        <option value="" disabled selected>Selecciona qué deseas encargar</option>
+                        <option value="Diseño personalizado / Varios / Otro">Diseño personalizado / Varios / Otro</option>
+                    </select>
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="detalles-pedido-cat">Detalles, observaciones o colores *</label>
+                    <textarea id="detalles-pedido-cat" rows="3" placeholder="Detalles de tu pedido..." required></textarea>
+                </div>
+
+                <div class="grupo-campo" style="margin-bottom: 0;">
+                    <label for="fecha-entrega-cat">¿Para qué fecha lo necesitas? *</label>
+                    <input type="date" id="fecha-entrega-cat" required>
+                </div>
+
+                <button type="submit" class="boton-confirmar-pedido" style="width: 100%; margin-top: 0.5rem; text-align: center;">Confirmar encargo</button>
+
+                <p class="texto-dudas-pedido" style="margin-top: 0.5rem;">
+                    ¿Tienes dudas antes de ordenar?<br>
+                    <a href="https://wa.me/593983462196" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- PANEL LATERAL DERECHO DEL CARRITO DE COMPRAS -->
+    <div id="overlay-carrito-lateral" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 9998;"></div>
+    <div id="panel-carrito-lateral" style="position: fixed; top: 0; right: -420px; width: 100%; max-width: 400px; height: 100vh; background: white; z-index: 9999; box-shadow: -5px 0 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; transition: right 0.35s ease; box-sizing: border-box; padding: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--rosa-claro); padding-bottom: 1rem; margin-bottom: 1rem;">
+            <h3 style="font-family: var(--f-titulo); color: var(--rosa); margin: 0; font-size: 1.4rem;">Tu Carrito de Compras</h3>
+            <button id="cerrar-panel-carrito" style="background: none; border: none; font-size: 1.2rem; font-weight: bold; color: #C93A5B; cursor: pointer; padding: 4px 8px;">✕</button>
+        </div>
+        
+        <div id="lista-items-carrito" style="display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; flex: 1; padding-right: 4px; margin-bottom: 1rem;">
+            <!-- Dinámico -->
+        </div>
+
+        <div style="border-top: 1.5px solid var(--rosa-claro); padding-top: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.8rem;">
+                <span>Total referencial:</span>
+                <span id="total-precio-carrito" style="color: var(--rosa);">$0.00</span>
+            </div>
+
+            <div style="background: #FFF7FA; border: 1.5px dashed var(--rosa-claro); border-radius: 12px; padding: 0.75rem; font-size: 0.82rem; color: var(--tinta); margin-bottom: 1rem; text-align: center; line-height: 1.4;">
+                💡 <strong>Nota:</strong> Romina revisará tu encargo y se contactará contigo para coordinar método de pago y envío.
+            </div>
+
+            <button id="btn-proceder-pedido-carrito" class="boton-primario" style="width: 100%; text-align: center; background-color: var(--rosa); color: #fff; border-radius: var(--radio-pill); padding: 0.75rem; border: none; font-weight: 700; cursor: pointer;">Proceder al encargo</button>
+        </div>
+    </div>
+
     <!-- Pie de página -->
     <footer class="pie-pagina">
         <div class="contenedor-pie">
@@ -244,7 +322,6 @@
                     <li><a href="#inicio">Inicio</a></li>
                     <li><a href="#sobre-mi">Sobre mí</a></li>
                     <li><a href="#catalogo">Catálogo</a></li>
-                    <li><a href="#pedidos">Pedidos</a></li>
                     <li><a href="#cuidados">Cuidados</a></li>
                     <li><a href="#preguntas">Preguntas</a></li>
                 </ul>
