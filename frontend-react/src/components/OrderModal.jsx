@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function OrderModal({ isOpen, onClose, initialDetails = '' }) {
+function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [celular, setCelular] = useState('');
@@ -8,39 +8,51 @@ function OrderModal({ isOpen, onClose, initialDetails = '' }) {
   const [detalles, setDetalles] = useState(initialDetails);
   const [fechaEntrega, setFechaEntrega] = useState('');
   const [suscritoClub, setSuscritoClub] = useState(false);
-  const [archivoNombre, setArchivoNombre] = useState('Ningún archivo seleccionado');
 
-  // Actualizar detalles si cambian desde el carrito
-  React.useEffect(() => {
-    if (initialDetails) setDetalles(initialDetails);
-  }, [initialDetails]);
+  // Estado para notificaciones flotantes dentro del modal
+  const [toastModal, setToastModal] = useState(null);
+
+  const mostrarToastModal = (mensaje, tipo = 'exito') => {
+    setToastModal({ mensaje, tipo });
+    setTimeout(() => {
+      setToastModal(null);
+    }, 3500);
+  };
+
+  // Cada vez que se abra el modal o cambien los detalles iniciales, actualizamos el estado interno
+  useEffect(() => {
+    setDetalles(initialDetails);
+  }, [initialDetails, isOpen]);
 
   if (!isOpen) return null;
 
   const hoyStr = new Date().toISOString().split('T')[0];
   const celularRegex = /^09\d{8}$/;
 
+  // Determinamos si el modal viene del carrito o es un encargo personalizado puro
+  const esDesdeCarrito = initialDetails && initialDetails.includes('Pedido desde el catálogo');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!nombre.trim()) {
-      alert('Por favor, ingresa tu nombre completo.');
+      mostrarToastModal('Por favor, ingresa tu nombre completo.', 'error');
       return;
     }
     if (!correo.includes('@') || !correo.includes('.')) {
-      alert('Por favor, ingresa un correo válido.');
+      mostrarToastModal('Por favor, ingresa un correo válido.', 'error');
       return;
     }
     if (!celularRegex.test(celular)) {
-      alert('Ingresa un celular válido (10 dígitos empezando con 09).');
+      mostrarToastModal('Ingresa un celular válido (10 dígitos empezando con 09).', 'error');
       return;
     }
     if (!detalles.trim()) {
-      alert('Por favor, ingresa los detalles del pedido.');
+      mostrarToastModal('Por favor, ingresa los detalles del pedido.', 'error');
       return;
     }
     if (!fechaEntrega || fechaEntrega < hoyStr) {
-      alert('Selecciona una fecha válida a partir de hoy.');
+      mostrarToastModal('Selecciona una fecha válida a partir de hoy.', 'error');
       return;
     }
 
@@ -62,26 +74,41 @@ function OrderModal({ isOpen, onClose, initialDetails = '' }) {
       });
 
       if (respuesta.ok) {
-        alert(`¡Gracias ${nombre}, tu encargo ha sido registrado con éxito!`);
+        mostrarToastModal(`¡Gracias ${nombre}, tu encargo ha sido registrado con éxito!`, 'exito');
         localStorage.removeItem('balenzaa_carrito');
-        onClose();
+        
+        setTimeout(() => {
+          onClose();
+          if (onPedidoExitoso) onPedidoExitoso();
+        }, 1500);
       } else {
-        alert('Error al registrar el pedido en el servidor.');
+        mostrarToastModal('Error al registrar el pedido en el servidor.', 'error');
       }
     } catch (err) {
       console.error(err);
-      alert('Error de conexión al enviar el pedido.');
+      mostrarToastModal('Error de conexión al enviar el pedido.', 'error');
     }
   };
 
   return (
     <div style={{ display: 'flex', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', zIndex: 9999, alignItems: 'center', justifyContent: 'center', padding: '1rem', boxSizing: 'border-box' }}>
+      
+      {toastModal && (
+        <div className={`toast-notificacion ${toastModal.tipo} visible`} style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 10005 }}>
+          {toastModal.mensaje}
+        </div>
+      )}
+
       <div style={{ background: 'white', borderRadius: '24px', padding: '1.5rem', maxWidth: '480px', width: '100%', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', boxSizing: 'border-box' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: '14px', right: '14px', background: 'none', border: 'none', fontSize: '1.1rem', fontWeight: 'bold', color: '#C93A5B', cursor: 'pointer', padding: '4px 8px' }}>✕</button>
         
         <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-          <h3 style={{ fontFamily: 'var(--f-titulo)', color: 'var(--rosa)', fontSize: '1.6rem', margin: 0 }}>Encargo Personalizado</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--tinta)', marginTop: '0.3rem' }}>Cuéntanos tu idea y Romina se contactará contigo.</p>
+          <h3 style={{ fontFamily: 'var(--f-titulo)', color: 'var(--rosa)', fontSize: '1.6rem', margin: 0 }}>
+            {esDesdeCarrito ? 'Encargo desde el Carrito' : 'Encargo Personalizado'}
+          </h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--tinta)', marginTop: '0.3rem' }}>
+            {esDesdeCarrito ? 'Romina se contactará contigo para coordinar detalles.' : 'Cuéntanos tu idea y Romina se contactará contigo.'}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', textAlign: 'left' }}>
@@ -112,7 +139,7 @@ function OrderModal({ isOpen, onClose, initialDetails = '' }) {
 
           <div className="grupo-campo" style={{ marginBottom: 0 }}>
             <label>Detalles, observaciones o colores *</label>
-            <textarea rows="2" value={detalles} onChange={e => setDetalles(e.target.value)} placeholder="Cuéntame colores de preferencia o referencias..." required />
+            <textarea rows="4" value={detalles} onChange={e => setDetalles(e.target.value)} placeholder="Cuéntame colores de preferencia o referencias..." required />
           </div>
 
           <div className="grupo-campo" style={{ marginBottom: 0 }}>

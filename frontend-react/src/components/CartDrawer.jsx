@@ -5,6 +5,21 @@ function CartDrawer({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem
 
   const total = cartItems.reduce((sum, item) => sum + (parseFloat(item.precio) || 0) * item.cantidad, 0);
 
+  // Función para preparar el texto detallado incluyendo las notas del cliente
+  const handleProcederPedido = () => {
+    let resumen = 'Pedido desde el carrito:\n';
+    cartItems.forEach(i => {
+      resumen += `- ${i.cantidad}x ${i.nombre} ($${((parseFloat(i.precio) || 0) * i.cantidad).toFixed(2)})`;
+      if (i.observacion && i.observacion.trim() !== '') {
+        resumen += ` [Nota: ${i.observacion.trim()}]`;
+      }
+      resumen += '\n';
+    });
+    
+    // Llamamos a la función de checkout pasando el resumen generado
+    onCheckout(resumen);
+  };
+
   return (
     <>
       <div 
@@ -68,7 +83,7 @@ function CartDrawer({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem
             <span style={{ color: 'var(--rosa)' }}>${total.toFixed(2)}</span>
           </div>
           <button 
-            onClick={onCheckout} 
+            onClick={handleProcederPedido} 
             style={{ width: '100%', textAlign: 'center', backgroundColor: 'var(--rosa)', color: '#fff', borderRadius: 'var(--radio-pill)', padding: '0.65rem', border: 'none', fontWeight: 700, cursor: 'pointer' }}
           >
             Proceder al encargo

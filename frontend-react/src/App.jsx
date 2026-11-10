@@ -9,98 +9,64 @@ import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import CartDrawer from './components/CartDrawer';
 import OrderModal from './components/OrderModal';
+import AdminPanel from './components/AdminPanel';
 
 function App() {
+  const [isAdminRoute, setIsAdminRoute] = useState(window.location.hash === '#admin');
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [orderModalDetails, setOrderModalDetails] = useState('');
+  
+  // Estados independientes para evitar que se mezclen el carrito y el encargo personalizado
+  const [isCartOrderModalOpen, setIsCartOrderModalOpen] = useState(false);
+  const [isCustomOrderModalOpen, setIsCustomOrderModalOpen] = useState(false);
+  const [cartOrderDetails, setCartOrderDetails] = useState('');
 
-  // Cargar carrito desde localStorage al iniciar
   useEffect(() => {
-    const savedCart = localStorage.getItem('balenzaa_carrito');
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
-    }
+    const handleHashChange = () => {
+      setIsAdminRoute(window.location.hash === '#admin');
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Guardar carrito en localStorage cuando cambie
-  const saveCartToStorage = (updatedCart) => {
-    setCart(updatedCart);
-    localStorage.setItem('balenzaa_carrito', JSON.stringify(updatedCart));
-  };
+  useEffect(() => {
+    const savedCart = localStorage.getItem('balenzaa_carrito');
+    if (savedCart) setCart(JSON.parse(savedCart));
+  }, []);
 
-  const handleAddToCart = (product) => {
-    const existingIndex = cart.findIndex(item => item.nombre === product.nombre);
-    let updatedCart = [...cart];
-    if (existingIndex > -1) {
-      updatedCart[existingIndex].cantidad += 1;
-    } else {
-      updatedCart.push({ ...product, cantidad: 1, observacion: '' });
-    }
-    saveCartToStorage(updatedCart);
-  };
+  if (isAdminRoute) {
+    return <AdminPanel onBackToStore={() => { window.location.hash = ''; setIsAdminRoute(false); }} />;
+  }
 
-  const handleUpdateQuantity = (index, delta) => {
-    let updatedCart = [...cart];
-    if (updatedCart[index].cantidad + delta > 0) {
-      updatedCart[index].cantidad += delta;
-    } else {
-      updatedCart.splice(index, 1);
-    }
-    saveCartToStorage(updatedCart);
-  };
-
-  const handleRemoveItem = (index) => {
-    let updatedCart = [...cart];
-    updatedCart.splice(index, 1);
-    saveCartToStorage(updatedCart);
-  };
-
-  const handleUpdateObservation = (index, observation) => {
-    let updatedCart = [...cart];
-    updatedCart[index].observacion = observation;
-    saveCartToStorage(updatedCart);
-  };
-
-  const handleCheckout = () => {
-    if (cart.length === 0) {
-      alert('Tu carrito está vacío.');
-      return;
-    }
-    setIsCartOpen(false);
-
-    // Preparar resumen del carrito para el modal de encargo
-    let resumen = 'Pedido desde el catálogo:\n';
-    cart.forEach(i => {
-      resumen += `- ${i.cantidad}x ${i.nombre} ($${((parseFloat(i.precio) || 0) * i.cantidad).toFixed(2)})`;
-      if (i.observacion) resumen += ` [Nota: ${i.observacion}]`;
-      resumen += '\n';
-    });
-
-    setOrderModalDetails(resumen);
-    setIsOrderModalOpen(true);
-  };
-
-  const handleOpenCustomOrder = () => {
-    setOrderModalDetails('');
-    setIsOrderModalOpen(true);
-  };
+  const totalCartItems = cart.reduce((acc, item) => acc + (item.cantidad || 0), 0);
 
   return (
     <div className="cuerpo-tienda">
       <Navbar 
+        cartCount={totalCartItems} 
         onOpenCart={() => setIsCartOpen(true)} 
-        onOpenModal={handleOpenCustomOrder} 
+        onOpenModal={() => {
+          // Abre el modal exclusivo de Encargo Personalizado
+          setIsCustomOrderModalOpen(true);
+        }} 
       />
       <main>
-        <Hero onOpenModal={handleOpenCustomOrder} />
+        <Hero onOpenModal={() => {
+          // Abre el modal exclusivo de Encargo Personalizado desde el banner principal
+          setIsCustomOrderModalOpen(true);
+        }} />
         <About />
-        <Catalog onAddToCart={handleAddToCart} />
+        <Catalog onAddToCart={(prod) => {
+          let updated = [...cart];
+          const idx = updated.findIndex(i => i.nombre === prod.nombre);
+          if (idx > -1) updated[idx].cantidad += 1;
+          else updated.push({ ...prod, cantidad: 1, observacion: '' });
+          setCart(updated);
+          localStorage.setItem('balenzaa_carrito', JSON.stringify(updated));
+        }} />
         <CareGuide />
         <FAQ />
       </main>
-      
       <Footer />
       <WhatsAppButton />
 
@@ -108,22 +74,58 @@ function App() {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         cartItems={cart}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-        onUpdateObservation={handleUpdateObservation}
-        onCheckout={handleCheckout}
+        onUpdateQuantity={(idx, delta) => {
+          let updated = [...cart];
+          if (updated[idx].cantidad + delta > 0) updated[idx].cantidad += delta;
+          else updated.splice(idx, 1);
+          setCart(updated);
+          localStorage.setItem('balenzaa_carrito', JSON.stringify(updated));
+        }}
+        onRemoveItem={(idx) => {
+          let updated = [...cart];
+          updated.splice(idx, 1);
+          setCart(updated);
+          localStorage.setItem('balenzaa_carrito', JSON.stringify(updated));
+        }}
+        onUpdateObservation={(idx, obs) => {
+          let updated = [...cart];
+          updated[idx].observacion = obs;
+          setCart(updated);
+          localStorage.setItem('balenzaa_carrito', JSON.stringify(updated));
+        }}
+        onCheckout={() => {
+          setIsCartOpen(false);
+          
+          let res = 'Pedido desde el catálogo:\n';
+          cart.forEach(i => {
+            res += `- ${i.cantidad}x ${i.nombre} ($${((parseFloat(i.precio) || 0) * i.cantidad).toFixed(2)})`;
+            if (i.observacion && i.observacion.trim() !== '') {
+              res += ` [Nota: ${i.observacion.trim()}]`;
+            }
+            res += '\n';
+          });
+
+          setCartOrderDetails(res);
+          setIsCartOrderModalOpen(true);
+        }}
       />
 
+      {/* Modal exclusivo para pedidos que vienen del Carrito */}
       <OrderModal 
-        isOpen={isOrderModalOpen}
-        onClose={() => {
-          setIsOrderModalOpen(false);
-          
-          // Actualizar carrito local por si se vació al confirmar pedido
-          const savedCart = localStorage.getItem('balenzaa_carrito');
-          setCart(savedCart ? JSON.parse(savedCart) : []);
+        isOpen={isCartOrderModalOpen}
+        onClose={() => setIsCartOrderModalOpen(false)}
+        initialDetails={cartOrderDetails}
+        onPedidoExitoso={() => {
+          setCart([]);
+          localStorage.removeItem('balenzaa_carrito');
         }}
-        initialDetails={orderModalDetails}
+      />
+
+      {/* Modal exclusivo para Encargo Personalizado */}
+      <OrderModal 
+        isOpen={isCustomOrderModalOpen}
+        onClose={() => setIsCustomOrderModalOpen(false)}
+        initialDetails=""
       />
     </div>
   );

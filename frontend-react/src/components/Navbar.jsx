@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Navbar({ onOpenCart, onOpenModal }) {
+function Navbar({ cartCount, onOpenCart, onOpenModal }) {
   return (
     <header className="barra-navegacion">
       <div className="contenedor-nav">
@@ -26,7 +26,7 @@ function Navbar({ onOpenCart, onOpenModal }) {
             className="boton-carrito-nav" 
             style={{ position: 'relative', background: 'var(--rosa-pastel)', border: '1.5px solid var(--rosa-claro)', borderRadius: 'var(--radio-pill)', padding: '0.35rem 0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.82rem', color: 'var(--tinta)' }}
           >
-            🛒 <span id="contador-carrito" style={{ background: 'var(--rosa)', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>0</span>
+            🛒 <span id="contador-carrito" style={{ background: 'var(--rosa)', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>{cartCount || 0}</span>
           </button>
           <button onClick={onOpenModal} className="boton-nav-cta">Encargo personalizado</button>
         </div>
