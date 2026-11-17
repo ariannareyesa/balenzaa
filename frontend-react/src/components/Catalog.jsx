@@ -4,6 +4,16 @@ function Catalog({ onAddToCart }) {
   const [productos, setProductos] = useState([]);
   const [filtroActivo, setFiltroActivo] = useState('todos');
   const [agendaCerrada, setAgendaCerrada] = useState(false);
+  
+  // Estado para la notificación flotante (toast)
+  const [toastCatalogo, setToastCatalogo] = useState(null);
+
+  const mostrarToastCatalogo = (mensaje, tipo = 'exito') => {
+    setToastCatalogo({ mensaje, tipo });
+    setTimeout(() => {
+      setToastCatalogo(null);
+    }, 3500);
+  };
 
   useEffect(() => {
     // Verificar estado de la agenda
@@ -56,6 +66,13 @@ function Catalog({ onAddToCart }) {
 
   return (
     <section id="catalogo" className="seccion-catalogo">
+      {/* Notificación flotante de catálogo */}
+      {toastCatalogo && (
+        <div className={`toast-notificacion ${toastCatalogo.tipo} visible`} style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 10005 }}>
+          {toastCatalogo.mensaje}
+        </div>
+      )}
+
       <div className="contenedor-catalogo">
         <div className="encabezado-seccion">
           <span className="subtitulo-seccion">Nuestras Creaciones</span>
@@ -116,7 +133,10 @@ function Catalog({ onAddToCart }) {
                     </div>
                     <button 
                       className="boton-agregar-carrito boton-encargar-tarjeta" 
-                      onClick={() => onAddToCart(prod)}
+                      onClick={() => {
+                        onAddToCart(prod);
+                        mostrarToastCatalogo(`¡"${prod.nombre}" se agregó al carrito! ✿`, 'exito');
+                      }}
                     >
                       Agregar
                     </button>

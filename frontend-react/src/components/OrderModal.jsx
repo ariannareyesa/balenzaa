@@ -7,6 +7,7 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
   const [tipoProducto, setTipoProducto] = useState('Diseño personalizado / Varios / Otro');
   const [detalles, setDetalles] = useState(initialDetails);
   const [fechaEntrega, setFechaEntrega] = useState('');
+  const [imagenReferencia, setImagenReferencia] = useState(null);
   const [suscritoClub, setSuscritoClub] = useState(false);
 
   // Estado para notificaciones flotantes dentro del modal
@@ -19,9 +20,9 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
     }, 3500);
   };
 
-  // Cada vez que se abra el modal o cambien los detalles iniciales, actualizamos el estado interno
   useEffect(() => {
     setDetalles(initialDetails);
+    setImagenReferencia(null);
   }, [initialDetails, isOpen]);
 
   if (!isOpen) return null;
@@ -63,6 +64,7 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
       producto: tipoProducto,
       detalles,
       fechaEntrega,
+      imagen: (!esDesdeCarrito && imagenReferencia) ? imagenReferencia.name : null,
       suscritoClub
     };
 
@@ -139,8 +141,30 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
 
           <div className="grupo-campo" style={{ marginBottom: 0 }}>
             <label>Detalles, observaciones o colores *</label>
-            <textarea rows="4" value={detalles} onChange={e => setDetalles(e.target.value)} placeholder="Cuéntame colores de preferencia o referencias..." required />
+            <textarea rows="3" value={detalles} onChange={e => setDetalles(e.target.value)} placeholder="Cuéntame colores de preferencia o referencias..." required />
           </div>
+
+          {/* ÚNICAMENTE aparece en Encargo Personalizado con un diseño estilizado */}
+          {!esDesdeCarrito && (
+            <div className="grupo-campo" style={{ marginBottom: 0 }}>
+              <label>Imagen o referencia visual (opcional)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#FAF6F0', padding: '0.5rem 0.8rem', borderRadius: '12px', border: '1px solid #E6D5C3' }}>
+                <label htmlFor="subir-imagen" style={{ background: 'var(--rosa)', color: 'white', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer', margin: 0, transition: 'background 0.2s' }}>
+                  Adjuntar...
+                </label>
+                <input 
+                  id="subir-imagen"
+                  type="file" 
+                  accept="image/*" 
+                  onChange={e => setImagenReferencia(e.target.files[0])}
+                  style={{ display: 'none' }} 
+                />
+                <span style={{ fontSize: '0.8rem', color: 'var(--tinta)', opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {imagenReferencia ? imagenReferencia.name : 'Ningún archivo seleccionado'}
+                </span>
+              </div>
+            </div>
+          )}
 
           <div className="grupo-campo" style={{ marginBottom: 0 }}>
             <label>¿Para qué fecha lo necesitas? *</label>
