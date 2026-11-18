@@ -10,6 +10,7 @@ import WhatsAppButton from './components/WhatsAppButton';
 import CartDrawer from './components/CartDrawer';
 import OrderModal from './components/OrderModal';
 import AdminPanel from "./components/admin/AdminPanel";
+import BalenzIA from './components/BalenzIA.jsx'; // <-- Importación del asistente virtual balenzIA
 
 function App() {
   const [isAdminRoute, setIsAdminRoute] = useState(window.location.hash === '#admin');
@@ -69,6 +70,9 @@ function App() {
       </main>
       <Footer />
       <WhatsAppButton />
+      
+      {/* Widget flotante de balenzIA */}
+      <BalenzIA />
 
       <CartDrawer 
         isOpen={isCartOpen}

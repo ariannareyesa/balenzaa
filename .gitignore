@@ -1,2 +1,11 @@
 node_modules/
+backend/node_modules/
+frontend/node_modules/
+frontend-react/node_modules/
 .env
+backend/.env
+dist/
+build/
+.DS_Store
+Thumbs.db
+*.log

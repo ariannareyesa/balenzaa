@@ -159,6 +159,10 @@ app.delete('/api/productos/:id', async (req, res) => {
     }
 });
 
+// 📌 RUTA DE BALENZIA (ASISTENTE VIRTUAL) - REGISTRADA ANTES DE LOS ESTÁTICOS
+const chatRoutes = require('./routes/chat');
+app.use('/api/chat', chatRoutes);
+
 // Rutas explícitas para servir el frontend
 app.get('/', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
@@ -173,7 +177,7 @@ app.use((req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-// Iniciar servidor local
+// Iniciar servidor local en el puerto 3000
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
