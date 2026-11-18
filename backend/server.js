@@ -20,7 +20,7 @@ app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
 // Definir la ruta absoluta hacia el frontend
-const frontendPath = path.resolve(__dirname, '..', 'frontend');
+const frontendPath = path.resolve(__dirname, '..', 'frontend-react');
 console.log('Carpeta frontend configurada en:', frontendPath);
 
 // Servir estáticos
