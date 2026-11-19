@@ -18,13 +18,13 @@ function BalenzIA() {
     setCargando(true);
 
     try {
-      const res = await fetch('http://localhost:3000/api/chat', {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mensaje: mensajeUsuario })
       });
       const data = await res.json();
-      
+
       setMensajes(prev => [...prev, { remitente: 'bot', texto: data.respuesta || '¡Te responderemos pronto por WhatsApp! 🧶' }]);
     } catch (err) {
       console.error(err);
@@ -38,7 +38,7 @@ function BalenzIA() {
     <div style={{ position: 'fixed', bottom: '20px', left: '20px', zIndex: 9998, fontFamily: 'var(--f-cuerpo)' }}>
       {/* Botón flotante izquierdo */}
       {!abierto && (
-        <button 
+        <button
           onClick={() => setAbierto(true)}
           aria-label="Abrir asistente balenzIA"
           style={{
@@ -55,10 +55,10 @@ function BalenzIA() {
           onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          <img 
-            src="/images/BalenzIA.png" 
-            alt="BalenzIA" 
-            style={{ width: '90px', height: 'auto', objectFit: 'contain', display: 'block' }} 
+          <img
+            src="/images/balenzIA.png"
+            alt="balenzIA"
+            style={{ width: '90px', height: 'auto', objectFit: 'contain', display: 'block' }}
           />
         </button>
       )}
@@ -87,14 +87,14 @@ function BalenzIA() {
             fontWeight: 'bold'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <img 
-                src="/images/BalenzIA.png" 
-                alt="BalenzIA" 
-                style={{ width: '35px', height: 'auto', objectFit: 'contain' }} 
+              <img
+                src="/images/balenzIA.png"
+                alt="balenzIA"
+                style={{ width: '35px', height: 'auto', objectFit: 'contain' }}
               />
               <span style={{ fontFamily: 'var(--f-titulo)', fontSize: '1.1rem' }}>balenzIA</span>
             </div>
-            <button 
+            <button
               onClick={() => setAbierto(false)}
               style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer' }}
             >
@@ -123,9 +123,9 @@ function BalenzIA() {
 
           {/* Input para escribir */}
           <form onSubmit={enviarMensaje} style={{ display: 'flex', borderTop: '1px solid var(--rosa-claro)', padding: '0.5rem', background: 'white' }}>
-            <input 
-              type="text" 
-              value={inputTexto} 
+            <input
+              type="text"
+              value={inputTexto}
               onChange={e => setInputTexto(e.target.value)}
               placeholder="Escribe tu duda..."
               style={{ flex: 1, border: 'none', padding: '0.5rem', fontSize: '0.9rem', outline: 'none' }}
