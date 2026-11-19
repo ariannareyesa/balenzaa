@@ -19,11 +19,11 @@ app.use(cors());
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
-// Definir la ruta absoluta hacia el frontend
+// Definir la ruta absoluta hacia el build de React
 const frontendPath = path.resolve(__dirname, '..', 'frontend-react', 'dist');
 console.log('Carpeta frontend configurada en:', frontendPath);
 
-// Servir estáticos
+// Servir archivos estáticos compilados
 app.use(express.static(frontendPath));
 
 // Conexión a MongoDB Atlas
@@ -159,20 +159,20 @@ app.delete('/api/productos/:id', async (req, res) => {
     }
 });
 
-// 📌 RUTA DE BALENZIA (ASISTENTE VIRTUAL) - REGISTRADA ANTES DE LOS ESTÁTICOS
+// RUTA DE BALENZIA (ASISTENTE VIRTUAL) - REGISTRADA ANTES DE LOS ESTÁTICOS
 const chatRoutes = require('./routes/chat');
 app.use('/api/chat', chatRoutes);
 
-// Rutas explícitas para servir el frontend
+// Rutas para servir la SPA compilada de React
 app.get('/', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'admin.html'));
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-// Fallback universal
+// Fallback universal para rutas de la aplicación
 app.use((req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
