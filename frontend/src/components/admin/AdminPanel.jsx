@@ -324,7 +324,14 @@ function AdminPanel({ onBackToStore }) {
         <div className="contenedor-admin-header">
           <span className="nombre-marca">Balenzaa</span>
           <span className="etiqueta-panel">Panel de Control</span>
-          <button onClick={onBackToStore} className="enlace-volver-tienda">Volver a la tienda</button>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <button onClick={onBackToStore} className="enlace-volver-tienda" style={{ marginLeft: 0 }}>
+              Volver a la tienda
+            </button>
+            <button onClick={handleLogout} className="boton-salir">
+              Cerrar sesión
+            </button>
+          </div>
         </div>
       </header>
 

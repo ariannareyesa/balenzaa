@@ -5,7 +5,6 @@ function CartDrawer({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem
 
   const total = cartItems.reduce((sum, item) => sum + (parseFloat(item.precio) || 0) * item.cantidad, 0);
 
-  // Función para preparar el texto detallado incluyendo las notas del cliente
   const handleProcederPedido = () => {
     let resumen = 'Pedido desde el carrito:\n';
     cartItems.forEach(i => {
@@ -15,8 +14,7 @@ function CartDrawer({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem
       }
       resumen += '\n';
     });
-    
-    // Llamamos a la función de checkout pasando el resumen generado
+
     onCheckout(resumen);
   };
 
@@ -30,28 +28,31 @@ function CartDrawer({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem
         position: 'fixed',
         top: 0,
         right: 0,
+        bottom: 0,
         width: '100%',
         maxWidth: '360px',
-        height: '100vh',
+        height: '100dvh',
+        maxHeight: '100dvh',
         background: 'white',
         zIndex: 9999,
         boxShadow: '-5px 0 25px rgba(0,0,0,0.15)',
         display: 'flex',
         flexDirection: 'column',
         boxSizing: 'border-box',
-        padding: '1.5rem'
+        padding: '1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom)) 1.25rem',
+        overflow: 'hidden'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1.5px solid var(--rosa-claro)', paddingBottom: '0.8rem', marginBottom: '0.8rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1.5px solid var(--rosa-claro)', paddingBottom: '0.75rem', marginBottom: '0.75rem', flexShrink: 0 }}>
           <h3 style={{ fontFamily: 'var(--f-titulo)', color: 'var(--rosa)', margin: 0, fontSize: '1.3rem' }}>Tu Carrito</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.1rem', fontWeight: 'bold', color: '#C93A5B', cursor: 'pointer' }}>✕</button>
         </div>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', overflowY: 'auto', flex: 1, marginBottom: '0.8rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', overflowY: 'auto', flex: '1 1 auto', minHeight: 0, paddingRight: '2px', marginBottom: '0.75rem' }}>
           {cartItems.length === 0 ? (
             <p style={{ textAlign: 'center', color: 'var(--tinta)', padding: '2rem' }}>Tu carrito está vacío.</p>
           ) : (
             cartItems.map((item, index) => (
-              <div key={index} style={{ background: '#FFF7FA', padding: '0.9rem', borderRadius: '14px', border: '1.5px solid var(--rosa-claro)', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              <div key={index} style={{ background: '#FFF7FA', padding: '0.9rem', borderRadius: '14px', border: '1.5px solid var(--rosa-claro)', display: 'flex', flexDirection: 'column', gap: '0.6rem', flexShrink: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <strong style={{ fontSize: '0.9rem', color: 'var(--tinta)', display: 'block' }}>{item.nombre}</strong>
@@ -77,14 +78,14 @@ function CartDrawer({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem
           )}
         </div>
 
-        <div style={{ borderTop: '1.5px solid var(--rosa-claro)', paddingTop: '0.8rem' }}>
+        <div style={{ borderTop: '1.5px solid var(--rosa-claro)', paddingTop: '0.75rem', flexShrink: 0, background: 'white' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 700, fontSize: '1rem', marginBottom: '0.6rem' }}>
             <span>Total referencial:</span>
             <span style={{ color: 'var(--rosa)' }}>${total.toFixed(2)}</span>
           </div>
           <button 
             onClick={handleProcederPedido} 
-            style={{ width: '100%', textAlign: 'center', backgroundColor: 'var(--rosa)', color: '#fff', borderRadius: 'var(--radio-pill)', padding: '0.65rem', border: 'none', fontWeight: 700, cursor: 'pointer' }}
+            style={{ width: '100%', textAlign: 'center', backgroundColor: 'var(--rosa)', color: '#fff', borderRadius: 'var(--radio-pill)', padding: '0.7rem', border: 'none', fontWeight: 700, cursor: 'pointer' }}
           >
             Proceder al encargo
           </button>
