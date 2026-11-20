@@ -28,7 +28,6 @@
   --flor-clara: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='%23FBC5D6'%3E%3Ccircle cx='50' cy='22' r='20'/%3E%3Ccircle cx='77' cy='42' r='20'/%3E%3Ccircle cx='67' cy='74' r='20'/%3E%3Ccircle cx='33' cy='74' r='20'/%3E%3Ccircle cx='23' cy='42' r='20'/%3E%3C/g%3E%3Ccircle cx='50' cy='50' r='13' fill='%23FFD45C'/%3E%3C/svg%3E");
 }
 
-/* Scrollbars personalizados elegantes estilo pastel */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -252,7 +251,6 @@ ul {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  flex-wrap: wrap;
 }
 
 .logotipo-marca {
@@ -261,6 +259,7 @@ ul {
   gap: 12px;
   font-size: 1.5rem;
   color: var(--rosa);
+  flex-shrink: 0;
 }
 
 .imagen-logo-nav {
@@ -291,14 +290,25 @@ ul {
   color: var(--rosa);
 }
 
+.acciones-nav-derecha {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .menu-hamburguesa {
   display: none;
   background: none;
   border: none;
   cursor: pointer;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 5px;
   padding: 5px;
+  flex-shrink: 0;
 }
 
 .menu-hamburguesa span {
@@ -308,6 +318,18 @@ ul {
   background-color: var(--rosa);
   border-radius: 2px;
   transition: all 0.3s ease;
+}
+
+.menu-hamburguesa.abierto span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.menu-hamburguesa.abierto span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-hamburguesa.abierto span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
 }
 
 .seccion-hero {
@@ -1181,7 +1203,6 @@ textarea:focus {
   max-width: 240px;
 }
 
-/* --- ESTILOS TOAST NOTIFICACIONES MINIMALISTAS --- */
 #contenedor-toasts {
   position: fixed;
   top: 24px;
@@ -1226,8 +1247,40 @@ textarea:focus {
 }
 
 @media (max-width: 800px) {
+  .contenedor-nav {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .logotipo-marca {
+    font-size: 1.25rem;
+    gap: 8px;
+  }
+
+  .imagen-logo-nav {
+    width: 34px;
+    height: 34px;
+  }
+
+  .acciones-nav-derecha {
+    gap: 0.4rem;
+    margin-left: auto;
+    align-items: center;
+  }
+
+  .boton-nav-cta {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
   .menu-hamburguesa {
     display: flex;
+    align-self: flex-start;
+    margin-top: 2px;
   }
 
   .menu-navegacion {
@@ -1238,18 +1291,22 @@ textarea:focus {
     background-color: var(--crema);
     flex-direction: column;
     align-items: center;
-    padding: 1.2rem 0;
+    gap: 0.4rem;
+    padding: 0;
     box-shadow: 0 10px 20px rgba(116, 64, 79, 0.08);
     border-top: 1.5px dashed var(--rosa-claro);
     max-height: 0;
     overflow: hidden;
     opacity: 0;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
+    pointer-events: none;
+    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
   }
 
   .menu-navegacion.activo {
     max-height: 350px;
+    padding: 1rem 0;
     opacity: 1;
+    pointer-events: auto;
   }
 
   .menu-navegacion li {
@@ -1265,10 +1322,6 @@ textarea:focus {
   .contenedor-sobre-mi,
   .contenedor-pie {
     grid-template-columns: 1fr;
-  }
-
-  .contenedor-nav {
-    justify-content: space-between;
   }
 
   .seccion-hero::before {
@@ -1294,5 +1347,4 @@ textarea:focus {
     grid-template-columns: 1fr !important;
     padding: 0 1rem;
   }
-  
 }
