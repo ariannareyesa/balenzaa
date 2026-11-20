@@ -124,9 +124,10 @@ app.delete('/api/pedidos/:id', async (req, res) => {
 // RUTAS API PRODUCTOS
 app.get('/api/productos', async (req, res) => {
     try {
-        const productos = await Producto.find().sort({ createdAt: -1 });
+        const productos = await Producto.find().sort({ _id: -1 }).lean();
         res.json(productos);
     } catch (err) {
+        console.error('Error al obtener productos del catálogo:', err);
         res.status(500).json({ error: 'Error al obtener productos del catálogo' });
     }
 });
@@ -137,15 +138,21 @@ app.post('/api/productos', async (req, res) => {
         await nuevoProducto.save();
         res.status(201).json(nuevoProducto);
     } catch (err) {
+        console.error('Error al agregar producto al catálogo:', err);
         res.status(400).json({ error: 'Error al agregar producto al catálogo' });
     }
 });
 
 app.put('/api/productos/:id', async (req, res) => {
     try {
-        const productoActualizado = await Producto.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const productoActualizado = await Producto.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { returnDocument: 'after' }
+        );
         res.json(productoActualizado);
     } catch (err) {
+        console.error('Error al actualizar producto:', err);
         res.status(400).json({ error: 'Error al actualizar producto' });
     }
 });
@@ -155,6 +162,7 @@ app.delete('/api/productos/:id', async (req, res) => {
         await Producto.findByIdAndDelete(req.params.id);
         res.json({ mensaje: 'Producto eliminado con éxito' });
     } catch (err) {
+        console.error('Error al eliminar producto:', err);
         res.status(400).json({ error: 'Error al eliminar producto' });
     }
 });
