@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function Navbar({ cartCount, onOpenCart, onOpenModal }) {
+function Navbar({ cartCount, onOpenCart }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   const toggleMenu = () => {
@@ -32,6 +32,7 @@ function Navbar({ cartCount, onOpenCart, onOpenModal }) {
         <div className="acciones-nav-derecha">
           <button
             id="boton-abrir-carrito"
+            type="button"
             onClick={() => {
               cerrarMenu();
               onOpenCart();
@@ -40,16 +41,6 @@ function Navbar({ cartCount, onOpenCart, onOpenModal }) {
             style={{ position: 'relative', background: 'var(--rosa-pastel)', border: '1.5px solid var(--rosa-claro)', borderRadius: 'var(--radio-pill)', padding: '0.35rem 0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.82rem', color: 'var(--tinta)' }}
           >
             🛒 <span id="contador-carrito" style={{ background: 'var(--rosa)', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>{cartCount || 0}</span>
-          </button>
-
-          <button
-            onClick={() => {
-              cerrarMenu();
-              onOpenModal();
-            }}
-            className="boton-nav-cta"
-          >
-            Encargo personalizado
           </button>
 
           <button
