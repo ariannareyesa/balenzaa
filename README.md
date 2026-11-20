@@ -1,6 +1,6 @@
 # 🧶 Balenzaa — Plataforma Web de Crochet Artesanal
 
-Plataforma web full-stack desarrollada con el stack **MERN** (MongoDB, Express.js, React + Vite y Node.js) para **Balenzaa**, un emprendimiento de tejido artesanal en Guayaquil, Ecuador. Integra una vitrina interactiva con carrito de compras, encargos personalizados y el asistente virtual **balenzIA**, junto con un Panel de Control Administrativo privado para la gestión de pedidos, métricas financieras, suscriptores y catálogo.
+Plataforma web full-stack desarrollada con el stack **MERN** (MongoDB, Express.js, React + Vite y Node.js) para **Balenzaa**, un emprendimiento de tejido artesanal en Guayaquil, Ecuador. Integra una vitrina interactiva con carrito de compras, encargos personalizados y el asistente virtual **BalenzIA**, junto con un Panel de Control Administrativo privado para la gestión de pedidos, métricas financieras, suscriptores y catálogo.
 
 ---
 
@@ -80,6 +80,7 @@ balenzaa/
 │   ├── index.html
 │   ├── package-lock.json
 │   ├── package.json
+│   ├── vercel.json             # Reglas de rewrite (/api/*) hacia el backend en Render
 │   └── vite.config.js
 ├── .gitignore
 └── README.md
@@ -92,12 +93,13 @@ balenzaa/
 | Tecnología | Rol en la Aplicación |
 | :--- | :--- |
 | ![MongoDB](https://img.shields.io/badge/MongoDB_Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white) | **Base de Datos:** Persistencia NoSQL en la nube con Mongoose ODM. |
-| ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white) | **Backend API:** Servidor RESTful, rutas modulares y entrega de archivos estáticos en producción. |
+| ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white) | **Backend API:** Servidor RESTful, rutas modulares y lógica de negocio. |
 | ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white) | **Frontend:** Interfaz modular basada en componentes funcionales, Hooks y empaquetado rápido con Vite. |
 | ![Node.js](https://img.shields.io/badge/Node.js-v18+-68A063?style=for-the-badge&logo=node.js&logoColor=white) | **Entorno de Ejecución:** Runtime asíncrono en el servidor. |
 | ![JavaScript](https://img.shields.io/badge/JavaScript_ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white) | **Lenguajes y Estilos:** JavaScript moderno (Async/Await, Fetch API) y CSS responsivo. |
 | ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white) | **Seguridad:** Autenticación por Tokens Bearer y encriptación con `bcryptjs`. |
 | ![Google Gemini](https://img.shields.io/badge/balenzIA_Chatbot-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white) | **Asistente Virtual:** Integración de IA conversacional mediante la ruta `/api/chat`. |
+| ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white) ![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=black) | **Despliegue:** Frontend estático en CDN global con Vercel y API REST en Render. |
 
 ---
 
@@ -154,16 +156,12 @@ Abre tu navegador en la URL local que indica Vite (`http://localhost:5173/`). Pa
 
 ---
 
-## Despliegue en Producción (Render)
+## Despliegue en Producción (Vercel + Render)
 
-El servidor Express (`backend/server.js`) está configurado para servir directamente el compilado de producción (`frontend/dist/`):
+La arquitectura de producción separa la entrega de la interfaz y el procesamiento del servidor para optimizar los tiempos de carga:
 
-```bash
-cd frontend
-npm run build
-```
-
-Luego el servidor inicia desde `backend/` con `npm start`, unificando la API REST y la interfaz React bajo un mismo dominio.
+* **Frontend en Vercel (`https://balenzaa-ten.vercel.app`):** Sirve el compilado de React + Vite (`frontend/dist/`) desde su CDN global y redirige las peticiones `/api/*` hacia el servidor mediante las reglas configuradas en `frontend/vercel.json`.
+* **Backend en Render (`https://balenzaa.onrender.com`):** Ejecuta la API REST en Node.js/Express (`backend/server.js`) conectada a MongoDB Atlas y sirve también el compilado de producción como respaldo monolítico (`npm run build` + `npm start`).
 
 ---
 
