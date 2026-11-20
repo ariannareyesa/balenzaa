@@ -8,9 +8,9 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
   const [detalles, setDetalles] = useState(initialDetails);
   const [fechaEntrega, setFechaEntrega] = useState('');
   const [imagenReferencia, setImagenReferencia] = useState(null);
+  const [nombreArchivo, setNombreArchivo] = useState('Ningún archivo seleccionado');
   const [suscritoClub, setSuscritoClub] = useState(false);
 
-  // Estado para notificaciones flotantes dentro del modal
   const [toastModal, setToastModal] = useState(null);
 
   const mostrarToastModal = (mensaje, tipo = 'exito') => {
@@ -23,6 +23,7 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
   useEffect(() => {
     setDetalles(initialDetails);
     setImagenReferencia(null);
+    setNombreArchivo('Ningún archivo seleccionado');
   }, [initialDetails, isOpen]);
 
   if (!isOpen) return null;
@@ -30,8 +31,40 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
   const hoyStr = new Date().toISOString().split('T')[0];
   const celularRegex = /^09\d{8}$/;
 
-  // Determinamos si el modal viene del carrito o es un encargo personalizado puro
   const esDesdeCarrito = initialDetails && initialDetails.includes('Pedido desde el catálogo');
+
+  const handleFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) {
+      setImagenReferencia(null);
+      setNombreArchivo('Ningún archivo seleccionado');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      mostrarToastModal('Por favor, selecciona un archivo de imagen válido.', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      mostrarToastModal('La imagen supera el límite de 10 MB.', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    setNombreArchivo(file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImagenReferencia(reader.result);
+    };
+    reader.onerror = () => {
+      mostrarToastModal('No se pudo leer la imagen seleccionada.', 'error');
+      setImagenReferencia(null);
+      setNombreArchivo('Ningún archivo seleccionado');
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,7 +97,7 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
       producto: tipoProducto,
       detalles,
       fechaEntrega,
-      imagen: (!esDesdeCarrito && imagenReferencia) ? imagenReferencia.name : null,
+      imagenReferencia: (!esDesdeCarrito && imagenReferencia) ? imagenReferencia : null,
       suscritoClub
     };
 
@@ -78,7 +111,16 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
       if (respuesta.ok) {
         mostrarToastModal(`¡Gracias ${nombre}, tu encargo ha sido registrado con éxito!`, 'exito');
         localStorage.removeItem('balenzaa_carrito');
-        
+        setNombre('');
+        setCorreo('');
+        setCelular('');
+        setTipoProducto('Diseño personalizado / Varios / Otro');
+        setDetalles('');
+        setFechaEntrega('');
+        setImagenReferencia(null);
+        setNombreArchivo('Ningún archivo seleccionado');
+        setSuscritoClub(false);
+
         setTimeout(() => {
           onClose();
           if (onPedidoExitoso) onPedidoExitoso();
@@ -102,7 +144,7 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
       )}
 
       <div style={{ background: 'white', borderRadius: '24px', padding: '1.5rem', maxWidth: '480px', width: '100%', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', boxSizing: 'border-box' }}>
-        <button onClick={onClose} style={{ position: 'absolute', top: '14px', right: '14px', background: 'none', border: 'none', fontSize: '1.1rem', fontWeight: 'bold', color: '#C93A5B', cursor: 'pointer', padding: '4px 8px' }}>✕</button>
+        <button type="button" onClick={onClose} style={{ position: 'absolute', top: '14px', right: '14px', background: 'none', border: 'none', fontSize: '1.1rem', fontWeight: 'bold', color: '#C93A5B', cursor: 'pointer', padding: '4px 8px' }}>✕</button>
         
         <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
           <h3 style={{ fontFamily: 'var(--f-titulo)', color: 'var(--rosa)', fontSize: '1.6rem', margin: 0 }}>
@@ -144,7 +186,6 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
             <textarea rows="3" value={detalles} onChange={e => setDetalles(e.target.value)} placeholder="Cuéntame colores de preferencia o referencias..." required />
           </div>
 
-          {/* ÚNICAMENTE aparece en Encargo Personalizado con un diseño estilizado */}
           {!esDesdeCarrito && (
             <div className="grupo-campo" style={{ marginBottom: 0 }}>
               <label>Imagen o referencia visual (opcional)</label>
@@ -156,13 +197,22 @@ function OrderModal({ isOpen, onClose, initialDetails = '', onPedidoExitoso }) {
                   id="subir-imagen"
                   type="file" 
                   accept="image/*" 
-                  onChange={e => setImagenReferencia(e.target.files[0])}
+                  onChange={handleFileChange}
                   style={{ display: 'none' }} 
                 />
                 <span style={{ fontSize: '0.8rem', color: 'var(--tinta)', opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {imagenReferencia ? imagenReferencia.name : 'Ningún archivo seleccionado'}
+                  {nombreArchivo}
                 </span>
               </div>
+              {imagenReferencia && (
+                <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'center' }}>
+                  <img
+                    src={imagenReferencia}
+                    alt="Vista previa de referencia"
+                    style={{ maxHeight: '110px', width: 'auto', borderRadius: '10px', border: '1px solid var(--rosa-claro)', objectFit: 'contain' }}
+                  />
+                </div>
+              )}
             </div>
           )}
 
