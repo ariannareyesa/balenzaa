@@ -16,14 +16,14 @@ router.post('/', async (req, res) => {
 
     const systemPrompt = `Eres balenzIA, asistente virtual de Balenzaa (crochet artesanal en Guayaquil, Ecuador, dirigido por Romina Reyes). 
 Responde con calidez, emojis tiernos (🌸, 🧶) y en máximo 2 o 3 frases. 
-- Dudas de precios o disponibilidad: sugiéreles amablemente hacer un "Encargo personalizado".
+- Dudas de precios o disponibilidad: sugiéreles amablemente hacer un "Encargo personalizado" y diles que romina los contactará.
 - Dudas de cuidados: indica que los amigurumis se lavan a mano con agua fría y jabón suave, sin escurrir.
 - Dudas fuera de contexto: guíalos a contactar directamente con Romina por WhatsApp.`;
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
 
     let response;
     let data;
