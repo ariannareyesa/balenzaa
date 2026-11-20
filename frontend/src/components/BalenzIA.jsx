@@ -20,9 +20,24 @@ function BalenzIA() {
     if (!inputTexto.trim() || cargando) return;
 
     const mensajeUsuario = inputTexto.trim();
-    setMensajes(prev => [...prev, { remitente: 'usuario', texto: mensajeUsuario }]);
+    setMensajes(prev => [
+      ...prev,
+      { remitente: 'usuario', texto: mensajeUsuario },
+      { remitente: 'bot', texto: '' }
+    ]);
     setInputTexto('');
     setCargando(true);
+
+    const actualizarUltimoBot = (nuevoTexto) => {
+      setMensajes(prev => {
+        const copia = [...prev];
+        const ultimoIdx = copia.length - 1;
+        if (ultimoIdx >= 0 && copia[ultimoIdx].remitente === 'bot') {
+          copia[ultimoIdx] = { ...copia[ultimoIdx], texto: nuevoTexto };
+        }
+        return copia;
+      });
+    };
 
     try {
       const res = await fetch('/api/chat', {
@@ -30,12 +45,38 @@ function BalenzIA() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mensaje: mensajeUsuario })
       });
-      const data = await res.json();
 
-      setMensajes(prev => [...prev, { remitente: 'bot', texto: data.respuesta || '¡Te responderemos pronto por WhatsApp! 🧶' }]);
+      const contentType = res.headers.get('content-type') || '';
+
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        actualizarUltimoBot(data.respuesta || '¡Te responderemos pronto por WhatsApp! 🧶');
+        return;
+      }
+
+      if (!res.body) {
+        const textoPlano = await res.text();
+        actualizarUltimoBot(textoPlano.trim() || '¡Te responderemos pronto por WhatsApp! 🧶');
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acumulado = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acumulado += decoder.decode(value, { stream: true });
+        actualizarUltimoBot(acumulado);
+      }
+
+      if (!acumulado.trim()) {
+        actualizarUltimoBot('¡Te responderemos pronto por WhatsApp! 🧶');
+      }
     } catch (err) {
       console.error(err);
-      setMensajes(prev => [...prev, { remitente: 'bot', texto: '¡Ups! Ocurrió un pequeño error de conexión, pero Romina te atiende con gusto en el botón de WhatsApp. ✨' }]);
+      actualizarUltimoBot('¡Ups! Ocurrió un pequeño error de conexión, pero Romina te atiende con gusto en el botón de WhatsApp. ✨');
     } finally {
       setCargando(false);
     }
@@ -112,21 +153,24 @@ function BalenzIA() {
             ref={listaMensajesRef}
             style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.6rem', background: '#FFFDF9' }}
           >
-            {mensajes.map((m, index) => (
-              <div key={index} style={{
-                alignSelf: m.remitente === 'usuario' ? 'flex-end' : 'flex-start',
-                background: m.remitente === 'usuario' ? 'var(--rosa-pastel)' : 'white',
-                color: 'var(--tinta)',
-                padding: '0.6rem 0.9rem',
-                borderRadius: '16px',
-                fontSize: '0.88rem',
-                maxWidth: '80%',
-                border: m.remitente === 'bot' ? '1px solid var(--rosa-claro)' : 'none',
-                whiteSpace: 'pre-line'
-              }}>
-                {m.texto}
-              </div>
-            ))}
+            {mensajes.map((m, index) => {
+              if (m.remitente === 'bot' && !m.texto && cargando) return null;
+              return (
+                <div key={index} style={{
+                  alignSelf: m.remitente === 'usuario' ? 'flex-end' : 'flex-start',
+                  background: m.remitente === 'usuario' ? 'var(--rosa-pastel)' : 'white',
+                  color: 'var(--tinta)',
+                  padding: '0.6rem 0.9rem',
+                  borderRadius: '16px',
+                  fontSize: '0.88rem',
+                  maxWidth: '80%',
+                  border: m.remitente === 'bot' ? '1px solid var(--rosa-claro)' : 'none',
+                  whiteSpace: 'pre-line'
+                }}>
+                  {m.texto}
+                </div>
+              );
+            })}
             {cargando && <div style={{ fontSize: '0.8rem', color: '#888', fontStyle: 'italic' }}>balenzIA está escribiendo...</div>}
           </div>
 
