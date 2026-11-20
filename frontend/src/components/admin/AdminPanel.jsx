@@ -54,7 +54,7 @@ function AdminPanel({ onBackToStore }) {
 
   useEffect(() => {
     const intervalo = setInterval(() => {
-      setPedidos(prevPedidos => 
+      setPedidos(prevPedidos =>
         prevPedidos.map(p => {
           if (p.cronometroActivo) {
             return { ...p, segundosTejidos: (p.segundosTejidos || 0) + 1 };
@@ -208,7 +208,7 @@ function AdminPanel({ onBackToStore }) {
   const pendientes = pedidos.filter(p => (p.estado || 'Pendiente') === 'Pendiente').length;
   const elaboracion = pedidos.filter(p => p.estado === 'En elaboración').length;
   const completados = pedidos.filter(p => p.estado === 'Completado').length;
-  
+
   let totalIngresos = 0;
   pedidos.forEach(p => {
     const pr = parseFloat(p.precioTotal) || 0;
@@ -259,7 +259,7 @@ function AdminPanel({ onBackToStore }) {
     const estadoActual = p.estado || 'Pendiente';
     const cumpleEstado = (estadoFiltro === 'todos') || (estadoActual === estadoFiltro);
     const cumpleTipo = (tipoFiltro === 'todos') || (p.producto && p.producto.trim().toLowerCase() === tipoFiltro.toLowerCase());
-    
+
     let cumpleMes = true;
     if (mesFiltro !== 'todos') {
       const mesC = obtenerMesDeFecha(p.fechaCreacion);
@@ -299,18 +299,18 @@ function AdminPanel({ onBackToStore }) {
             <h3 style={{ fontFamily: 'var(--f-titulo)', color: 'var(--rosa)', margin: 0, fontSize: '1.4rem' }}>Confirmación</h3>
             <p style={{ fontFamily: 'var(--f-cuerpo)', color: 'var(--tinta)', margin: 0, fontSize: '1rem' }}>{confirmacionModal.mensaje}</p>
             <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-              <button 
-                onClick={() => setConfirmacionModal({ visible: false, mensaje: '', onAceptar: null })} 
+              <button
+                onClick={() => setConfirmacionModal({ visible: false, mensaje: '', onAceptar: null })}
                 style={{ flex: 1, background: 'var(--crema)', color: 'var(--tinta)', border: '1.5px solid var(--rosa-claro)', borderRadius: 'var(--radio-pill)', padding: '0.6rem 1rem', fontWeight: 700, cursor: 'pointer' }}
               >
                 Cancelar
               </button>
-              <button 
+              <button
                 onClick={() => {
                   const accion = confirmacionModal.onAceptar;
                   setConfirmacionModal({ visible: false, mensaje: '', onAceptar: null });
                   if (accion) accion();
-                }} 
+                }}
                 style={{ flex: 1, background: 'var(--rosa)', color: 'white', border: 'none', borderRadius: 'var(--radio-pill)', padding: '0.6rem 1rem', fontWeight: 700, cursor: 'pointer' }}
               >
                 Aceptar
@@ -337,8 +337,8 @@ function AdminPanel({ onBackToStore }) {
 
       <main className="contenedor-principal-admin">
         <div className="panel-contenido">
-          
-          <AdminMetrics 
+
+          <AdminMetrics
             agendaCerrada={agendaCerrada}
             toggleAgenda={toggleAgenda}
             onOpenSubscribers={() => setModalSuscriptoresOpen(true)}
@@ -348,7 +348,7 @@ function AdminPanel({ onBackToStore }) {
             totalIngresos={totalIngresos}
           />
 
-          <AdminOrdersTable 
+          <AdminOrdersTable
             pedidosFiltrados={pedidosFiltrados}
             tiposDisponibles={tiposDisponibles}
             estadoFiltro={estadoFiltro}
@@ -412,7 +412,7 @@ function AdminPanel({ onBackToStore }) {
             onOpenModalManual={() => setModalPedidoManualOpen(true)}
           />
 
-          <AdminCatalog 
+          <AdminCatalog
             productos={productos}
             onDeleteProducto={(id) => {
               solicitarConfirmacion('¿Estás segura de eliminar esta pieza?', async () => {
@@ -444,13 +444,13 @@ function AdminPanel({ onBackToStore }) {
         </div>
       </main>
 
-      <OrderDetailsModal 
+      <OrderDetailsModal
         modalFoto={modalFoto}
         onClose={() => setModalFoto(null)}
         formatearFechaTexto={formatearFechaTexto}
       />
 
-      <SubscribersModal 
+      <SubscribersModal
         isOpen={modalSuscriptoresOpen}
         onClose={() => setModalSuscriptoresOpen(false)}
         suscriptores={obtenerSuscriptoresUnicos()}
@@ -458,7 +458,7 @@ function AdminPanel({ onBackToStore }) {
         mostrarToast={mostrarToast}
       />
 
-      <ManualOrderModal 
+      <ManualOrderModal
         isOpen={modalPedidoManualOpen}
         onClose={() => setModalPedidoManualOpen(false)}
         manual={manual}
@@ -481,13 +481,18 @@ function AdminPanel({ onBackToStore }) {
         }}
       />
 
-      <NewProductModal 
+      <NewProductModal
         isOpen={modalNuevoProdOpen}
-        onClose={() => setModalNuevoProdOpen(false)}
+        onClose={() => {
+          setModalNuevoProdOpen(false);
+          setNuevoProd({ nombre: '', categoria: 'Amigurumis', precio: '', descripcion: '', imagen: '' });
+          setNombreFotoAdmin('Ningún archivo seleccionado');
+        }}
         nuevoProd={nuevoProd}
         setNuevoProd={setNuevoProd}
         nombreFotoAdmin={nombreFotoAdmin}
         setNombreFotoAdmin={setNombreFotoAdmin}
+        productos={productos}
         onSubmit={async (e) => {
           e.preventDefault();
           try {
