@@ -241,7 +241,7 @@ ul {
   gap: 12px;
   font-size: 1.5rem;
   color: var(--rosa);
-  flex-shrink: 0;
+  flex: 1 1 0;
 }
 
 .imagen-logo-nav {
@@ -253,8 +253,15 @@ ul {
   border: 1.5px solid var(--rosa-claro);
 }
 
+.navegacion-principal {
+  flex: 2 1 auto;
+  display: flex;
+  justify-content: center;
+}
+
 .menu-navegacion {
   display: flex;
+  justify-content: center;
   gap: 1.2rem;
   flex-wrap: wrap;
 }
@@ -275,9 +282,9 @@ ul {
 .acciones-nav-derecha {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.6rem;
-  margin-left: auto;
-  flex-shrink: 0;
+  flex: 1 1 0;
 }
 
 .menu-hamburguesa {
@@ -1240,6 +1247,7 @@ textarea:focus {
   .logotipo-marca {
     font-size: 1.25rem;
     gap: 8px;
+    flex: 0 0 auto;
   }
 
   .imagen-logo-nav {
@@ -1247,10 +1255,15 @@ textarea:focus {
     height: 34px;
   }
 
+  .navegacion-principal {
+    flex: 0 0 auto;
+  }
+
   .acciones-nav-derecha {
     gap: 0.5rem;
     margin-left: auto;
     align-items: center;
+    flex: 0 0 auto;
   }
 
   .menu-hamburguesa {
