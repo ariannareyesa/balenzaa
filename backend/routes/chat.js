@@ -4,8 +4,8 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   try {
     const { mensaje } = req.body;
-    
-    if (!mensaje) {
+
+    if (!mensaje || typeof mensaje !== 'string' || !mensaje.trim()) {
       return res.status(400).json({ error: 'El mensaje es requerido.' });
     }
 
@@ -20,42 +20,54 @@ Responde con calidez, emojis tiernos (🌸, 🧶) y en máximo 2 o 3 frases.
 - Dudas de cuidados: indica que los amigurumis se lavan a mano con agua fría y jabón suave, sin escurrir.
 - Dudas fuera de contexto: guíalos a contactar directamente con Romina por WhatsApp.`;
 
-    // Apuntamos estrictamente al modelo gemini-3.8-flash que exige el servidor
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              { text: `${systemPrompt}\n\nCliente: ${mensaje}` }
-            ]
-          }
-        ]
-      })
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-    const data = await response.json();
+    let response;
+    let data;
+
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                { text: `${systemPrompt}\n\nCliente: ${mensaje.trim()}` }
+              ]
+            }
+          ]
+        })
+      });
+      data = await response.json();
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
-      console.warn('Aviso de la API de Google:', data);
-      return res.json({ 
-        respuesta: 'El chatbot no funciona actualmente 🌸 Cuéntale a Romina lo que buscas en el botón de WhatsApp para hacer tu pedido. ✨' 
+      console.warn('Aviso de la API de Google:', JSON.stringify(data));
+      return res.json({
+        respuesta: 'El chatbot no funciona actualmente 🌸 Cuéntale a Romina lo que buscas en el botón de WhatsApp para hacer tu pedido. ✨'
       });
     }
 
-    const textoRespuesta = data.candidates?.[0]?.content?.parts?.[0]?.text || '¡Te responderemos pronto por WhatsApp! 🧶';
+    const textoRespuesta = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '¡Te responderemos pronto por WhatsApp! 🧶';
     res.json({ respuesta: textoRespuesta });
-
   } catch (error) {
-    console.error('Error interno en la ruta del chat:', error);
-    res.json({ 
-      respuesta: 'El chatbot no funciona actualmente 🌸 Cuéntale a Romina lo que buscas en el botón de WhatsApp para hacer tu pedido. ✨' 
+    if (error.name === 'AbortError') {
+      console.warn('Timeout al consultar Gemini en /api/chat');
+    } else {
+      console.error('Error interno en la ruta del chat:', error);
+    }
+    res.json({
+      respuesta: 'El chatbot no funciona actualmente 🌸 Cuéntale a Romina lo que buscas en el botón de WhatsApp para hacer tu pedido. ✨'
     });
   }
 });

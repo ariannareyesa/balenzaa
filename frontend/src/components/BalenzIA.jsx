@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 function BalenzIA() {
   const [abierto, setAbierto] = useState(false);
@@ -7,12 +7,19 @@ function BalenzIA() {
   ]);
   const [inputTexto, setInputTexto] = useState('');
   const [cargando, setCargando] = useState(false);
+  const listaMensajesRef = useRef(null);
+
+  useEffect(() => {
+    if (listaMensajesRef.current) {
+      listaMensajesRef.current.scrollTop = listaMensajesRef.current.scrollHeight;
+    }
+  }, [mensajes, cargando, abierto]);
 
   const enviarMensaje = async (e) => {
     e.preventDefault();
-    if (!inputTexto.trim()) return;
+    if (!inputTexto.trim() || cargando) return;
 
-    const mensajeUsuario = inputTexto;
+    const mensajeUsuario = inputTexto.trim();
     setMensajes(prev => [...prev, { remitente: 'usuario', texto: mensajeUsuario }]);
     setInputTexto('');
     setCargando(true);
@@ -36,9 +43,9 @@ function BalenzIA() {
 
   return (
     <div style={{ position: 'fixed', bottom: '20px', left: '20px', zIndex: 9998, fontFamily: 'var(--f-cuerpo)' }}>
-      {/* Botón flotante izquierdo */}
       {!abierto && (
         <button
+          type="button"
           onClick={() => setAbierto(true)}
           aria-label="Abrir asistente balenzIA"
           style={{
@@ -63,7 +70,6 @@ function BalenzIA() {
         </button>
       )}
 
-      {/* Ventana del Chat */}
       {abierto && (
         <div style={{
           width: '330px',
@@ -76,7 +82,6 @@ function BalenzIA() {
           flexDirection: 'column',
           overflow: 'hidden'
         }}>
-          {/* Cabecera del Chat */}
           <div style={{
             background: 'var(--rosa)',
             color: 'white',
@@ -95,6 +100,7 @@ function BalenzIA() {
               <span style={{ fontFamily: 'var(--f-titulo)', fontSize: '1.1rem' }}>balenzIA</span>
             </div>
             <button
+              type="button"
               onClick={() => setAbierto(false)}
               style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer' }}
             >
@@ -102,8 +108,10 @@ function BalenzIA() {
             </button>
           </div>
 
-          {/* Cuerpo de mensajes */}
-          <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.6rem', background: '#FFFDF9' }}>
+          <div
+            ref={listaMensajesRef}
+            style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.6rem', background: '#FFFDF9' }}
+          >
             {mensajes.map((m, index) => (
               <div key={index} style={{
                 alignSelf: m.remitente === 'usuario' ? 'flex-end' : 'flex-start',
@@ -113,7 +121,8 @@ function BalenzIA() {
                 borderRadius: '16px',
                 fontSize: '0.88rem',
                 maxWidth: '80%',
-                border: m.remitente === 'bot' ? '1px solid var(--rosa-claro)' : 'none'
+                border: m.remitente === 'bot' ? '1px solid var(--rosa-claro)' : 'none',
+                whiteSpace: 'pre-line'
               }}>
                 {m.texto}
               </div>
@@ -121,16 +130,20 @@ function BalenzIA() {
             {cargando && <div style={{ fontSize: '0.8rem', color: '#888', fontStyle: 'italic' }}>balenzIA está escribiendo...</div>}
           </div>
 
-          {/* Input para escribir */}
           <form onSubmit={enviarMensaje} style={{ display: 'flex', borderTop: '1px solid var(--rosa-claro)', padding: '0.5rem', background: 'white' }}>
             <input
               type="text"
               value={inputTexto}
               onChange={e => setInputTexto(e.target.value)}
               placeholder="Escribe tu duda..."
+              disabled={cargando}
               style={{ flex: 1, border: 'none', padding: '0.5rem', fontSize: '0.9rem', outline: 'none' }}
             />
-            <button type="submit" style={{ background: 'var(--rosa)', color: 'white', border: 'none', borderRadius: '12px', padding: '0 0.9rem', cursor: 'pointer', fontWeight: 'bold' }}>
+            <button
+              type="submit"
+              disabled={cargando}
+              style={{ background: 'var(--rosa)', color: 'white', border: 'none', borderRadius: '12px', padding: '0 0.9rem', cursor: cargando ? 'not-allowed' : 'pointer', fontWeight: 'bold', opacity: cargando ? 0.65 : 1 }}
+            >
               ➤
             </button>
           </form>
