@@ -20,7 +20,7 @@ app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
 // Definir la ruta absoluta hacia el build de React
-const frontendPath = path.resolve(__dirname, '..', 'frontend-react', 'dist');
+const frontendPath = path.resolve(__dirname, '..', 'frontend', 'dist');
 console.log('Carpeta frontend configurada en:', frontendPath);
 
 // Servir archivos estáticos compilados
@@ -159,7 +159,7 @@ app.delete('/api/productos/:id', async (req, res) => {
     }
 });
 
-// RUTA DE BALENZIA (ASISTENTE VIRTUAL) - REGISTRADA ANTES DE LOS ESTÁTICOS
+// RUTA DE BALENZIA (ASISTENTE VIRTUAL)
 const chatRoutes = require('./routes/chat');
 app.use('/api/chat', chatRoutes);
 
